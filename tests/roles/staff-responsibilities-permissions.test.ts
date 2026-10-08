@@ -16,6 +16,7 @@ import {
 } from '../../components/users/user-resolvers.ts'
 import { resolveTenantRole, mapSessionToTenantRole } from '../../lib/auth/types.ts'
 import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
+import { getServerFilteredNavigation } from '../../config/navigation.config.ts'
 
 describe('Staff Responsibilities, Roles & Permission-Based Account Engine', () => {
   describe('1. Practical Responsibilities Normalization & Resolution', () => {
@@ -223,4 +224,44 @@ describe('Staff Responsibilities, Roles & Permission-Based Account Engine', () =
       assert.equal(mapSessionToTenantRole('Head Accountant'), 'accountant')
     })
   })
+
+  describe('6. Communications & Messages Privacy Boundary', () => {
+    test('6.1 Staff roles with baseline notifications.view do NOT receive /communications in getServerFilteredNavigation', () => {
+      const baselineStaffPermissions = [
+        'tasks.view',
+        'tasks.complete',
+        'notifications.view',
+        'support.view',
+        'support.create',
+      ]
+
+      for (const role of ['staff', 'general_staff', 'operator', 'designer']) {
+        const sections = getServerFilteredNavigation(role, baselineStaffPermissions, false)
+        const allHrefs = sections.flatMap((s) => s.items.map((i) => i.href))
+        assert.ok(
+          !allHrefs.includes('/communications'),
+          `Role ${role} must NOT receive /communications when only holding baseline notifications.view`
+        )
+      }
+    })
+
+    test('6.2 Staff roles explicitly granted communications.view DO receive /communications', () => {
+      const elevatedPermissions = [
+        'tasks.view',
+        'tasks.complete',
+        'notifications.view',
+        'communications.view',
+      ]
+
+      for (const role of ['staff', 'general_staff', 'operator', 'designer']) {
+        const sections = getServerFilteredNavigation(role, elevatedPermissions, false)
+        const allHrefs = sections.flatMap((s) => s.items.map((i) => i.href))
+        assert.ok(
+          allHrefs.includes('/communications'),
+          `Role ${role} must receive /communications when explicitly granted communications.view`
+        )
+      }
+    })
+  })
 })
+

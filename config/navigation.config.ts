@@ -547,7 +547,7 @@ export function getServerFilteredNavigation(
       },
     ]
 
-    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+    if (permissions.includes('communications.view')) {
       items.push({
         key: 'communications',
         title: 'Messages',
@@ -604,7 +604,7 @@ export function getServerFilteredNavigation(
       },
     ]
 
-    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+    if (permissions.includes('communications.view')) {
       items.push({
         key: 'communications',
         title: 'Messages',
@@ -664,7 +664,7 @@ export function getServerFilteredNavigation(
       })
     }
 
-    if (permissions.includes('notifications.view') || permissions.includes('communications.view')) {
+    if (permissions.includes('communications.view')) {
       items.push({
         key: 'communications',
         title: 'Messages',

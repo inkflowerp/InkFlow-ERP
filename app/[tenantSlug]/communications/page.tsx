@@ -252,12 +252,11 @@ export default function CommunicationsHubPage() {
 
  return (
     <PanelAccessGuard
-      module="notifications"
+      module="whatsapp"
       action="view"
       panelTitle="Messages & Communications"
-      panelTitleBn="মেসেজিং ও নোটিফিকেশন"
+      panelTitleBn="মেসেজিং ও গেটওয়ে"
       allowIfAny={[
-        { module: 'notifications', action: 'view' },
         { module: 'communications', action: 'view' },
         { module: 'whatsapp', action: 'view' },
         { module: 'settings', action: 'manage' },

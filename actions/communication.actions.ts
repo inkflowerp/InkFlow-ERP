@@ -36,7 +36,7 @@ export const sendUnifiedMessageAction = withTenantAction(
 
 export const getCommunicationLogsAction = withTenantAction(
   {
-    anyPermission: ["notifications.view", "communications.view", "whatsapp.view"],
+    anyPermission: ["communications.view", "whatsapp.view", "settings.manage"],
     entityType: "communication"
   },
   async (ctx, options?: {

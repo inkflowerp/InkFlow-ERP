@@ -14,6 +14,7 @@ import {
   Palette,
   Flame,
   FileText,
+  ShoppingBag,
 } from 'lucide-react'
 import { useOfflineQueue } from '@/hooks/use-offline-queue'
 import { useNetworkStatus } from '@/hooks/use-network-status'
@@ -28,7 +29,7 @@ import type { NavSection } from '@/config/navigation.config'
 export function MobileBottomNav({ initialNavSections }: { initialNavSections?: NavSection[] } = {}) {
   const pathname = usePathname()
   const { company, currentUser } = useTenant()
-  const { isOwner } = usePermissions()
+  const { isOwner, can } = usePermissions()
   const { tBilingual } = useI18n()
   const pathSlug = pathname ? pathname.split('/')[1] : null
   const tenantSlug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
@@ -56,14 +57,15 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
     window.dispatchEvent(new Event('printflow_open_mobile_nav'))
   }
 
-  // 1. General Staff Bottom Navigation (4 big touch targets, zero owner actions)
+  // 1. General Staff Bottom Navigation (clean touch targets, zero owner actions)
   if (isGeneralStaff) {
+    const hasComms = can('view', 'whatsapp') || can('view', 'communications')
     return (
       <nav
         aria-label="Staff Bottom Navigation"
         className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] select-none shadow-lg"
       >
-        <div className="grid grid-cols-4 h-16 items-center px-1">
+        <div className={`grid ${hasComms ? 'grid-cols-4' : 'grid-cols-3'} h-16 items-center px-1`}>
           <Link
             href={getTenantNavHref('/portal', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
@@ -88,17 +90,19 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
             </span>
           </Link>
 
-          <Link
-            href={getTenantNavHref('/communications', pathname, tenantSlug)}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
-              isMessagesActive ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <MessageSquare className="h-5 w-5 shrink-0" />
-            <span className="text-xs font-semibold mt-1 truncate max-w-[70px]">
-              {tBilingual('Messages', 'মেসেজ')}
-            </span>
-          </Link>
+          {hasComms && (
+            <Link
+              href={getTenantNavHref('/communications', pathname, tenantSlug)}
+              className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+                isMessagesActive ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <MessageSquare className="h-5 w-5 shrink-0" />
+              <span className="text-xs font-semibold mt-1 truncate max-w-[70px]">
+                {tBilingual('Messages', 'মেসেজ')}
+              </span>
+            </Link>
+          )}
 
           <Link
             href={getTenantNavHref('/portal/my-workforce', pathname, tenantSlug)}
@@ -176,12 +180,13 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
 
   // 3. Graphic Designer Bottom Navigation
   if (isDesigner) {
+    const canViewOrders = can('view', 'orders') || can('view', 'order')
     return (
       <nav
         aria-label="Designer Bottom Navigation"
         className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] select-none shadow-lg"
       >
-        <div className="grid grid-cols-4 h-16 items-center px-1">
+        <div className={`grid ${canViewOrders ? 'grid-cols-4' : 'grid-cols-3'} h-16 items-center px-1`}>
           <Link
             href={getTenantNavHref('/designer', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
@@ -194,6 +199,20 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
             </span>
           </Link>
 
+          {canViewOrders && (
+            <Link
+              href={getTenantNavHref('/orders', pathname, tenantSlug)}
+              className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
+                pathname?.includes('/orders') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <ShoppingBag className="h-5 w-5 shrink-0" />
+              <span className="text-xs font-semibold mt-1 truncate max-w-[70px]">
+                {tBilingual('Orders', 'অর্ডার')}
+              </span>
+            </Link>
+          )}
+
           <Link
             href={getTenantNavHref('/attendance', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
@@ -203,18 +222,6 @@ export function MobileBottomNav({ initialNavSections }: { initialNavSections?: N
             <Clock className="h-5 w-5 shrink-0" />
             <span className="text-xs font-semibold mt-1 truncate max-w-[70px]">
               {tBilingual('Attendance', 'হাজিরা')}
-            </span>
-          </Link>
-
-          <Link
-            href={getTenantNavHref('/communications', pathname, tenantSlug)}
-            className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
-              isMessagesActive ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <MessageSquare className="h-5 w-5 shrink-0" />
-            <span className="text-xs font-semibold mt-1 truncate max-w-[70px]">
-              {tBilingual('Messages', 'মেসেজ')}
             </span>
           </Link>
 

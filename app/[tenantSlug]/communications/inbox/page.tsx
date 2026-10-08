@@ -36,6 +36,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
  getWhatsAppChatsAction,
  getWhatsAppChatMessagesAction,
@@ -194,8 +195,19 @@ export default function TenantWhatsAppInboxPage() {
  return true
   })
 
- return (
-    <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/80 bg-background shadow-sm">
+  return (
+    <PanelAccessGuard
+      module="whatsapp"
+      action="view"
+      panelTitle="WhatsApp Inbox"
+      panelTitleBn="হোয়াটসঅ্যাপ ইনবক্স"
+      allowIfAny={[
+        { module: 'communications', action: 'view' },
+        { module: 'whatsapp', action: 'view' },
+        { module: 'settings', action: 'manage' },
+      ]}
+    >
+      <div className="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-xl border border-border/80 bg-background shadow-sm">
       {/* ------------------------------------------------------------------------ */}
       {/* PANE 1: Chats List (Left) */}
       {/* ------------------------------------------------------------------------ */}
@@ -550,6 +562,7 @@ export default function TenantWhatsAppInboxPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </PanelAccessGuard>
   )
 }
