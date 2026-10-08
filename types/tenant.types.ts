@@ -56,6 +56,8 @@ export interface LinkedEmployeeSummary {
   mobile?: string | null
   email?: string | null
   status: string
+  profile_picture_url?: string | null
+  avatar_url?: string | null
 }
 
 export interface CompanyUserWithProfile

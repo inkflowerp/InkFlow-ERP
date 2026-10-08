@@ -291,6 +291,7 @@ export interface TenantSessionData {
   fullName: string
   fullNameBn?: string | null
   phone?: string | null
+  avatarUrl?: string | null
   companyId: string
   companySlug: string
   companyName: string

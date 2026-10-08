@@ -317,8 +317,17 @@ export function EmployeeTable({
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0 overflow-hidden">
-                            {emp.profile_picture_url ? (
-                              <img src={emp.profile_picture_url} alt={emp.name} className="w-full h-full object-cover" />
+                            {emp.profile_picture_url || (emp as any).avatar_url || (emp as any).photo_url ? (
+                              <img
+                                src={emp.profile_picture_url || (emp as any).avatar_url || (emp as any).photo_url}
+                                alt={emp.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                  const parent = e.currentTarget.parentElement
+                                  if (parent) parent.innerText = emp.name.slice(0, 2).toUpperCase()
+                                }}
+                              />
                             ) : (
                               emp.name.slice(0, 2).toUpperCase()
                             )}
@@ -474,8 +483,17 @@ export function EmployeeTable({
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0 overflow-hidden">
-                      {emp.profile_picture_url ? (
-                        <img src={emp.profile_picture_url} alt={emp.name} className="w-full h-full object-cover" />
+                      {emp.profile_picture_url || (emp as any).avatar_url || (emp as any).photo_url ? (
+                        <img
+                          src={emp.profile_picture_url || (emp as any).avatar_url || (emp as any).photo_url}
+                          alt={emp.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            const parent = e.currentTarget.parentElement
+                            if (parent) parent.innerText = emp.name.slice(0, 2).toUpperCase()
+                          }}
+                        />
                       ) : (
                         emp.name.slice(0, 2).toUpperCase()
                       )}

@@ -168,6 +168,10 @@ export interface EmployeeRecord {
   bank_payment_info?: BankPaymentInfo | null
   mfs_payment_info?: MfsPaymentInfo | null
   profile_picture_url?: string | null
+  avatar_url?: string | null
+  blood_group?: string | null
+  nid_number?: string | null
+  date_of_birth?: string | null
   document_attachments?: DocumentAttachment[] | null
   status: 'active' | 'on_leave' | 'terminated'
   notes?: string | null

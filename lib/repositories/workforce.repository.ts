@@ -499,13 +499,22 @@ export class WorkforceRepository {
       if (s.employee_id_number) empMap.set(s.employee_id_number, s)
     }
 
-    // 2. Overlay DB employees (preserving extended rich fields from store if present)
+    // 2. Overlay DB employees (preserving extended rich fields and photos from store if present)
     for (const d of dbEmployees) {
       const existing = empMap.get(d.id) || (d.employee_id_number ? empMap.get(d.employee_id_number) : null)
       if (existing) {
-        empMap.set(d.id, { ...existing, ...d })
+        const photo = d.profile_picture_url || d.avatar_url || existing.profile_picture_url || (existing as any).avatar_url || null
+        empMap.set(d.id, {
+          ...existing,
+          ...d,
+          profile_picture_url: photo,
+          avatar_url: photo,
+        })
       } else {
-        empMap.set(d.id, d)
+        empMap.set(d.id, {
+          ...d,
+          avatar_url: d.profile_picture_url || d.avatar_url || null,
+        })
       }
     }
 
@@ -529,10 +538,13 @@ export class WorkforceRepository {
           (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id) ||
           (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id)
 
+        const photo = data.profile_picture_url || data.avatar_url || storeEmp?.profile_picture_url || (storeEmp as any)?.avatar_url || null
         return {
           ...(storeEmp || {}),
           ...data,
-          branch_name: data.branches?.name || null,
+          profile_picture_url: photo,
+          avatar_url: photo,
+          branch_name: data.branches?.name || storeEmp?.branch_name || null,
         } as EmployeeRecord
       }
     } catch (e) {
@@ -573,11 +585,18 @@ export class WorkforceRepository {
   static async createEmployee(emp: EmployeeRecord): Promise<EmployeeRecord> {
     // 1. Always save to DataStore in tenant scope, clean slug scope, and general scope to guarantee local persistence
     const cleanSlug = emp.company_id.replace(/^comp-/, '').replace(/^co-/, '')
-    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, emp.company_id)
-    if (cleanSlug !== emp.company_id) {
-      PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp, cleanSlug)
+    const photo = emp.profile_picture_url || (emp as any).avatar_url || null
+    const normalizedEmp: EmployeeRecord = {
+      ...emp,
+      profile_picture_url: photo,
+      avatar_url: photo,
     }
-    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, emp)
+
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, normalizedEmp, emp.company_id)
+    if (cleanSlug !== emp.company_id) {
+      PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, normalizedEmp, cleanSlug)
+    }
+    PrintFlowDataStore.addItem(STORAGE_KEYS.EMPLOYEES, normalizedEmp)
 
     // 2. Attempt DB insertion with schema sanitization
     try {
@@ -617,6 +636,30 @@ export class WorkforceRepository {
         overtime_hourly_rate: Number(emp.overtime_hourly_rate || 0),
         current_advance_balance: Number(emp.current_advance_balance || 0),
         status: dbStatus,
+        profile_picture_url: photo,
+        avatar_url: photo,
+        branch_id: emp.branch_id || null,
+        branch_name: emp.branch_name || null,
+        user_id: emp.user_id || null,
+        duty_settings: emp.duty_settings || {},
+        portal_credentials: emp.portal_credentials || {},
+        salary_structure: emp.salary_structure || {},
+        bank_payment_info: emp.bank_payment_info || {},
+        mfs_payment_info: emp.mfs_payment_info || {},
+        commission_settings: emp.commission_settings || {},
+        document_attachments: emp.document_attachments || [],
+        blood_group: (emp as any).blood_group || null,
+        nid_number: (emp as any).nid_number || null,
+        date_of_birth: (emp as any).date_of_birth || null,
+        permanent_address: (emp as any).permanent_address || null,
+        educational_qualification: (emp as any).educational_qualification || null,
+        emergency_contact_name: (emp as any).emergency_contact_name || null,
+        emergency_contact_phone: (emp as any).emergency_contact_phone || null,
+        emergency_contact_relation: (emp as any).emergency_contact_relation || null,
+        allowed_monthly_leaves: emp.allowed_monthly_leaves ?? 2,
+        payment_method: emp.payment_method || 'cash',
+        is_daily_worker: emp.is_daily_worker ?? false,
+        contract_end_date: emp.contract_end_date || null,
         created_at: emp.created_at || new Date().toISOString(),
         updated_at: emp.updated_at || new Date().toISOString(),
       }
@@ -632,7 +675,7 @@ export class WorkforceRepository {
         .single()
 
       if (!error && data) {
-        const merged = { ...emp, id: data.id || emp.id }
+        const merged = { ...normalizedEmp, ...data, id: data.id || emp.id }
         PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged, emp.company_id)
         PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, emp.id, merged)
         return merged
@@ -643,7 +686,7 @@ export class WorkforceRepository {
       console.warn('[WorkforceRepository.createEmployee] DB insert fallback:', e)
     }
 
-    return emp
+    return normalizedEmp
   }
 
   static async updateEmployee(
@@ -651,7 +694,17 @@ export class WorkforceRepository {
     companyId: string,
     updates: Partial<EmployeeRecord>
   ): Promise<EmployeeRecord | null> {
-    const payload = { ...updates, updated_at: new Date().toISOString() }
+    const updatedPhoto = updates.profile_picture_url !== undefined
+      ? updates.profile_picture_url
+      : (updates as any).avatar_url !== undefined
+      ? (updates as any).avatar_url
+      : undefined
+
+    const payload: Partial<EmployeeRecord> & { updated_at: string } = {
+      ...updates,
+      ...(updatedPhoto !== undefined ? { profile_picture_url: updatedPhoto, avatar_url: updatedPhoto } : {}),
+      updated_at: new Date().toISOString(),
+    }
 
     // 1. Update DataStore in all scopes (companyId, cleanSlug, and global)
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
@@ -680,6 +733,33 @@ export class WorkforceRepository {
         if (updates.current_advance_balance !== undefined) dbUpdates.current_advance_balance = updates.current_advance_balance
         if (updates.status !== undefined) dbUpdates.status = updates.status
         if (updates.salary_basis !== undefined) dbUpdates.salary_type = updates.salary_basis === 'daily_rate' ? 'daily_rate' : 'monthly'
+
+        if (updatedPhoto !== undefined) {
+          dbUpdates.profile_picture_url = updatedPhoto
+          dbUpdates.avatar_url = updatedPhoto
+        }
+        if (updates.branch_id !== undefined) dbUpdates.branch_id = updates.branch_id
+        if (updates.branch_name !== undefined) dbUpdates.branch_name = updates.branch_name
+        if (updates.user_id !== undefined) dbUpdates.user_id = updates.user_id
+        if (updates.duty_settings !== undefined) dbUpdates.duty_settings = updates.duty_settings
+        if (updates.portal_credentials !== undefined) dbUpdates.portal_credentials = updates.portal_credentials
+        if (updates.salary_structure !== undefined) dbUpdates.salary_structure = updates.salary_structure
+        if (updates.bank_payment_info !== undefined) dbUpdates.bank_payment_info = updates.bank_payment_info
+        if (updates.mfs_payment_info !== undefined) dbUpdates.mfs_payment_info = updates.mfs_payment_info
+        if (updates.commission_settings !== undefined) dbUpdates.commission_settings = updates.commission_settings
+        if (updates.document_attachments !== undefined) dbUpdates.document_attachments = updates.document_attachments
+        if ((updates as any).blood_group !== undefined) dbUpdates.blood_group = (updates as any).blood_group
+        if ((updates as any).nid_number !== undefined) dbUpdates.nid_number = (updates as any).nid_number
+        if ((updates as any).date_of_birth !== undefined) dbUpdates.date_of_birth = (updates as any).date_of_birth
+        if ((updates as any).permanent_address !== undefined) dbUpdates.permanent_address = (updates as any).permanent_address
+        if ((updates as any).educational_qualification !== undefined) dbUpdates.educational_qualification = (updates as any).educational_qualification
+        if ((updates as any).emergency_contact_name !== undefined) dbUpdates.emergency_contact_name = (updates as any).emergency_contact_name
+        if ((updates as any).emergency_contact_phone !== undefined) dbUpdates.emergency_contact_phone = (updates as any).emergency_contact_phone
+        if ((updates as any).emergency_contact_relation !== undefined) dbUpdates.emergency_contact_relation = (updates as any).emergency_contact_relation
+        if (updates.allowed_monthly_leaves !== undefined) dbUpdates.allowed_monthly_leaves = updates.allowed_monthly_leaves
+        if (updates.payment_method !== undefined) dbUpdates.payment_method = updates.payment_method
+        if (updates.is_daily_worker !== undefined) dbUpdates.is_daily_worker = updates.is_daily_worker
+        if (updates.contract_end_date !== undefined) dbUpdates.contract_end_date = updates.contract_end_date
 
         const { data, error } = await (admin as any)
           .from('employees')

@@ -127,6 +127,36 @@ const ROLE_PERMISSION_DETAILS: Record<string, { title: string; badge: string; sc
       'Staff task delegation',
     ],
   },
+  production_manager: {
+    title: 'Production Manager (উৎপাদন ব্যবস্থাপক)',
+    badge: 'Production Lead',
+    scopes: [
+      'Machine scheduling & routing',
+      'Material requisition & consumption approval',
+      'Work order progression & job cards',
+      'Floor staff supervision',
+    ],
+  },
+  branch_manager: {
+    title: 'Branch / Outlet Manager (শাখা ব্যবস্থাপক)',
+    badge: 'Branch Lead',
+    scopes: [
+      'Branch orders, quotations & invoicing',
+      'Customer relationships & payments',
+      'Branch staff attendance & tasks',
+      'Branch POS & cash register',
+    ],
+  },
+  store_manager: {
+    title: 'Store & Inventory Keeper (স্টোর কিপার)',
+    badge: 'Store Desk',
+    scopes: [
+      'Raw material rolls & consumables stock',
+      'Issue master rolls & scrap recording',
+      'Purchase receipts & stock inward',
+      'Vendor stock balance tracking',
+    ],
+  },
   sales_rep: {
     title: 'Sales & Counter Executive (কাউন্টার সেলস)',
     badge: 'Front Desk',
@@ -135,6 +165,16 @@ const ROLE_PERMISSION_DETAILS: Record<string, { title: string; badge: string; sc
       'Customer directory & balance checks',
       'Invoice printing & payment receipt',
       'Counter POS terminal',
+    ],
+  },
+  sales_manager: {
+    title: 'Sales Manager (বিক্রয় ব্যবস্থাপক)',
+    badge: 'Sales Lead',
+    scopes: [
+      'Lead management & customer pipelines',
+      'Quotations approval & custom discounting',
+      'Sales rep performance & commissions',
+      'Billing & customer reconciliation',
     ],
   },
   field_staff: {
@@ -147,6 +187,16 @@ const ROLE_PERMISSION_DETAILS: Record<string, { title: string; badge: string; sc
       'Field expense submission',
     ],
   },
+  delivery_coordinator: {
+    title: 'Delivery Coordinator (ডেলিভারি সমন্বয়ক)',
+    badge: 'Logistics',
+    scopes: [
+      'Chalan & delivery slips dispatch',
+      'Rider & courier assignment',
+      'Customer delivery proof photos',
+      'Return goods tracking',
+    ],
+  },
   accounts: {
     title: 'Accounts & Billing Executive (হিসাবরক্ষণ)',
     badge: 'Finance Desk',
@@ -155,6 +205,26 @@ const ROLE_PERMISSION_DETAILS: Record<string, { title: string; badge: string; sc
       'Expense entry & cash drawer balance',
       'Advance salary deduction review',
       'Payroll sheet verification',
+    ],
+  },
+  accountant: {
+    title: 'Head Accountant (প্রধান হিসাবরক্ষক)',
+    badge: 'Finance Desk',
+    scopes: [
+      'Full ledger & journal entries',
+      'Payroll disbursement & slip release',
+      'Supplier invoices & payment settlements',
+      'Financial reports & statements',
+    ],
+  },
+  general_staff: {
+    title: 'General Support Staff (সহকারী কর্মী)',
+    badge: 'Staff Level',
+    scopes: [
+      'Personal attendance & punch clock',
+      'Personal task view',
+      'Payslip & advance request submission',
+      'Basic support communication',
     ],
   },
 }
@@ -324,6 +394,130 @@ export function EmployeeFormWizard({
       },
     }
   })
+
+  // Synchronize form data when editing employee or opening wizard
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        const photo = initialData.profile_picture_url || (initialData as any).avatar_url || (initialData as any).photo_url || null
+        setFormData({
+          ...initialData,
+          profile_picture_url: photo,
+          avatar_url: photo,
+          duty_settings: {
+            office_start_time: '09:00',
+            office_end_time: '18:00',
+            late_grace_minutes: 15,
+            weekly_off_day: 'Friday',
+            ot_calc_type: '1.5x_standard',
+            absent_deduction_allowed: true,
+            late_fine_policy: '3_late_1_day_salary',
+            ...(initialData.duty_settings || {}),
+          },
+          salary_structure: {
+            basic: Math.round((initialData.base_salary || 20000) * 0.6),
+            house_allowance: Math.round((initialData.base_salary || 20000) * 0.2),
+            transport_allowance: Math.round((initialData.base_salary || 20000) * 0.1),
+            food_allowance: 0,
+            medical_allowance: Math.round((initialData.base_salary || 20000) * 0.1),
+            other_allowances: 0,
+            bonuses: 0,
+            ...(initialData.salary_structure || {}),
+          },
+          portal_credentials: {
+            create_login: false,
+            username: initialData.mobile || '',
+            email: initialData.email || '',
+            password: '',
+            role: initialData.role?.toLowerCase() || 'operator',
+            send_invitation: true,
+            ...(initialData.portal_credentials || {}),
+          },
+          bank_payment_info: {
+            bank_name: '',
+            branch_name: '',
+            account_name: initialData.name || '',
+            account_number: '',
+            routing_number: '',
+            ...(initialData.bank_payment_info || {}),
+          },
+          mfs_payment_info: {
+            provider: 'bkash',
+            wallet_number: initialData.mobile || '',
+            account_type: 'personal',
+            ...(initialData.mfs_payment_info || {}),
+          },
+        })
+      } else {
+        setFormData({
+          name: '',
+          name_bn: '',
+          mobile: '',
+          phone: '',
+          email: '',
+          address: '',
+          permanent_address: '',
+          profile_picture_url: null,
+          document_attachments: [],
+          employee_id_number: generateEmployeeCode(),
+          department: 'printing',
+          role: '',
+          employee_type: 'permanent',
+          joining_date: new Date().toISOString().split('T')[0],
+          salary_basis: 'monthly',
+          base_salary: 20000,
+          daily_rate: 769,
+          hourly_rate: 96,
+          overtime_hourly_rate: 144,
+          allowed_monthly_leaves: 2,
+          payment_method: 'cash',
+          status: 'active',
+          emergency_contact_name: '',
+          emergency_contact_phone: '',
+          emergency_contact_relation: 'Spouse',
+          duty_settings: {
+            office_start_time: '09:00',
+            office_end_time: '18:00',
+            late_grace_minutes: 15,
+            weekly_off_day: 'Friday',
+            ot_calc_type: '1.5x_standard',
+            absent_deduction_allowed: true,
+            late_fine_policy: '3_late_1_day_salary',
+          },
+          salary_structure: {
+            basic: 12000,
+            house_allowance: 4000,
+            transport_allowance: 2000,
+            food_allowance: 0,
+            medical_allowance: 2000,
+            other_allowances: 0,
+            bonuses: 0,
+          },
+          portal_credentials: {
+            create_login: false,
+            username: '',
+            email: '',
+            password: '',
+            role: 'operator',
+            send_invitation: true,
+          },
+          bank_payment_info: {
+            bank_name: '',
+            branch_name: '',
+            account_name: '',
+            account_number: '',
+            routing_number: '',
+          },
+          mfs_payment_info: {
+            provider: 'bkash',
+            wallet_number: '',
+            account_type: 'personal',
+          },
+        })
+      }
+      setCurrentStep(1)
+    }
+  }, [open, initialData])
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -1758,10 +1952,17 @@ export function EmployeeFormWizard({
                       >
                         <option value="operator">Production Machine Operator (মেশিন অপারেটর)</option>
                         <option value="designer">Graphic Designer & Pre-press (ডিজাইনার)</option>
+                        <option value="production_manager">Production Manager (উৎপাদন ব্যবস্থাপক)</option>
                         <option value="manager">Shop Floor Manager / Supervisor (সুপারভাইজার)</option>
+                        <option value="branch_manager">Branch / Outlet Manager (শাখা ব্যবস্থাপক)</option>
+                        <option value="store_manager">Store & Inventory Keeper (স্টোর কিপার)</option>
                         <option value="sales_rep">Counter Sales Representative (কাউন্টার সেলস)</option>
+                        <option value="sales_manager">Sales Manager (বিক্রয় ব্যবস্থাপক)</option>
+                        <option value="delivery_coordinator">Delivery Coordinator (ডেলিভারি সমন্বয়ক)</option>
                         <option value="field_staff">Field Installation Staff (মাঠকর্মী)</option>
                         <option value="accounts">Accounts & Billing Executive (হিসাবরক্ষণ)</option>
+                        <option value="accountant">Head Accountant (প্রধান হিসাবরক্ষক)</option>
+                        <option value="general_staff">General Support Staff (সহকারী কর্মী)</option>
                       </select>
                     </div>
 

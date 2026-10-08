@@ -379,7 +379,7 @@ export function MobileNav() {
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar
  fallback={userName}
- src={currentUser?.profile?.avatar_url || undefined}
+ src={currentUser?.profile?.avatar_url || (currentUser as any)?.linked_employee?.profile_picture_url || (currentUser as any)?.linked_employee?.avatar_url || undefined}
  className="h-8 w-8 text-xs font-bold shrink-0 bg-primary/10 text-primary bg-primary text-primary ring-1 focus:ring-ring/20"/>
                   <div className="truncate">
                     <span className="block font-bold text-xs sm:text-sm text-foreground truncate leading-tight bangla-text">

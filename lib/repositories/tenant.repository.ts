@@ -759,7 +759,7 @@ export class TenantRepository {
       try {
         const { data: emps } = await (admin as any)
           .from('employees')
-          .select('id, employee_id_number, name, name_bn, role, department, mobile, email, status, user_id')
+          .select('id, employee_id_number, name, name_bn, role, department, mobile, email, status, user_id, profile_picture_url, avatar_url')
           .eq('company_id', companyId)
           .in('user_id', userIds)
         ;(emps || []).forEach((e: any) => employeeMap.set(e.user_id, e))
@@ -824,18 +824,23 @@ export class TenantRepository {
           is_expired: Boolean(isExpired),
           linked_employee: linkedEmployee,
           last_login_at: lastLoginAt,
-        profile: prof || {
-          id: cu.user_id,
-          email: cu.invited_email || '',
-          full_name: 'Team Member',
-          full_name_bn: null,
-          phone: null,
-          avatar_url: null,
-          preferred_locale: 'bn',
-          is_active: cu.status === 'active',
-          created_at: cu.created_at,
-          updated_at: cu.updated_at,
-        },
+        profile: prof
+          ? {
+              ...prof,
+              avatar_url: prof.avatar_url || linkedEmployee?.profile_picture_url || linkedEmployee?.avatar_url || null,
+            }
+          : {
+              id: cu.user_id,
+              email: cu.invited_email || '',
+              full_name: 'Team Member',
+              full_name_bn: null,
+              phone: null,
+              avatar_url: linkedEmployee?.profile_picture_url || linkedEmployee?.avatar_url || null,
+              preferred_locale: 'bn',
+              is_active: cu.status === 'active',
+              created_at: cu.created_at,
+              updated_at: cu.updated_at,
+            },
         roles,
         branch: cu.branch || null,
       } as CompanyUserWithProfile

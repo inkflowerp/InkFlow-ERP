@@ -12,6 +12,7 @@ import {
  Layers,
  Plus,
  RefreshCw,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
@@ -29,6 +30,8 @@ import { AttendanceCorrectionTable } from '@/components/workforce/attendance-cor
 import { OvertimeTable } from '@/components/workforce/overtime-table'
 import { ShiftManager } from '@/components/workforce/shift-manager'
 import { AttendancePunchModal } from '@/components/mobile/attendance-punch-modal'
+import { AttendanceReportView } from '@/components/workforce/attendance-report-view'
+import { EmployeeProfileDialog } from '@/components/workforce/employee-profile-dialog'
 import {
  getEmployeesAction,
  getDailyAttendanceAction,
@@ -59,8 +62,9 @@ export default function AttendancePage() {
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
  const initialTab = searchParams?.get('tab') || 'roster'
- const [activeTab, setActiveTab] = useState<'roster' | 'corrections' | 'overtime' | 'shifts'>(
- initialTab as any
+ const [profileEmployee, setProfileEmployee] = useState<EmployeeRecord | null>(null)
+  const [activeTab, setActiveTab] = useState<'roster' | 'corrections' | 'overtime' | 'shifts' | 'report'>(
+    initialTab as any
   )
 
  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -109,7 +113,7 @@ export default function AttendancePage() {
 
  useEffect(() => {
  const tab = searchParams?.get('tab')
- if (tab && ['roster', 'corrections', 'overtime', 'shifts'].includes(tab)) {
+ if (tab && ['roster', 'corrections', 'overtime', 'shifts', 'report'].includes(tab)) {
  setActiveTab(tab as any)
     }
  if (searchParams?.get('mode') === 'qr') {
@@ -314,6 +318,18 @@ export default function AttendancePage() {
               <Layers className="w-4 h-4"/>
               <span>{tBilingual('Shifts', 'শিফট')}</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shrink-0 ${
+                activeTab === 'report'
+                  ? 'bg-primary text-white font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>{tBilingual('Attendance Report', 'হাজিরা রিপোর্ট')}</span>
+            </button>
           </div>
 
           {/* Active Tab View */}
@@ -351,6 +367,25 @@ export default function AttendancePage() {
  isLoading={isLoading}
  tenantSlug={slug}
  onReview={handleReviewOvertime}
+            />
+          )}
+
+                    {activeTab === 'report' && (
+            <AttendanceReportView
+              employees={employees}
+              tenantSlug={slug}
+              onViewEmployeeProfile={(emp) => setProfileEmployee(emp)}
+            />
+          )}
+
+          {profileEmployee && (
+            <EmployeeProfileDialog
+              employee={profileEmployee}
+              open={Boolean(profileEmployee)}
+              onOpenChange={(open) => {
+                if (!open) setProfileEmployee(null)
+              }}
+              tenantSlug={slug}
             />
           )}
 

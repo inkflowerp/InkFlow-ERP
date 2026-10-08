@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AttendanceReportView } from './attendance-report-view'
 import type {
  EmployeeRecord,
  PayrollPeriodRecord,
@@ -294,37 +295,9 @@ export function WorkforceReport({
         </TabsContent>
 
         {/* 2. ATTENDANCE REPORT TAB */}
-        <TabsContent value="attendance"className="pt-4 space-y-4">
-          <Card className="bg-card border-border p-5 rounded-xl">
-            <h3 className="text-sm font-bold text-foreground mb-1">{tBilingual('Attendance Analytics', 'হাজিরা অ্যানালিটিক্স')}</h3>
-            <p className="text-xs text-muted-foreground mb-4">
- {tBilingual('Historical presence, late minutes, and field work counts across employees', 'কর্মীদের উপস্থিতি, দেরিতে আগমন ও ফিল্ড ওয়ার্কের সামগ্রিক তথ্য')}
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-xs text-muted-foreground block">{tBilingual('Total Staff Tracked', 'মোট ট্র্যাককৃত কর্মী')}</span>
-                <span className="text-lg font-bold text-foreground">{employees.length}</span>
-              </div>
-              <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-xs text-muted-foreground block">{tBilingual('Active Status', 'সক্রিয় কর্মী')}</span>
-                <span className="text-lg font-bold text-success">
-                  {employees.filter((e) => e.status === 'active').length}
-                </span>
-              </div>
-              <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-xs text-muted-foreground block">{tBilingual('On Leave', 'ছুটিতে')}</span>
-                <span className="text-lg font-bold text-warning">
-                  {employees.filter((e) => e.status === 'on_leave').length}
-                </span>
-              </div>
-              <div className="p-3 bg-muted rounded-lg border border-border">
-                <span className="text-xs text-muted-foreground block">{tBilingual('Daily Labor', 'দিনমজুর কর্মী')}</span>
-                <span className="text-lg font-bold text-primary">
-                  {employees.filter((e) => e.salary_basis === 'daily_rate' || e.is_daily_worker).length}
-                </span>
-              </div>
-            </div>
-          </Card>
+                {/* 2. ATTENDANCE REPORT TAB */}
+        <TabsContent value="attendance" className="pt-4 space-y-4">
+          <AttendanceReportView employees={employees} tenantSlug={tenantSlug} />
         </TabsContent>
 
         {/* 3. OVERTIME REPORT TAB */}

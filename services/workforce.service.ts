@@ -272,8 +272,27 @@ export class WorkforceService {
         if (synced?.employee) {
           updated = synced.employee
         }
+      } catch (err) {
+        console.warn('[WorkforceService.updateEmployee] Portal login sync warning:', err)
+      }
+    }
+    if (updated?.user_id) {
+      try {
+        const admin = createAdminClient()
+        const photo = updated.profile_picture_url || (updated as any).avatar_url || null
+        const userUpdates: any = {
+          full_name: updated.name,
+          full_name_bn: updated.name_bn || null,
+          phone: updated.mobile || null,
+          updated_at: new Date().toISOString(),
+        }
+        if (photo) {
+          userUpdates.avatar_url = photo
+        }
+        await (admin as any).from('user_profiles').update(userUpdates).eq('id', updated.user_id)
+        await (admin as any).from('profiles').update(userUpdates).eq('id', updated.user_id)
       } catch (e) {
-        console.warn('[WorkforceService.updateEmployee] Portal sync error:', e)
+        console.warn('[WorkforceService.updateEmployee] User profile sync warning:', e)
       }
     }
 
@@ -535,6 +554,7 @@ export class WorkforceService {
       }
 
       if (userId) {
+        const photo = employee.profile_picture_url || employee.avatar_url || null
         await (admin as any).from('user_profiles').upsert({
           id: userId,
           email,
@@ -542,6 +562,7 @@ export class WorkforceService {
           full_name: employee.name,
           full_name_bn: employee.name_bn || null,
           phone: employee.mobile || null,
+          avatar_url: photo,
           preferred_locale: 'bn',
           is_active: true,
           updated_at: new Date().toISOString(),
@@ -554,6 +575,7 @@ export class WorkforceService {
             full_name: employee.name,
             full_name_bn: employee.name_bn || null,
             phone: employee.mobile || null,
+            avatar_url: photo,
             preferred_locale: 'bn',
             updated_at: new Date().toISOString(),
           })

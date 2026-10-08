@@ -30,6 +30,7 @@ import {
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import {
@@ -312,9 +313,11 @@ export function UserDetailDrawer({
         {/* HEADER */}
         <div className="p-4 sm:p-5 border-b border-border flex items-start justify-between gap-3 bg-muted/50">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-12 w-12 rounded-full bg-primary/10 bg-primary/40 text-primary text-primary font-bold text-lg flex items-center justify-center shrink-0 border border-primary/20 border-border">
-              {fullName.charAt(0).toUpperCase()}
-            </div>
+            <Avatar
+              src={user.profile?.avatar_url || linkedEmployee?.profile_picture_url || (linkedEmployee as any)?.avatar_url || null}
+              fallback={fullName}
+              className="h-12 w-12 rounded-full border border-border shrink-0 font-bold text-base"
+            />
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">

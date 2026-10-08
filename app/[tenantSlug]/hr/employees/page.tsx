@@ -86,6 +86,9 @@ export default function EmployeesPage() {
  const res = await updateEmployeeAction(editingEmployee.id, formData)
  if (res.success && res.data) {
  setEmployees((prev) => prev.map((e) => (e.id === editingEmployee.id ? res.data! : e)))
+ if (selectedProfileEmployee?.id === editingEmployee.id) {
+   setSelectedProfileEmployee(res.data)
+ }
  setWizardOpen(false)
  return true
       }

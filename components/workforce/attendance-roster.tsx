@@ -25,6 +25,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { computeAttendanceAnalytics } from '@/lib/attendance/attendance-analytics'
 import {
  DropdownMenu,
  DropdownMenuContent,
@@ -111,26 +112,8 @@ export function AttendanceRoster({
 
   // Top KPIs
  const stats = useMemo(() => {
- let present = 0
- let late = 0
- let absent = 0
- let leave = 0
- let fieldWork = 0
- let currentlyWorking = 0
-
- for (const item of rosterItems) {
- if (item.summary) {
- if (item.summary.status === 'present' || item.summary.status === 'half_day') present++
- if (item.summary.status === 'late' || item.summary.late_minutes > 0) late++
- if (item.summary.status === 'leave') leave++
- if (item.summary.status === 'field_work') fieldWork++
- if (item.summary.check_in_time && !item.summary.check_out_time) currentlyWorking++
-      } else {
- absent++
-      }
-    }
- return { present, late, absent, leave, fieldWork, currentlyWorking }
-  }, [rosterItems])
+ return computeAttendanceAnalytics(attendanceRecords, employees.length)
+ }, [attendanceRecords, employees.length])
 
  const getStatusBadge = (status: AttendanceDailyStatus) => {
  switch (status) {
@@ -161,30 +144,43 @@ export function AttendanceRoster({
  return (
     <div className="space-y-4">
       {/* KPI Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Present', 'উপস্থিত')}</span>
-          <span className="text-xl font-bold text-success tabular-nums">{stats.present}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block">{tBilingual('Present', 'উপস্থিত')}</span>
+          <span className="text-xl font-bold text-success tabular-nums">{stats.presentCount}</span>
         </Card>
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Late', 'দেরিতে আগমন')}</span>
-          <span className="text-xl font-bold text-warning tabular-nums">{stats.late}</span>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block">{tBilingual('Late', 'দেরিতে আগমন')}</span>
+          <span className="text-xl font-bold text-warning tabular-nums">{stats.lateCount}</span>
         </Card>
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Absent', 'অনুপস্থিত')}</span>
-          <span className="text-xl font-bold text-destructive tabular-nums">{stats.absent}</span>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block">{tBilingual('Absent', 'অনুপস্থিত')}</span>
+          <span className="text-xl font-bold text-destructive tabular-nums">{stats.absentCount}</span>
         </Card>
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Leave', 'ছুটিতে')}</span>
-          <span className="text-xl font-bold text-primary tabular-nums">{stats.leave}</span>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block flex items-center gap-1">
+            <Clock className="w-3 h-3 text-primary" />
+            <span>{tBilingual('Avg Check-In', 'গড় প্রবেশ')}</span>
+          </span>
+          <span className="text-sm font-bold text-foreground tabular-nums font-mono mt-0.5 block">{stats.avgCheckInTime}</span>
         </Card>
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Field Work', 'ফিল্ডে')}</span>
-          <span className="text-xl font-bold text-primary tabular-nums">{stats.fieldWork}</span>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block flex items-center gap-1">
+            <Clock className="w-3 h-3 text-warning" />
+            <span>{tBilingual('Avg Check-Out', 'গড় প্রস্থান')}</span>
+          </span>
+          <span className="text-sm font-bold text-foreground tabular-nums font-mono mt-0.5 block">{stats.avgCheckOutTime}</span>
         </Card>
-        <Card className="p-3 bg-card border-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] rounded-xl">
-          <span className="text-xs font-medium text-muted-foreground block">{tBilingual('Working Now', 'ফ্লোরে কর্মরত')}</span>
-          <span className="text-xl font-bold text-primary tabular-nums">{stats.currentlyWorking}</span>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block flex items-center gap-1">
+            <Activity className="w-3 h-3 text-primary" />
+            <span>{tBilingual('Avg Duration', 'গড় কর্মকাল')}</span>
+          </span>
+          <span className="text-sm font-bold text-primary tabular-nums font-mono mt-0.5 block">{stats.avgWorkedFormatted}</span>
+        </Card>
+        <Card className="p-3 bg-card border-border shadow-xs rounded-xl">
+          <span className="text-[12px] font-medium text-muted-foreground block">{tBilingual('On Floor Now', 'ফ্লোরে কর্মরত')}</span>
+          <span className="text-xl font-bold text-primary tabular-nums">{stats.currentlyWorkingCount}</span>
         </Card>
       </div>
 
@@ -325,9 +321,29 @@ export function AttendanceRoster({
                     <tr key={employee.id} className="hover:bg-muted transition-colors">
                       {/* Employee */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-foreground">{employee.name}</div>
-                        <div className="text-xs text-muted-foreground font-mono">
-                          {employee.employee_id_number}
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0 overflow-hidden">
+                            {employee.profile_picture_url || (employee as any).avatar_url || (employee as any).photo_url ? (
+                              <img
+                                src={employee.profile_picture_url || (employee as any).avatar_url || (employee as any).photo_url}
+                                alt={employee.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                  const parent = e.currentTarget.parentElement
+                                  if (parent) parent.innerText = employee.name.slice(0, 2).toUpperCase()
+                                }}
+                              />
+                            ) : (
+                              <span>{employee.name.slice(0, 2).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground">{employee.name}</div>
+                            <div className="text-xs text-muted-foreground font-mono">
+                              {employee.employee_id_number}
+                            </div>
+                          </div>
                         </div>
                       </td>
 

@@ -57,7 +57,7 @@ export function UserMenu() {
  className="flex items-center gap-2 rounded-lg p-1 hover:bg-muted cursor-pointer transition-colors shrink-0 whitespace-nowrap">
         <Avatar
  fallback={userName}
- src={currentUser?.profile?.avatar_url || undefined}
+ src={currentUser?.profile?.avatar_url || (currentUser as any)?.linked_employee?.profile_picture_url || (currentUser as any)?.linked_employee?.avatar_url || undefined}
  className="h-8 w-8 text-xs font-bold shrink-0 bg-primary/10 text-primary bg-primary text-primary"/>
         <div className="hidden 2xl:flex flex-col text-left shrink-0 whitespace-nowrap max-w-[140px]">
           <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight whitespace-nowrap truncate bangla-text">

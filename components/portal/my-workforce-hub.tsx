@@ -29,6 +29,7 @@ import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { formatBDT, formatDate } from '@/lib/formatters'
@@ -152,32 +153,39 @@ export function MyWorkforceHub() {
  return (
     <div className="space-y-6">
       {/* 1. TOP IDENTITY & LIVE PUNCH BANNER */}
-      <div className="relative overflow-hidden rounded-xl p-5 sm:p-6 text-white shadow-xs">
+      <div className="relative overflow-hidden rounded-xl p-5 sm:p-6 bg-card border border-border shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-primary/20 text-primary border-border/30 text-xs">
-                {tBilingual('Employee Self-Service Portal', 'কর্মচারী পোর্টাল ও সেলফ সার্ভিস')}
-              </Badge>
-              <Badge variant="outline"className="text-white border-white/20 text-xs">
-                {employee?.employee_id_number || '#EMP-1001'}
-              </Badge>
-              {employee?.branch_name && (
-                <span className="text-xs text-primary flex items-center gap-1">
-                  <Building className="h-3 w-3"/>
-                  {employee.branch_name}
-                </span>
-              )}
-            </div>
+          <div className="flex items-center gap-4">
+            <Avatar
+              src={employee?.profile_picture_url || (employee as any)?.avatar_url || null}
+              fallback={employee?.name || 'User'}
+              className="w-16 h-16 rounded-full border border-border shrink-0 text-base font-bold bg-muted"
+            />
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="bg-primary/20 text-primary border-border/30 text-xs">
+                  {tBilingual('Employee Self-Service Portal', 'কর্মচারী পোর্টাল ও সেলফ সার্ভিস')}
+                </Badge>
+                <Badge variant="outline" className="border-border text-xs">
+                  {employee?.employee_id_number || '#EMP-1001'}
+                </Badge>
+                {employee?.branch_name && (
+                  <span className="text-xs text-primary flex items-center gap-1">
+                    <Building className="h-3 w-3"/>
+                    {employee.branch_name}
+                  </span>
+                )}
+              </div>
 
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black bangla-text">
-              {employee ? tBilingual(employee.name, employee.name_bn || employee.name) : 'Team Member'}
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              <span className="font-semibold text-white">{employee?.role || 'Print Operator'}</span> •{' '}
-              <span className="capitalize">{employee?.department || 'printing'} Department</span> •{' '}
-              <span className="capitalize">{employee?.employee_type || 'permanent'}</span>
-            </p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground bangla-text">
+                {employee ? tBilingual(employee.name, employee.name_bn || employee.name) : 'Team Member'}
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">{employee?.role || 'Print Operator'}</span> •{' '}
+                <span className="capitalize">{employee?.department || 'printing'} Department</span> •{' '}
+                <span className="capitalize">{employee?.employee_type || 'permanent'}</span>
+              </p>
+            </div>
           </div>
 
           {/* Today's Punch Station */}

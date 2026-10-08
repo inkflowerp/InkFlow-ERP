@@ -49,6 +49,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import type { EmployeeRecord, DocumentAttachment } from '@/types/workforce.types'
 import { useI18n } from '@/i18n/context'
+import { useTenant } from '@/hooks/use-tenant'
 
 export interface EmployeeProfileDialogProps {
   employee: EmployeeRecord | null
@@ -59,25 +60,51 @@ export interface EmployeeProfileDialogProps {
   onSendInvitation?: (employeeId: string) => Promise<void>
 }
 
-const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string[] }> = {
+const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string[]; limitations: string[] }> = {
   operator: {
     title: 'Production Machine Operator (মেশিন অপারেটর)',
-    badge: 'Operator Level',
+    badge: 'Machine Operator',
     scopes: [
-      'View assigned job orders & queue',
-      'Start/Stop press run timers',
-      'Log waste & scrap consumption',
-      'Personal attendance & shift check-in',
+      'View assigned job orders & machine print queue',
+      'Start/Stop press run timers & log speed',
+      'Log waste & scrap roll consumption',
+      'Personal attendance & shift check-in / check-out',
+    ],
+    limitations: [
+      'No access to customer financial ledgers or pricing formulas',
+      'Job queue limited to assigned printing machines only',
+      'Cannot edit or delete job orders once completed',
+      'Geofenced attendance: Shop-floor punch only',
     ],
   },
   designer: {
     title: 'Graphic Designer & Pre-press (ডিজাইনার)',
-    badge: 'Design Studio',
+    badge: 'Pre-Press Studio',
     scopes: [
-      'Customer design asset library',
-      'Proof generation & approval flow',
-      'Pre-press prep & color separation',
-      'Design stage progress tracking',
+      'Customer design asset library & vector proofs',
+      'Color separation & plate generation',
+      'Proof generation & approval workflow',
+      'Design stage progress tracking & status updates',
+    ],
+    limitations: [
+      'Cannot modify billing invoices or payment status',
+      'File uploads restricted to vector and PDF print specs',
+      'Proof watermarking applied before client sign-off',
+    ],
+  },
+  production_manager: {
+    title: 'Production Manager (উৎপাদন ব্যবস্থাপক)',
+    badge: 'Production In-Charge',
+    scopes: [
+      'Full factory production scheduling & routing',
+      'Raw material requisition & roll allocation',
+      'Overtime & shift attendance adjustments approval',
+      'Machine maintenance scheduling & downtime logs',
+    ],
+    limitations: [
+      'Limited to production, machine and inventory modules',
+      'Cannot disburse final payroll bank transactions',
+      'Restricted to factory branch operations',
     ],
   },
   manager: {
@@ -85,19 +112,85 @@ const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string
     badge: 'Supervisory',
     scopes: [
       'Full production scheduling & routing',
-      'Attendance & OT approval',
+      'Attendance & overtime review & approval',
       'Machine maintenance scheduling',
-      'Staff task delegation',
+      'Staff task delegation & job tracking',
+    ],
+    limitations: [
+      'Cannot modify company-wide legal or financial accounts',
+      'Branch-level data scope: isolated from other facilities',
+      'Advance approvals limited to standard monthly thresholds',
+    ],
+  },
+  branch_manager: {
+    title: 'Branch Manager & In-Charge (শাখা প্রধান)',
+    badge: 'Branch In-Charge',
+    scopes: [
+      'Branch daily turnover & order oversight',
+      'Staff attendance & local roster control',
+      'Customer account verification & delivery dispatch',
+      'Branch cash drawer reconciliation',
+    ],
+    limitations: [
+      'Branch-scoped data isolation',
+      'No platform owner or global settings configuration',
+    ],
+  },
+  store_manager: {
+    title: 'Store & Inventory Keeper (স্টোর কিপার)',
+    badge: 'Inventory Keeper',
+    scopes: [
+      'Raw material stock check-in & verification',
+      'Master roll barcode issue to press',
+      'Scrap & waste material tracking',
+      'Stock replenishment low-level alerts',
+    ],
+    limitations: [
+      'Cannot create sales orders or change sales quotes',
+      'Requires PO verification for all stock inward receipts',
     ],
   },
   sales_rep: {
     title: 'Sales & Counter Executive (কাউন্টার সেলস)',
     badge: 'Front Desk',
     scopes: [
-      'Order creation & estimation',
+      'Counter POS order creation & instant quotes',
       'Customer directory & balance checks',
       'Invoice printing & payment receipt',
-      'Counter POS terminal',
+      'Counter POS terminal & cash collection',
+    ],
+    limitations: [
+      'Cannot view factory labor rates or supplier purchase costs',
+      'Cannot approve discounts beyond authorized 5% threshold',
+      'Cash drawer access locked to logged-in user shifts',
+    ],
+  },
+  sales_manager: {
+    title: 'Sales & Commercial Manager (বিক্রয় ব্যবস্থাপক)',
+    badge: 'Commercial Sales',
+    scopes: [
+      'Commercial pipeline & corporate quotations',
+      'Customer credit limit authorization',
+      'Sales rep performance metrics & targets',
+      'Client relationship & statement export',
+    ],
+    limitations: [
+      'Cannot modify machine maintenance or technician wages',
+      'Discount approvals beyond policy require Director sign-off',
+    ],
+  },
+  delivery_coordinator: {
+    title: 'Delivery & Logistics Coordinator (ডেলিভারি সমন্বয়কারী)',
+    badge: 'Logistics Desk',
+    scopes: [
+      'Challan dispatch generation & tracking',
+      'Courier parcel tracking & manifest log',
+      'Client delivery address confirmation',
+      'Customer digital receipt capture',
+    ],
+    limitations: [
+      'Cannot modify sales order pricing or specification items',
+      'Must record proof of delivery for completed orders',
     ],
   },
   field_staff: {
@@ -109,6 +202,10 @@ const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string
       'Customer sign-off capture',
       'GPS location ping on job start',
     ],
+    limitations: [
+      'Mobile-only simplified interface',
+      'No access to internal company cost sheets or inventory stock',
+    ],
   },
   accounts: {
     title: 'Accounts & Billing Executive (হিসাবরক্ষণ)',
@@ -119,7 +216,58 @@ const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string
       'Vendor & material payment logging',
       'Ledger & daily cash register reconciliation',
     ],
+    limitations: [
+      'Dual-approval required for payments exceeding ৳ 50,000',
+      'Audit log recorded on all ledger adjustments and refunds',
+    ],
   },
+  accountant: {
+    title: 'Senior Accountant (প্রধান হিসাবরক্ষক)',
+    badge: 'Senior Accounts',
+    scopes: [
+      'Full chart of accounts & profit/loss statements',
+      'Bank reconciliation & tax/VAT registers',
+      'Staff payroll final approval & disbursements',
+      'Vendor credit lines & ledger verification',
+    ],
+    limitations: [
+      'Cannot modify past closed fiscal year records without audit lock release',
+    ],
+  },
+  general_staff: {
+    title: 'General Factory Staff (সাধারণ কর্মী)',
+    badge: 'General Staff',
+    scopes: [
+      'Personal attendance & shift check-in',
+      'View personal payslip & advances balance',
+      'Submit leave and overtime requests',
+      'View company announcements',
+    ],
+    limitations: [
+      'Read-only personal self-service portal access only',
+      'Cannot access shop-floor production management or finances',
+    ],
+  },
+}
+
+function getDynamicRoleMeta(employee: EmployeeRecord) {
+  const roleName = employee.role || employee.designation || 'Staff'
+  const dept = employee.department || 'General'
+  return {
+    title: `${roleName} (${dept})`,
+    badge: roleName,
+    scopes: [
+      `Assigned ${dept} operations and workflow tasks`,
+      'Personal attendance and duty check-in logging',
+      'Personal payslip, overtime and advances records',
+      'Task progress logging and completion updates',
+    ],
+    limitations: [
+      `Access limited to assigned ${dept} department scope`,
+      'Cannot modify billing, payments or system configuration',
+      'Operational advances subject to company payroll limits',
+    ],
+  }
 }
 
 function calculateTenure(joiningDateStr?: string | null): string {
@@ -149,12 +297,28 @@ export function EmployeeProfileDialog({
   onSendInvitation,
 }: EmployeeProfileDialogProps) {
   const { tBilingual } = useI18n()
+  const { company } = useTenant()
   const [activeTab, setActiveTab] = useState('overview')
   const [isSendingInvite, setIsSendingInvite] = useState(false)
   const [inviteSent, setInviteSent] = useState(false)
   const [copiedId, setCopiedId] = useState(false)
+  const [printMode, setPrintMode] = useState<'none' | 'dossier' | 'id_badge'>('none')
+  const [badgeSide, setBadgeSide] = useState<'both' | 'front' | 'back'>('both')
+  const [imgError, setImgError] = useState(false)
+
+  // Listen to afterprint to reset printMode cleanly
+  React.useEffect(() => {
+    const handleAfterPrint = () => setPrintMode('none')
+    window.addEventListener('afterprint', handleAfterPrint)
+    return () => window.removeEventListener('afterprint', handleAfterPrint)
+  }, [])
 
   if (!employee) return null
+
+  const companyName = company?.name || company?.legal_name || 'PrintFlow Commercial Press'
+  const companyAddress = company?.address || 'Main Press Facility & Factory'
+  const companyPhone = company?.phone || '+880 1700-000000'
+  const photoUrl = employee.profile_picture_url || (employee as any).avatar_url || (employee as any).photo_url || null
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(employee.employee_id_number)
@@ -174,8 +338,14 @@ export function EmployeeProfileDialog({
     }
   }
 
-  const handlePrint = () => {
-    window.print()
+  const triggerPrint = (mode: 'dossier' | 'id_badge') => {
+    setPrintMode(mode)
+    setTimeout(() => {
+      window.print()
+      setTimeout(() => {
+        setPrintMode('none')
+      }, 800)
+    }, 150)
   }
 
   const getStatusBadge = (status: string) => {
@@ -184,9 +354,8 @@ export function EmployeeProfileDialog({
     return 'bg-destructive/10 text-destructive border-border'
   }
 
-  const roleMeta =
-    ROLE_SCOPES[employee.portal_credentials?.role || employee.role?.toLowerCase() || 'operator'] ||
-    ROLE_SCOPES.operator
+  const roleKey = (employee.portal_credentials?.role || employee.role || 'operator').toLowerCase()
+  const roleMeta = ROLE_SCOPES[roleKey] || getDynamicRoleMeta(employee)
 
   const bloodGroup = (employee as any).blood_group || null
   const nidNumber = (employee as any).nid_number || null
@@ -205,15 +374,16 @@ export function EmployeeProfileDialog({
             <div className="flex items-center gap-3.5 min-w-0">
               {/* Avatar with Status Ring */}
               <div className="relative shrink-0">
-                <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center shadow-xs border border-border overflow-hidden">
-                  {employee.profile_picture_url ? (
+                <div className="w-16 h-16 rounded-2xl bg-muted font-bold text-xl flex items-center justify-center shadow-xs border border-border overflow-hidden">
+                  {photoUrl && !imgError ? (
                     <img
-                      src={employee.profile_picture_url}
+                      src={photoUrl}
                       alt={employee.name}
                       className="w-full h-full object-cover"
+                      onError={() => setImgError(true)}
                     />
                   ) : (
-                    <span>{employee.name.slice(0, 2).toUpperCase()}</span>
+                    <span className="text-foreground">{employee.name.slice(0, 2).toUpperCase()}</span>
                   )}
                 </div>
                 <div
@@ -289,7 +459,7 @@ export function EmployeeProfileDialog({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handlePrint}
+                onClick={() => triggerPrint('dossier')}
                 className="h-8 text-xs border-border bg-card hover:bg-muted"
                 title="Print 360° Profile Dossier"
               >
@@ -873,7 +1043,7 @@ export function EmployeeProfileDialog({
                 <div className="p-3.5 rounded-lg border border-border bg-muted/40 space-y-2">
                   <div className="flex items-center gap-1.5 text-foreground font-semibold">
                     <ShieldCheck className="w-4 h-4 text-primary" />
-                    <span>Capabilities & Permissions for this Role:</span>
+                    <span>Dynamic Capabilities & Permissions for this Role:</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground">
                     {roleMeta.scopes.map((scope, idx) => (
@@ -885,6 +1055,67 @@ export function EmployeeProfileDialog({
                   </div>
                 </div>
 
+                {/* Dynamic Access Control & Security Restrictions */}
+                <div className="p-3.5 rounded-lg border border-border bg-card space-y-3">
+                  <div className="flex items-center justify-between border-b border-border pb-2">
+                    <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                      <Shield className="w-4 h-4 text-warning" />
+                      <span>Access Control, Operational Limits & Restrictions:</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs bg-muted border-border font-mono">
+                      Security Enforced
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-muted-foreground text-xs">
+                    <div className="p-2.5 rounded-md border border-border bg-muted/30 space-y-1">
+                      <span className="font-semibold text-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-primary" />
+                        <span>Geofence & Location Enforcement:</span>
+                      </span>
+                      <p className="text-muted-foreground">
+                        {employee.branch_name ? `Restricted to ${employee.branch_name} premises. Remote punches require supervisor bypass.` : 'Factory shop-floor premises only.'}
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-md border border-border bg-muted/30 space-y-1">
+                      <span className="font-semibold text-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-primary" />
+                        <span>Shift Punch Window Limits:</span>
+                      </span>
+                      <p className="text-muted-foreground">
+                        Grace period {employee.duty_settings?.late_grace_minutes ?? 15}m. Check-in permitted 30 mins before {employee.duty_settings?.office_start_time || '09:00'}.
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 rounded-md border border-border bg-muted/30 space-y-1">
+                      <span className="font-semibold text-foreground flex items-center gap-1">
+                        <Wallet className="w-3 h-3 text-primary" />
+                        <span>Financial Advance Ceiling:</span>
+                      </span>
+                      <p className="text-muted-foreground">
+                        Max advance cap ৳ {(employee.base_salary || 0).toLocaleString('en-IN')} (1 month base).
+                      </p>
+                    </div>
+                  </div>
+
+                  {roleMeta.limitations && roleMeta.limitations.length > 0 && (
+                    <div className="pt-2 border-t border-border">
+                      <span className="text-xs font-semibold text-foreground block mb-1">
+                        Role Security Restrictions:
+                      </span>
+                      <ul className="space-y-1">
+                        {roleMeta.limitations.map((limit, idx) => (
+                          <li key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+                            <span>{limit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
                 {/* Dispatch Invitation */}
                 {onSendInvitation && (
                   <div className="pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -892,7 +1123,7 @@ export function EmployeeProfileDialog({
                       <span className="text-xs font-semibold text-foreground block">
                         Invite Staff Member via SMS / WhatsApp
                       </span>
-                      <span className="text-[12px] text-muted-foreground block">
+                      <span className="text-xs text-muted-foreground block">
                         Sends mobile login portal URL, username and credential verification link.
                       </span>
                     </div>
@@ -950,11 +1181,11 @@ export function EmployeeProfileDialog({
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-semibold text-foreground truncate max-w-[160px]">{doc.name}</span>
-                              <Badge variant="outline" className="text-[12px] px-1.5 py-0 border-border bg-background capitalize">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 border-border bg-background capitalize">
                                 {doc.type.replace('_', ' ')}
                               </Badge>
                             </div>
-                            <span className="text-[12px] text-muted-foreground block mt-0.5">
+                            <span className="text-xs text-muted-foreground block mt-0.5">
                               {doc.size || 'Attachment'} • {new Date(doc.uploaded_at || Date.now()).toLocaleDateString()}
                             </span>
                           </div>
@@ -990,7 +1221,7 @@ export function EmployeeProfileDialog({
                   <div className="text-center py-8 text-muted-foreground border border-dashed border-border rounded-xl">
                     <FileText className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
                     <p className="text-xs font-medium text-foreground">No documents attached yet</p>
-                    <p className="text-[12px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       National ID, appointment letters, resumes or trade certificates can be uploaded by clicking &quot;Edit Profile&quot;.
                     </p>
                   </div>
@@ -999,92 +1230,457 @@ export function EmployeeProfileDialog({
             </TabsContent>
 
             {/* ---------------------------------------------------------------- */}
-            {/* TAB 7: Printable ID Badge */}
+            {/* TAB 7: Printable Factory Staff ID Badge (55mm x 85mm) */}
             {/* ---------------------------------------------------------------- */}
             <TabsContent value="id_card" className="m-0 space-y-4 text-xs">
               <div className="p-4 rounded-xl border border-border bg-card space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-border">
-                  <div className="font-semibold text-foreground flex items-center gap-1.5">
-                    <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                    <span>{tBilingual('Printable Factory Staff ID Badge', 'কারখানা কর্মী পরিচয়পত্র')}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-border gap-3">
+                  <div>
+                    <div className="font-semibold text-foreground flex items-center gap-1.5">
+                      <BadgeCheck className="w-4 h-4 text-primary" />
+                      <span>{tBilingual('Printable Factory Staff ID Badge', 'কারখানা কর্মী পরিচয়পত্র')}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground block mt-0.5">
+                      Standard CR80 PVC Size: 55mm × 85mm • Dynamic Company Name & Photo
+                    </span>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handlePrint}
-                    className="h-8 text-xs border-border bg-card hover:bg-muted"
-                  >
-                    <Printer className="w-3.5 h-3.5 mr-1" />
-                    <span>Print ID Badge</span>
-                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex rounded-lg border border-border bg-muted p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setBadgeSide('both')}
+                        className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                          badgeSide === 'both' ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Both Sides
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBadgeSide('front')}
+                        className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                          badgeSide === 'front' ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Front
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBadgeSide('back')}
+                        className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                          badgeSide === 'back' ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Back
+                      </button>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => triggerPrint('id_badge')}
+                      className="h-8 text-xs border-border bg-card hover:bg-muted"
+                    >
+                      <Printer className="w-3.5 h-3.5 mr-1" />
+                      <span>Print ID Badge</span>
+                    </Button>
+                  </div>
                 </div>
 
-                {/* ID Card Visual Preview */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 py-4">
-                  {/* Front Side */}
-                  <div className="w-72 rounded-2xl border-2 border-border bg-card p-5 shadow-xs text-center space-y-3 relative overflow-hidden">
-                    <div className="border-b border-border pb-2">
-                      <span className="font-bold text-xs uppercase tracking-wider text-primary block">PrintFlow Factory Staff</span>
-                      <span className="text-[12px] text-muted-foreground block font-mono">{employee.branch_name || 'Main Press Facility'}</span>
-                    </div>
-
-                    <div className="w-20 h-20 mx-auto rounded-2xl border-2 border-border bg-muted overflow-hidden flex items-center justify-center font-bold text-2xl text-primary">
-                      {employee.profile_picture_url ? (
-                        <img src={employee.profile_picture_url} alt={employee.name} className="w-full h-full object-cover" />
-                      ) : (
-                        employee.name.slice(0, 2).toUpperCase()
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 className="font-bold text-sm text-foreground">{employee.name}</h3>
-                      {employee.name_bn && <p className="text-xs text-muted-foreground">{employee.name_bn}</p>}
-                      <p className="text-xs text-primary font-semibold mt-0.5 capitalize">{employee.role || 'Staff'}</p>
-                      <Badge variant="outline" className="text-[12px] mt-1 uppercase font-mono">
-                        {employee.department}
-                      </Badge>
-                    </div>
-
-                    <div className="border-t border-border pt-2 flex items-center justify-between text-[12px] font-mono text-muted-foreground">
-                      <span>ID: {employee.employee_id_number}</span>
-                      <span>BLOOD: {bloodGroup || 'O+'}</span>
-                    </div>
-                  </div>
-
-                  {/* Back Side */}
-                  <div className="w-72 rounded-2xl border-2 border-border bg-muted/40 p-5 shadow-xs text-left space-y-3 relative">
-                    <div className="border-b border-border pb-2 text-center">
-                      <span className="font-bold text-[12px] uppercase tracking-wider text-foreground">Terms & Emergency Notice</span>
-                    </div>
-
-                    <div className="space-y-1.5 text-[12px] text-muted-foreground">
-                      <div>
-                        <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
+                {/* ID Badge Preview Canvas: 55mm x 85mm */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 py-6 bg-muted/30 rounded-xl border border-border overflow-x-auto p-4">
+                  {/* Front Side: 55mm x 85mm */}
+                  {(badgeSide === 'both' || badgeSide === 'front') && (
+                    <div
+                      style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+                      className="rounded-xl border-2 border-border bg-card p-3 shadow-xs text-center flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
+                    >
+                      {/* Top Header */}
+                      <div className="border-b border-border pb-1">
+                        <span className="font-black text-xs uppercase tracking-wider text-primary block truncate">
+                          {companyName}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono block truncate">
+                          {employee.branch_name || 'Main Press Facility'}
+                        </span>
                       </div>
-                      <div>
-                        <span className="font-semibold text-foreground">Emergency Contact:</span> {employee.emergency_contact_phone || employee.mobile}
-                      </div>
-                      <div>
-                        <span className="font-semibold text-foreground">Joined:</span> {employee.joining_date || 'N/A'}
-                      </div>
-                      <div className="pt-2 text-[12px] leading-relaxed text-muted-foreground/80">
-                        This card is the property of PrintFlow Factory. If found, please return to the facility security desk.
-                      </div>
-                    </div>
 
-                    <div className="border-t border-border pt-2 text-center">
-                      <div className="font-mono text-[12px] tracking-widest text-muted-foreground">
-                        ||| | |||| | ||||| | |||
+                      {/* Photo Box */}
+                      <div className="w-20 h-22 mx-auto rounded-xl border-2 border-border bg-muted overflow-hidden flex items-center justify-center shrink-0">
+                        {photoUrl && !imgError ? (
+                          <img
+                            src={photoUrl}
+                            alt={employee.name}
+                            className="w-full h-full object-cover"
+                            onError={() => setImgError(true)}
+                          />
+                        ) : (
+                          <span className="font-bold text-xl text-foreground">
+                            {employee.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[12px] text-muted-foreground block mt-0.5">Authorized Issuer Signature</span>
+
+                      {/* Identity Details */}
+                      <div className="space-y-0.5">
+                        <h3 className="font-bold text-xs text-foreground leading-tight truncate">
+                          {employee.name}
+                        </h3>
+                        {employee.name_bn && (
+                          <p className="text-xs text-muted-foreground truncate">{employee.name_bn}</p>
+                        )}
+                        <p className="text-xs text-primary font-semibold capitalize truncate">
+                          {employee.role || employee.designation || 'Staff'}
+                        </p>
+                        <Badge variant="outline" className="text-xs uppercase font-mono px-1.5 py-0">
+                          {employee.department}
+                        </Badge>
+                      </div>
+
+                      {/* Bottom ID Bar */}
+                      <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono text-muted-foreground">
+                        <span className="font-bold text-foreground">ID: {employee.employee_id_number}</span>
+                        <span className="font-bold text-destructive">BLOOD: {bloodGroup || 'O+'}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Back Side: 55mm x 85mm */}
+                  {(badgeSide === 'both' || badgeSide === 'back') && (
+                    <div
+                      style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+                      className="rounded-xl border-2 border-border bg-card p-3 shadow-xs text-left flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
+                    >
+                      {/* Top Header */}
+                      <div className="border-b border-border pb-1 text-center">
+                        <span className="font-bold text-xs uppercase tracking-wider text-foreground block">
+                          Official Staff ID Card
+                        </span>
+                        <span className="text-xs text-muted-foreground block truncate">
+                          {companyName}
+                        </span>
+                      </div>
+
+                      {/* Emergency & Details */}
+                      <div className="space-y-1 text-xs text-muted-foreground leading-tight">
+                        <div>
+                          <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-foreground">Emergency:</span>{' '}
+                          {employee.emergency_contact_phone || employee.mobile}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-foreground">NID No:</span> {nidNumber || 'Verified'}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-foreground">Joined:</span>{' '}
+                          {employee.joining_date || 'N/A'}
+                        </div>
+                        <div className="pt-1 text-xs leading-tight text-muted-foreground/90 border-t border-border">
+                          This identity badge is the property of {companyName}. Return upon cessation of employment. If found, return to {companyAddress}.
+                        </div>
+                      </div>
+
+                      {/* Barcode & Signature */}
+                      <div className="border-t border-border pt-1 text-center">
+                        <div className="font-mono text-xs tracking-widest text-muted-foreground">
+                          ||| | |||| | ||||| | |||
+                        </div>
+                        <span className="text-xs text-muted-foreground block mt-0.5">
+                          Authorized Signatory
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
           </div>
         </Tabs>
       </DialogContent>
+
+      {/* ==================================================================== */}
+      {/* 3. ISOLATED PRINT DOCUMENT: 360° PROFILE DOSSIER */}
+      {/* ==================================================================== */}
+      {printMode === 'dossier' && (
+        <div
+          data-print-isolate="true"
+          className="bg-card text-foreground print:bg-white print:text-black p-8 max-w-4xl mx-auto space-y-6 text-xs"
+        >
+          {/* Letterhead */}
+          <div className="border-b-2 border-border pb-4 flex items-start justify-between">
+            <div>
+              <h1 className="text-xl font-bold tracking-tight uppercase">{companyName}</h1>
+              <p className="text-xs text-muted-foreground print:text-black/70">
+                {companyAddress} • Phone: {companyPhone}
+              </p>
+              <span className="inline-block mt-2 px-2 py-0.5 rounded bg-muted text-foreground font-mono text-xs font-semibold uppercase tracking-wider border border-border">
+                Confidential • Employee 360° Profile & Service Dossier
+              </span>
+            </div>
+            <div className="text-right text-xs font-mono text-muted-foreground print:text-black/70">
+              <div>DOC ID: PF-DOS-{employee.employee_id_number}</div>
+              <div>DATE: {new Date().toLocaleDateString('en-GB')}</div>
+            </div>
+          </div>
+
+          {/* Section 1: Bio & Identity */}
+          <div className="border border-border rounded-lg p-4 flex gap-4 items-start">
+            <div className="w-24 h-28 border border-border rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
+              {photoUrl && !imgError ? (
+                <img src={photoUrl} alt={employee.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold">{employee.name.slice(0, 2).toUpperCase()}</span>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-y-2 gap-x-4 flex-1">
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Full Name</span>
+                <span className="font-bold text-sm">{employee.name}</span>
+                {employee.name_bn && <div className="text-xs text-muted-foreground">{employee.name_bn}</div>}
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Employee ID</span>
+                <span className="font-mono font-bold">{employee.employee_id_number}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Employment Status</span>
+                <span className="font-semibold capitalize">{employee.status}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Role / Designation</span>
+                <span className="font-semibold">{employee.role || 'Staff'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Department & Branch</span>
+                <span className="font-semibold capitalize">{employee.department} • {employee.branch_name || 'Main Press'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Joining Date / Tenure</span>
+                <span className="font-semibold">{employee.joining_date || 'N/A'} ({calculateTenure(employee.joining_date)})</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">National ID / NID</span>
+                <span className="font-mono font-semibold">{nidNumber || 'Not recorded'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Blood Group</span>
+                <span className="font-bold">{bloodGroup || 'Not recorded'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Date of Birth</span>
+                <span className="font-semibold">{dob || 'Not recorded'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Contact & Emergency */}
+          <div className="border border-border rounded-lg p-4 space-y-2">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-foreground border-b border-border pb-1">
+              Contact & Emergency Guardian Details
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Primary Mobile</span>
+                <span className="font-mono font-semibold">{employee.mobile}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Emergency Guardian</span>
+                <span className="font-semibold">{employee.emergency_contact_name || 'Family Guardian'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Emergency Phone</span>
+                <span className="font-mono font-semibold">{employee.emergency_contact_phone || employee.mobile}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-muted-foreground block text-xs uppercase">Present Address</span>
+                <span>{employee.address || 'Factory staff quarter / Local'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Permanent Address</span>
+                <span>{permAddress || 'On file'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Compensation & Duty Rules */}
+          <div className="border border-border rounded-lg p-4 space-y-2">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-foreground border-b border-border pb-1">
+              Compensation Structure & Duty Shift Timings
+            </h3>
+            <div className="grid grid-cols-4 gap-3">
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Base Salary</span>
+                <span className="font-bold">৳ {(employee.base_salary || 0).toLocaleString('en-IN')} / {(employee.salary_basis || 'monthly')}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Overtime Rate</span>
+                <span className="font-semibold">৳ {(employee.overtime_hourly_rate || 0).toLocaleString('en-IN')} / hr</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Shift Schedule</span>
+                <span className="font-mono">{employee.duty_settings?.office_start_time || '09:00'} - {employee.duty_settings?.office_end_time || '18:00'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Weekly Off</span>
+                <span className="font-semibold">{employee.duty_settings?.weekly_off_day || 'Friday'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Payment Method</span>
+                <span className="font-semibold capitalize">{employee.payment_method || 'Cash'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Advance Balance</span>
+                <span className="font-bold">৳ {(employee.current_advance_balance || 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Late Grace Window</span>
+                <span>{employee.duty_settings?.late_grace_minutes ?? 15} mins</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-xs uppercase">Monthly Leave Quota</span>
+                <span>{employee.allowed_monthly_leaves ?? 2} days / month</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Role Capabilities & Access Restrictions */}
+          <div className="border border-border rounded-lg p-4 space-y-2">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-foreground border-b border-border pb-1">
+              Authorized Operational Scope & Security Restrictions
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="font-semibold text-success block text-xs mb-1">Permitted Operational Capabilities:</span>
+                <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                  {roleMeta.scopes.map((s, i) => <li key={i}>{s}</li>)}
+                </ul>
+              </div>
+              <div>
+                <span className="font-semibold text-destructive block text-xs mb-1">System Limitations & Access Controls:</span>
+                <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                  {roleMeta.limitations.map((l, i) => <li key={i}>{l}</li>)}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 5: Official Signatures */}
+          <div className="pt-8 border-t border-border grid grid-cols-3 gap-6 text-center text-xs">
+            <div>
+              <div className="border-t border-border pt-1">
+                <span className="font-semibold block">{employee.name}</span>
+                <span className="text-muted-foreground">Employee Signature & Date</span>
+              </div>
+            </div>
+            <div>
+              <div className="border-t border-border pt-1">
+                <span className="font-semibold block">HR & Compliance In-Charge</span>
+                <span className="text-muted-foreground">Verified & Recorded</span>
+              </div>
+            </div>
+            <div>
+              <div className="border-t border-border pt-1">
+                <span className="font-semibold block">Authorized Managing Authority</span>
+                <span className="text-muted-foreground">{companyName}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 4. ISOLATED PRINT DOCUMENT: 55mm x 85mm FACTORY STAFF ID BADGE */}
+      {/* ==================================================================== */}
+      {printMode === 'id_badge' && (
+        <div
+          data-print-isolate="true"
+          className="bg-card text-foreground print:bg-white print:text-black p-4 flex flex-row flex-wrap items-center justify-center gap-8"
+        >
+          {/* FRONT SIDE (Exact 55mm x 85mm) */}
+          <div
+            style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+            className="border border-border rounded-xl p-3 flex flex-col justify-between text-center bg-card text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden text-xs"
+          >
+            <div className="border-b border-border pb-1">
+              <span className="font-black text-xs uppercase tracking-wider block text-primary truncate">
+                {companyName}
+              </span>
+              <span className="text-xs text-muted-foreground font-mono block">
+                {employee.branch_name || 'Main Press Facility'}
+              </span>
+            </div>
+
+            <div className="w-20 h-22 mx-auto rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center shrink-0">
+              {photoUrl && !imgError ? (
+                <img src={photoUrl} alt={employee.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-bold text-lg">{employee.name.slice(0, 2).toUpperCase()}</span>
+              )}
+            </div>
+
+            <div className="space-y-0.5">
+              <h3 className="font-bold text-xs truncate leading-tight">{employee.name}</h3>
+              {employee.name_bn && <p className="text-xs text-muted-foreground truncate">{employee.name_bn}</p>}
+              <span className="text-xs font-semibold text-primary capitalize block truncate">
+                {employee.role || 'Factory Staff'}
+              </span>
+              <span className="inline-block px-1.5 py-0 rounded text-xs uppercase font-mono bg-muted border border-border">
+                {employee.department}
+              </span>
+            </div>
+
+            <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono">
+              <span className="font-bold">ID: {employee.employee_id_number}</span>
+              <span className="font-bold text-destructive">BLOOD: {bloodGroup || 'O+'}</span>
+            </div>
+          </div>
+
+          {/* BACK SIDE (Exact 55mm x 85mm) */}
+          <div
+            style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+            className="border border-border rounded-xl p-3 flex flex-col justify-between text-left bg-muted/30 text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden text-xs"
+          >
+            <div className="border-b border-border pb-1 text-center">
+              <span className="font-bold text-xs uppercase tracking-wider block">
+                Official Staff Identity Card
+              </span>
+              <span className="text-xs text-muted-foreground block truncate">
+                {companyName}
+              </span>
+            </div>
+
+            <div className="space-y-1 text-xs text-muted-foreground leading-tight">
+              <div>
+                <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">Emergency:</span>{' '}
+                {employee.emergency_contact_phone || employee.mobile}
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">NID No:</span> {nidNumber || 'Recorded'}
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">Joined:</span>{' '}
+                {employee.joining_date || 'N/A'}
+              </div>
+              <div className="pt-1 text-xs leading-tight text-muted-foreground border-t border-border">
+                This card is the property of {companyName}. Return upon cessation of employment or if found, hand over to {companyAddress}.
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-1 text-center">
+              <div className="font-mono text-xs tracking-widest text-muted-foreground">
+                * {employee.employee_id_number} *
+              </div>
+              <span className="text-xs text-muted-foreground block mt-0.5">Authorized Signatory</span>
+            </div>
+          </div>
+        </div>
+      )}
     </Dialog>
   )
 }

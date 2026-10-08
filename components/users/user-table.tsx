@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
  DropdownMenu,
@@ -214,9 +215,11 @@ export function UserTable({
                   {/* Column 1: User Identity */}
                   <td className="px-5 py-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-muted text-foreground font-semibold text-xs flex items-center justify-center border border-border flex-shrink-0 group-hover:border-border dark:group-hover:border-primary/20 transition-colors">
-                        {initials}
-                      </div>
+                      <Avatar
+                        src={u.profile?.avatar_url || u.linked_employee?.profile_picture_url || (u.linked_employee as any)?.avatar_url || null}
+                        fallback={initials}
+                        className="w-9 h-9 border border-border flex-shrink-0 group-hover:border-border transition-colors text-xs"
+                      />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-foreground truncate text-sm">

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import { Badge } from '@/components/ui/badge'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
  DropdownMenu,
@@ -183,9 +184,11 @@ export function UserCard({
       {/* Top Header: Identity & Status */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-muted text-foreground font-bold text-xs flex items-center justify-center border border-border flex-shrink-0">
-            {initials}
-          </div>
+          <Avatar
+            src={user.profile?.avatar_url || user.linked_employee?.profile_picture_url || (user.linked_employee as any)?.avatar_url || null}
+            fallback={initials}
+            className="w-10 h-10 border border-border flex-shrink-0 text-xs"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground truncate text-sm">
