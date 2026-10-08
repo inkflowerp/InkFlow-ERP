@@ -69,6 +69,15 @@
     --cmyk-magenta: 326 100% 50%;
     --cmyk-yellow: 48 100% 50%;
     --cmyk-key: 222 47% 11%;
+
+    /* Scanner Reticle Height (w-48 = 192px on mobile, w-56 = 224px on desktop) */
+    --qr-reticle-h: 192px;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --qr-reticle-h: 224px;
+    }
   }
 
   .dark {
@@ -874,43 +883,57 @@ pre,
   animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* QR Code & Barcode Laser Scanning Bar Animation */
+/* QR Code & Barcode Laser Scanning Bar Animation - Pure GPU Composited (60/120 FPS) */
 @keyframes qr-scan-laser {
   0% {
-    top: 3%;
-    opacity: 0.75;
+    transform: translate3d(0, 4px, 0);
+    opacity: 0.85;
   }
   50% {
-    top: 97%;
+    transform: translate3d(0, calc(var(--qr-reticle-h, 192px) - 8px), 0);
     opacity: 1;
   }
   100% {
-    top: 3%;
-    opacity: 0.75;
+    transform: translate3d(0, 4px, 0);
+    opacity: 0.85;
   }
 }
 
 @keyframes scan {
   0% {
-    top: 3%;
-    opacity: 0.75;
+    transform: translate3d(0, 4px, 0);
+    opacity: 0.85;
   }
   50% {
-    top: 97%;
+    transform: translate3d(0, calc(var(--qr-reticle-h, 192px) - 8px), 0);
     opacity: 1;
   }
   100% {
-    top: 3%;
-    opacity: 0.75;
+    transform: translate3d(0, 4px, 0);
+    opacity: 0.85;
   }
 }
 
 .animate-qr-scan {
-  animation: qr-scan-laser 2.2s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  animation: qr-scan-laser 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  transform: translate3d(0, 4px, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .animate-scan {
-  animation: scan 2.2s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  animation: scan 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  transform: translate3d(0, 4px, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* ==============================================================================

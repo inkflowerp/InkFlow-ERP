@@ -150,14 +150,14 @@ export function AttendancePunchModal({
       <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
               <QrCode className="h-5 w-5"/>
             </div>
-            <div>
-              <DialogTitle className="text-foreground text-base font-bold">
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-foreground text-base font-bold whitespace-nowrap [text-wrap:nowrap]">
                 {tBilingual('Attendance & Shift Punch', 'উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-xs">
+              <DialogDescription className="text-muted-foreground text-xs whitespace-nowrap [text-wrap:nowrap] truncate">
                 {tBilingual('Authoritative QR & GPS Geofence Verification', 'কিউআর কোড ও জিপিএস জিওফেন্স যাচাইকরণ')}
               </DialogDescription>
             </div>
