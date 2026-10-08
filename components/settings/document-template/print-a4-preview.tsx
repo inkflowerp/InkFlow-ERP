@@ -20,6 +20,8 @@ import {
   Landmark,
   Layers,
   MapPin,
+  Printer,
+  Download,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -40,6 +42,7 @@ interface LiveA4PreviewProps {
   companyWebsite?: string
   companyLogoUrl?: string
   onPreviewPdf?: () => void
+  onPrintPdf?: () => void
   onDownloadPdf?: () => void
 }
 
@@ -53,6 +56,9 @@ export function LiveA4Preview({
   companyEmail = 'info@printflow.bd',
   companyWebsite = 'www.printflow.bd',
   companyLogoUrl,
+  onPreviewPdf,
+  onPrintPdf,
+  onDownloadPdf,
 }: LiveA4PreviewProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(100)
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -162,9 +168,9 @@ export function LiveA4Preview({
     : getDynamicDefaultTerms()
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-xs overflow-hidden flex flex-col h-full">
+    <div className="bg-card border border-border rounded-2xl shadow-xs overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 print:w-full print:rounded-none">
       {/* 1. TOP PREVIEW TOOLBAR */}
-      <div className="p-3.5 sm:px-5 border-b border-border flex items-center justify-between gap-3 bg-muted/20 shrink-0">
+      <div className="p-3.5 sm:px-5 border-b border-border flex items-center justify-between gap-3 bg-muted/20 shrink-0 print:hidden">
         <div className="flex items-center gap-2 min-w-0">
           <Eye className="h-4 w-4 text-primary shrink-0" />
           <span className="text-sm font-bold text-foreground">
@@ -172,28 +178,60 @@ export function LiveA4Preview({
           </span>
         </div>
 
-        {/* Sample Document Switcher Dropdown */}
-        <select
-          value={effectiveDocType}
-          onChange={(e) => {
-            const nextType = e.target.value as DocumentTypeKey
-            if (onDocTypeChange) {
-              onDocTypeChange(nextType)
-            }
-          }}
-          className="h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-          aria-label="Sample Document Type Preview"
-        >
-          {sampleDocOptions.map((opt) => (
-            <option key={opt.key} value={opt.key}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Sample Document Switcher Dropdown */}
+          <select
+            value={effectiveDocType}
+            onChange={(e) => {
+              const nextType = e.target.value as DocumentTypeKey
+              if (onDocTypeChange) {
+                onDocTypeChange(nextType)
+              }
+            }}
+            className="h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+            aria-label="Sample Document Type Preview"
+          >
+            {sampleDocOptions.map((opt) => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Quick Print Action */}
+          {onPrintPdf && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onPrintPdf}
+              className="h-8 text-xs font-semibold gap-1 px-2.5 bg-card cursor-pointer border-input hover:bg-muted"
+              title="Print A4 document"
+            >
+              <Printer className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+          )}
+
+          {/* Quick Download PDF Action */}
+          {onDownloadPdf && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onDownloadPdf}
+              className="h-8 text-xs font-semibold gap-1 px-2.5 bg-card cursor-pointer border-input hover:bg-muted"
+              title="Download PDF"
+            >
+              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="hidden sm:inline">Download</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 2. LIVE A4 DOCUMENT CANVAS WRAPPER */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 flex items-start justify-center bg-muted/30">
+      <div className="flex-1 overflow-auto p-4 sm:p-6 flex items-start justify-center bg-muted/30 print:p-0 print:m-0 print:bg-white print:overflow-visible">
         <div
           ref={canvasRef}
           style={{
@@ -201,12 +239,13 @@ export function LiveA4Preview({
             transformOrigin: 'top center',
             transition: 'transform 0.15s ease-out',
           }}
-          className="w-full max-w-[620px] shadow-md rounded-xs transition-transform"
+          className="w-full max-w-[620px] shadow-md rounded-xs transition-transform print:transform-none print:w-full print:max-w-none print:shadow-none print:border-none print:m-0 print:p-0"
         >
           {/* Actual A4 Sheet (210mm x 297mm Ratio) */}
           <div
             data-print-sheet="true"
-            className="relative w-full aspect-[210/297] bg-white text-foreground overflow-hidden rounded-xs border border-border shadow-xs select-none"
+            data-print-isolate="true"
+            className="relative w-full aspect-[210/297] bg-white text-foreground overflow-hidden rounded-xs border border-border shadow-xs select-none print:border-none print:shadow-none print:rounded-none print:w-full print:m-0"
           >
             {/* Background Letterhead Artwork (Dynamic with business info) */}
             {settings.use_letterhead && (
@@ -245,7 +284,7 @@ export function LiveA4Preview({
             >
               {/* Visual Safe Area Guideline */}
               <div
-                className="absolute inset-0 border border-dashed border-[#38BDF8] pointer-events-none rounded-xs"
+                className="absolute inset-0 border border-dashed border-[#38BDF8] pointer-events-none rounded-xs print:hidden"
                 title="Safe Area / Content Padding Boundary"
               />
 
@@ -804,7 +843,7 @@ export function LiveA4Preview({
       </div>
 
       {/* 3. BOTTOM PREVIEW FOOTER & PAGINATION */}
-      <div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-muted/20 shrink-0">
+      <div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-muted/20 shrink-0 print:hidden">
         <div className="flex items-center gap-1.5">
           <Button
             type="button"

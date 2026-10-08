@@ -591,6 +591,7 @@ pre,
 
   /* 2. Hide Non-Printable UI Chrome, Navigation, Floating Bars & Modals */
   body:has([data-print-isolate="true"]) > *:not(:has([data-print-isolate="true"])),
+  body:has([data-print-sheet="true"]) > *:not(:has([data-print-sheet="true"])),
   body:has([data-print-isolate="true"]) [data-slot="dialog-content"]:not(:has([data-print-isolate="true"])),
   body:has([data-print-isolate="true"]) [data-slot="dialog-overlay"],
   body:has([data-print-isolate="true"]) .bg-surface-inset,
@@ -662,6 +663,29 @@ pre,
     color: #0f172a !important;
     border: none !important;
     box-shadow: none !important;
+  }
+
+  /* A4 Document Template Sheet Exact Page Fit & Print Isolation */
+  [data-print-sheet="true"],
+  [data-print-isolate="true"][data-print-sheet="true"] {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    min-height: 275mm !important;
+    aspect-ratio: 210 / 297 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* A4 Attendance QR Poster Canvas Isolation & Exact Page Fit */

@@ -737,6 +737,8 @@ function QuotationDetailContent() {
            ========================================================================= */}
         <div
           id="quotation-print-area"
+          data-print-isolate="true"
+          data-print-sheet="true"
           style={
             docTemplate?.use_letterhead
               ? {
@@ -747,7 +749,7 @@ function QuotationDetailContent() {
                 }
               : undefined
           }
-          className="relative bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none overflow-hidden"
+          className="relative bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none print:w-full print:max-w-none overflow-hidden"
         >
           {docTemplate?.use_letterhead && (
             docTemplate.letterhead_file?.url ? (

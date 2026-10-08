@@ -174,4 +174,62 @@ describe('Document Templates Settings & Navigation Tests', () => {
       'Hook must listen to cross-tab storage events'
     )
   })
+
+  it('9. Verifies LiveA4Preview print isolation and guideline suppression', () => {
+    const previewPath = path.resolve(
+      process.cwd(),
+      'components/settings/document-template/print-a4-preview.tsx'
+    )
+    const content = fs.readFileSync(previewPath, 'utf-8')
+
+    assert.ok(
+      content.includes('data-print-isolate="true"'),
+      'Must contain data-print-isolate="true" for globals.css print isolation'
+    )
+    assert.ok(
+      content.includes('data-print-sheet="true"'),
+      'Must contain data-print-sheet="true" for exact A4 print dimensions'
+    )
+    assert.ok(
+      content.includes('border-dashed border-[#38BDF8] pointer-events-none rounded-xs print:hidden'),
+      'Safe area dashed guideline must have print:hidden'
+    )
+    assert.ok(
+      content.includes('print:transform-none'),
+      'Zoom container must reset transform on print'
+    )
+  })
+
+  it('10. Verifies DocumentTemplateDesigner integrates Print PDF, Vector Modal, and Download PDF', () => {
+    const designerPath = path.resolve(
+      process.cwd(),
+      'components/settings/document-template/document-template-designer.tsx'
+    )
+    const content = fs.readFileSync(designerPath, 'utf-8')
+
+    assert.ok(
+      content.includes('PdfViewerModal'),
+      'Must integrate PdfViewerModal for vector preview'
+    )
+    assert.ok(
+      content.includes('downloadPdf'),
+      'Must integrate downloadPdf for direct file download'
+    )
+    assert.ok(
+      content.includes('handlePrintPdf'),
+      'Must implement handlePrintPdf for isolated browser print'
+    )
+    assert.ok(
+      content.includes('handleDownloadPdf'),
+      'Must implement handleDownloadPdf'
+    )
+    assert.ok(
+      content.includes('Print PDF'),
+      'Header actions must include Print PDF button'
+    )
+    assert.ok(
+      content.includes('Download PDF'),
+      'Header actions must include Download PDF button'
+    )
+  })
 })

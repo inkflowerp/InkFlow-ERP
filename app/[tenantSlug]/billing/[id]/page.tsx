@@ -372,6 +372,8 @@ export default function InvoiceCockpitPage() {
          ========================================================================= */}
       <div
         id="invoice-print-area"
+        data-print-isolate="true"
+        data-print-sheet="true"
         style={
           docTemplate?.use_letterhead
             ? {
@@ -382,7 +384,7 @@ export default function InvoiceCockpitPage() {
               }
             : undefined
         }
-        className="relative bg-card text-foreground print:bg-white print:text-foreground p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full overflow-hidden"
+        className="relative bg-card text-foreground print:bg-white print:text-foreground p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full print:max-w-none overflow-hidden"
       >
         {docTemplate?.use_letterhead && (
           docTemplate.letterhead_file?.url ? (

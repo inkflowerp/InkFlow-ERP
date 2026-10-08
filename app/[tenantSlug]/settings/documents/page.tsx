@@ -753,7 +753,7 @@ export default function DocumentDesignerPage() {
 
           {/* VIEW 1: PRINTABLE PDF DOCUMENT CANVAS */}
           {previewMode === 'pdf' && (
-            <div className="bg-card text-foreground print:bg-white print:text-foreground print: print: p-4 sm:p-8 lg:p-12 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6 min-w-[300px] print:min-w-full">
+            <div data-print-isolate="true" data-print-sheet="true" className="bg-card text-foreground print:bg-white print:text-foreground p-4 sm:p-8 lg:p-12 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-6 min-w-[300px] print:min-w-full print:w-full">
               {/* Document Header */}
               <div className="text-center space-y-1 pb-4 border-b-2 border-border print:border-border">
                 <h1 className="text-lg sm:text-xl font-black tracking-tight print:text-foreground">

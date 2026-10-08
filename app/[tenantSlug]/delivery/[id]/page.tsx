@@ -347,6 +347,8 @@ export default function DeliveryChallanDetailPage() {
           {copiesToRender.map((copyMeta, copyIdx) => (
             <div
               key={copyMeta.key}
+              data-print-isolate="true"
+              data-print-sheet="true"
               style={
                 docTemplate?.use_letterhead
                   ? {
