@@ -120,11 +120,13 @@ export class WorkforceService {
     const otRate = Number(input.overtime_hourly_rate || ((hourlyRate > 0 ? hourlyRate : 100) * 1.5).toFixed(2))
 
     // Ensure no duplicate credentials across login accounts (Email, Username, Phone, Badge ID)
-    const sanitizedUsername = input.portal_credentials?.username?.trim()
-      ? sanitizeUsername(input.portal_credentials.username)
-      : undefined
+    // Only check username uniqueness if portal login provisioning is actively requested
+    const sanitizedUsername =
+      input.portal_credentials?.create_login && input.portal_credentials?.username?.trim()
+        ? sanitizeUsername(input.portal_credentials.username)
+        : undefined
     const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
-      email: input.portal_credentials?.email || input.email,
+      email: input.portal_credentials?.create_login ? (input.portal_credentials?.email || input.email) : input.email,
       username: sanitizedUsername,
       phone: input.mobile,
       employeeIdNumber: input.employee_id_number,
@@ -238,22 +240,77 @@ export class WorkforceService {
       throw new Error('Employee record not found.')
     }
 
-    // Ensure no duplicate credentials on update
-    const sanitizedUsername = updates.portal_credentials?.username?.trim()
+    // Determine what credentials actually need uniqueness validation on update
+    const portalLoginActive = Boolean(
+      updates.portal_credentials?.create_login ?? existing.portal_credentials?.create_login
+    )
+
+    const rawUpdatedUsername = updates.portal_credentials?.username?.trim()
       ? sanitizeUsername(updates.portal_credentials.username)
       : undefined
-    const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
-      email: updates.portal_credentials?.email || updates.email,
-      username: sanitizedUsername,
-      phone: updates.mobile,
-      employeeIdNumber: updates.employee_id_number,
-      excludeEmployeeId: id,
-      excludeUserId: existing.user_id,
-      companyId,
-    })
+    const existingUsername = existing.portal_credentials?.username?.trim()
+      ? sanitizeUsername(existing.portal_credentials.username)
+      : undefined
 
-    if (!uniquenessCheck.available) {
-      throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+    const isUsernameChanged =
+      Boolean(rawUpdatedUsername) &&
+      (!existingUsername || rawUpdatedUsername?.toLowerCase() !== existingUsername?.toLowerCase())
+
+    const usernameToCheck = portalLoginActive && isUsernameChanged ? rawUpdatedUsername : undefined
+
+    const existingEmail = existing.portal_credentials?.email || existing.email
+    const updatedEmail = updates.portal_credentials?.email || updates.email
+    const isEmailChanged = Boolean(updatedEmail) && updatedEmail?.toLowerCase() !== existingEmail?.toLowerCase()
+    const emailToCheck = isEmailChanged ? updatedEmail : undefined
+
+    const isPhoneChanged = Boolean(updates.mobile) && updates.mobile !== existing.mobile
+    const phoneToCheck = isPhoneChanged ? updates.mobile : undefined
+
+    const isIdChanged =
+      Boolean(updates.employee_id_number) && updates.employee_id_number !== existing.employee_id_number
+    const idToCheck = isIdChanged ? updates.employee_id_number : undefined
+
+    // Resolve employee's user_id if not explicitly linked on record
+    let effectiveExcludeUserId = existing.user_id
+    if (!effectiveExcludeUserId) {
+      try {
+        const admin = createAdminClient()
+        if (existing.mobile) {
+          const { data: matchedProf } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .eq('phone', existing.mobile)
+            .limit(1)
+            .maybeSingle()
+          if (matchedProf?.id) effectiveExcludeUserId = matchedProf.id
+        }
+        if (!effectiveExcludeUserId && existing.email) {
+          const { data: matchedProf } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .eq('email', existing.email.toLowerCase())
+            .limit(1)
+            .maybeSingle()
+          if (matchedProf?.id) effectiveExcludeUserId = matchedProf.id
+        }
+      } catch {}
+    }
+
+    // Only validate uniqueness if one of the identifiers was changed or newly activated
+    if (emailToCheck || usernameToCheck || phoneToCheck || idToCheck) {
+      const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+        email: emailToCheck,
+        username: usernameToCheck,
+        phone: phoneToCheck,
+        employeeIdNumber: idToCheck,
+        excludeEmployeeId: id,
+        excludeUserId: effectiveExcludeUserId,
+        companyId,
+      })
+
+      if (!uniquenessCheck.available) {
+        throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+      }
     }
 
     let updated = await WorkforceRepository.updateEmployee(id, companyId, updates)

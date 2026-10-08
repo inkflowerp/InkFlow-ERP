@@ -579,6 +579,10 @@ pre,
 
   /* 2. Hide Non-Printable UI Chrome, Navigation, Floating Bars & Modals */
   body:has([data-print-isolate="true"]) > *:not(:has([data-print-isolate="true"])),
+  body:has([data-print-isolate="true"]) [data-slot="dialog-content"],
+  body:has([data-print-isolate="true"]) [data-slot="dialog-overlay"],
+  body:has([data-print-isolate="true"]) .bg-surface-inset,
+  body:has([data-print-isolate="true"]) [role="dialog"],
   header:not(.print-header),
   aside:not(.print-aside),
   nav:not(.print-nav),

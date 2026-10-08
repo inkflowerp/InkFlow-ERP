@@ -50,6 +50,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import type { EmployeeRecord, DocumentAttachment } from '@/types/workforce.types'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { cn } from '@/lib/utils'
 
 export interface EmployeeProfileDialogProps {
   employee: EmployeeRecord | null
@@ -338,13 +339,34 @@ export function EmployeeProfileDialog({
     }
   }
 
+  const formatRoleTitle = (role?: string | null, designation?: string | null, department?: string | null) => {
+    const cleanDesignation = designation?.trim()
+    if (cleanDesignation && cleanDesignation.length > 1) return cleanDesignation
+
+    const cleanRole = role?.trim()
+    if (cleanRole && cleanRole.length > 1) {
+      return cleanRole
+        .replace(/[_-]+/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+    }
+
+    if (department?.trim()) {
+      return `${department.trim().replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} Staff`
+    }
+
+    return 'Official Staff'
+  }
+
   const triggerPrint = (mode: 'dossier' | 'id_badge') => {
     setPrintMode(mode)
+    const cleanup = () => {
+      setPrintMode('none')
+      window.removeEventListener('afterprint', cleanup)
+    }
+    window.addEventListener('afterprint', cleanup)
     setTimeout(() => {
       window.print()
-      setTimeout(() => {
-        setPrintMode('none')
-      }, 800)
+      setTimeout(cleanup, 2500)
     }, 150)
   }
 
@@ -365,7 +387,7 @@ export function EmployeeProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} maxWidth="max-w-5xl">
-      <DialogContent className="p-0 overflow-hidden bg-card border border-border shadow-xs rounded-xl flex flex-col max-h-[92vh]">
+      <DialogContent className={cn("p-0 overflow-hidden bg-card border border-border shadow-xs rounded-xl flex flex-col max-h-[92vh]", printMode !== 'none' && 'print:hidden')}>
         {/* ==================================================================== */}
         {/* 1. Header Profile Banner & Quick Identity Bar */}
         {/* ==================================================================== */}
@@ -431,7 +453,7 @@ export function EmployeeProfileDialog({
                     <span>{employee.employee_id_number}</span>
                     {copiedId ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
                   </button>
-                  <span className="capitalize font-medium text-foreground">{employee.role || employee.designation || 'Staff'}</span>
+                  <span className="capitalize font-medium text-foreground">{formatRoleTitle(employee.role, employee.designation, employee.department)}</span>
                   <span>•</span>
                   <Badge variant="secondary" className="text-xs px-2 py-0 capitalize">
                     {employee.department}
@@ -531,47 +553,47 @@ export function EmployeeProfileDialog({
         {/* 2. 360-Degree Deep Information Tabs */}
         {/* ==================================================================== */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
-          <div className="border-b border-border px-4 sm:px-6 bg-card shrink-0 overflow-x-auto scrollbar-none">
-            <TabsList className="bg-transparent h-10 p-0 space-x-4 sm:space-x-6 justify-start">
+          <div className="border-b border-border px-3 sm:px-6 bg-card shrink-0 overflow-x-auto scrollbar-none">
+            <TabsList className="bg-transparent h-10 p-0 flex items-center gap-2 sm:gap-4 justify-start w-max min-w-full rounded-none">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 360° Overview
               </TabsTrigger>
               <TabsTrigger
                 value="compensation"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Compensation & Payroll
               </TabsTrigger>
               <TabsTrigger
                 value="duty"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Duty & Attendance Rules
               </TabsTrigger>
               <TabsTrigger
                 value="advances"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Advances & Financials
               </TabsTrigger>
               <TabsTrigger
                 value="access"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Portal Login & Scope
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Documents ({employee.document_attachments?.length || 0})
               </TabsTrigger>
               <TabsTrigger
                 value="id_card"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-1 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent px-2 pb-2 pt-2 text-xs font-medium text-muted-foreground shadow-none whitespace-nowrap shrink-0 hover:text-foreground transition-colors"
               >
                 Printable ID Badge
               </TabsTrigger>
@@ -1294,7 +1316,7 @@ export function EmployeeProfileDialog({
                   {(badgeSide === 'both' || badgeSide === 'front') && (
                     <div
                       style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
-                      className="rounded-xl border-2 border-border bg-card p-3 shadow-xs text-center flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
+                      className="rounded-xl border-2 border-border bg-card p-2 shadow-xs text-center flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
                     >
                       {/* Top Header */}
                       <div className="border-b border-border pb-1">
@@ -1307,7 +1329,7 @@ export function EmployeeProfileDialog({
                       </div>
 
                       {/* Photo Box */}
-                      <div className="w-20 h-22 mx-auto rounded-xl border-2 border-border bg-muted overflow-hidden flex items-center justify-center shrink-0">
+                      <div className="w-16 h-20 mx-auto rounded-lg border border-border bg-muted overflow-hidden flex items-center justify-center shrink-0">
                         {photoUrl && !imgError ? (
                           <img
                             src={photoUrl}
@@ -1316,7 +1338,7 @@ export function EmployeeProfileDialog({
                             onError={() => setImgError(true)}
                           />
                         ) : (
-                          <span className="font-bold text-xl text-foreground">
+                          <span className="font-bold text-lg text-foreground">
                             {employee.name.slice(0, 2).toUpperCase()}
                           </span>
                         )}
@@ -1328,10 +1350,10 @@ export function EmployeeProfileDialog({
                           {employee.name}
                         </h3>
                         {employee.name_bn && (
-                          <p className="text-xs text-muted-foreground truncate">{employee.name_bn}</p>
+                          <p className="text-xs text-muted-foreground truncate leading-tight">{employee.name_bn}</p>
                         )}
-                        <p className="text-xs text-primary font-semibold capitalize truncate">
-                          {employee.role || employee.designation || 'Staff'}
+                        <p className="text-xs text-primary font-semibold truncate leading-tight">
+                          {formatRoleTitle(employee.role, employee.designation, employee.department)}
                         </p>
                         <Badge variant="outline" className="text-xs uppercase font-mono px-1.5 py-0">
                           {employee.department}
@@ -1339,9 +1361,9 @@ export function EmployeeProfileDialog({
                       </div>
 
                       {/* Bottom ID Bar */}
-                      <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono text-muted-foreground">
-                        <span className="font-bold text-foreground">ID: {employee.employee_id_number}</span>
-                        <span className="font-bold text-destructive">BLOOD: {bloodGroup || 'O+'}</span>
+                      <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono tracking-tight whitespace-nowrap">
+                        <span className="font-bold text-foreground truncate">ID: {employee.employee_id_number}</span>
+                        <span className="font-bold text-destructive shrink-0 ml-1">BLOOD: {bloodGroup || 'O+'}</span>
                       </div>
                     </div>
                   )}
@@ -1350,7 +1372,7 @@ export function EmployeeProfileDialog({
                   {(badgeSide === 'both' || badgeSide === 'back') && (
                     <div
                       style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
-                      className="rounded-xl border-2 border-border bg-card p-3 shadow-xs text-left flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
+                      className="rounded-xl border-2 border-border bg-card p-2 shadow-xs text-left flex flex-col justify-between relative overflow-hidden shrink-0 select-none"
                     >
                       {/* Top Header */}
                       <div className="border-b border-border pb-1 text-center">
@@ -1363,7 +1385,7 @@ export function EmployeeProfileDialog({
                       </div>
 
                       {/* Emergency & Details */}
-                      <div className="space-y-1 text-xs text-muted-foreground leading-tight">
+                      <div className="space-y-0.5 text-xs text-muted-foreground leading-snug">
                         <div>
                           <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
                         </div>
@@ -1597,88 +1619,92 @@ export function EmployeeProfileDialog({
       {printMode === 'id_badge' && (
         <div
           data-print-isolate="true"
-          className="bg-card text-foreground print:bg-white print:text-black p-4 flex flex-row flex-wrap items-center justify-center gap-8"
+          className="bg-card text-foreground print:bg-white print:text-black p-4 flex flex-row flex-wrap items-center justify-center gap-6"
         >
           {/* FRONT SIDE (Exact 55mm x 85mm) */}
-          <div
-            style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
-            className="border border-border rounded-xl p-3 flex flex-col justify-between text-center bg-card text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden text-xs"
-          >
-            <div className="border-b border-border pb-1">
-              <span className="font-black text-xs uppercase tracking-wider block text-primary truncate">
-                {companyName}
-              </span>
-              <span className="text-xs text-muted-foreground font-mono block">
-                {employee.branch_name || 'Main Press Facility'}
-              </span>
-            </div>
+          {(badgeSide === 'both' || badgeSide === 'front') && (
+            <div
+              style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+              className="border-2 border-border rounded-xl p-2 flex flex-col justify-between text-center bg-card text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden select-none"
+            >
+              <div className="border-b border-border pb-1">
+                <span className="font-black text-xs uppercase tracking-wider block text-primary truncate">
+                  {companyName}
+                </span>
+                <span className="text-xs text-muted-foreground font-mono block truncate">
+                  {employee.branch_name || 'Main Press Facility'}
+                </span>
+              </div>
 
-            <div className="w-20 h-22 mx-auto rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center shrink-0">
-              {photoUrl && !imgError ? (
-                <img src={photoUrl} alt={employee.name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold text-lg">{employee.name.slice(0, 2).toUpperCase()}</span>
-              )}
-            </div>
+              <div className="w-16 h-20 mx-auto rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center shrink-0">
+                {photoUrl && !imgError ? (
+                  <img src={photoUrl} alt={employee.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-bold text-lg">{employee.name.slice(0, 2).toUpperCase()}</span>
+                )}
+              </div>
 
-            <div className="space-y-0.5">
-              <h3 className="font-bold text-xs truncate leading-tight">{employee.name}</h3>
-              {employee.name_bn && <p className="text-xs text-muted-foreground truncate">{employee.name_bn}</p>}
-              <span className="text-xs font-semibold text-primary capitalize block truncate">
-                {employee.role || 'Factory Staff'}
-              </span>
-              <span className="inline-block px-1.5 py-0 rounded text-xs uppercase font-mono bg-muted border border-border">
-                {employee.department}
-              </span>
-            </div>
+              <div className="space-y-0.5">
+                <h3 className="font-bold text-xs truncate leading-tight">{employee.name}</h3>
+                {employee.name_bn && <p className="text-xs text-muted-foreground truncate leading-tight">{employee.name_bn}</p>}
+                <span className="text-xs font-semibold text-primary capitalize block truncate leading-tight">
+                  {formatRoleTitle(employee.role, employee.designation, employee.department)}
+                </span>
+                <span className="inline-block px-1.5 py-0 rounded text-xs uppercase font-mono bg-muted border border-border">
+                  {employee.department}
+                </span>
+              </div>
 
-            <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono">
-              <span className="font-bold">ID: {employee.employee_id_number}</span>
-              <span className="font-bold text-destructive">BLOOD: {bloodGroup || 'O+'}</span>
+              <div className="border-t border-border pt-1 flex items-center justify-between text-xs font-mono tracking-tight whitespace-nowrap">
+                <span className="font-bold truncate">ID: {employee.employee_id_number}</span>
+                <span className="font-bold text-destructive shrink-0 ml-1">BLOOD: {bloodGroup || 'O+'}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* BACK SIDE (Exact 55mm x 85mm) */}
-          <div
-            style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
-            className="border border-border rounded-xl p-3 flex flex-col justify-between text-left bg-muted/30 text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden text-xs"
-          >
-            <div className="border-b border-border pb-1 text-center">
-              <span className="font-bold text-xs uppercase tracking-wider block">
-                Official Staff Identity Card
-              </span>
-              <span className="text-xs text-muted-foreground block truncate">
-                {companyName}
-              </span>
-            </div>
+          {(badgeSide === 'both' || badgeSide === 'back') && (
+            <div
+              style={{ width: '55mm', height: '85mm', boxSizing: 'border-box' }}
+              className="border-2 border-border rounded-xl p-2 flex flex-col justify-between text-left bg-card text-foreground print:bg-white print:text-black shadow-none break-inside-avoid relative overflow-hidden select-none"
+            >
+              <div className="border-b border-border pb-1 text-center">
+                <span className="font-bold text-xs uppercase tracking-wider block">
+                  Official Staff Identity Card
+                </span>
+                <span className="text-xs text-muted-foreground block truncate">
+                  {companyName}
+                </span>
+              </div>
 
-            <div className="space-y-1 text-xs text-muted-foreground leading-tight">
-              <div>
-                <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
+              <div className="space-y-0.5 text-xs text-muted-foreground leading-snug">
+                <div>
+                  <span className="font-semibold text-foreground">Mobile:</span> {employee.mobile}
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">Emergency:</span>{' '}
+                  {employee.emergency_contact_phone || employee.mobile}
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">NID No:</span> {nidNumber || 'Recorded'}
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">Joined:</span>{' '}
+                  {employee.joining_date || 'N/A'}
+                </div>
+                <div className="pt-1 text-xs leading-tight text-muted-foreground/90 border-t border-border">
+                  This card is the property of {companyName}. Return upon cessation of employment or if found, hand over to {companyAddress}.
+                </div>
               </div>
-              <div>
-                <span className="font-semibold text-foreground">Emergency:</span>{' '}
-                {employee.emergency_contact_phone || employee.mobile}
-              </div>
-              <div>
-                <span className="font-semibold text-foreground">NID No:</span> {nidNumber || 'Recorded'}
-              </div>
-              <div>
-                <span className="font-semibold text-foreground">Joined:</span>{' '}
-                {employee.joining_date || 'N/A'}
-              </div>
-              <div className="pt-1 text-xs leading-tight text-muted-foreground border-t border-border">
-                This card is the property of {companyName}. Return upon cessation of employment or if found, hand over to {companyAddress}.
-              </div>
-            </div>
 
-            <div className="border-t border-border pt-1 text-center">
-              <div className="font-mono text-xs tracking-widest text-muted-foreground">
-                * {employee.employee_id_number} *
+              <div className="border-t border-border pt-1 text-center">
+                <div className="font-mono text-xs tracking-widest text-muted-foreground">
+                  * {employee.employee_id_number} *
+                </div>
+                <span className="text-xs text-muted-foreground block mt-0.5">Authorized Signatory</span>
               </div>
-              <span className="text-xs text-muted-foreground block mt-0.5">Authorized Signatory</span>
             </div>
-          </div>
+          )}
         </div>
       )}
     </Dialog>

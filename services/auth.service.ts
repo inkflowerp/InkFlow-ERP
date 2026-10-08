@@ -405,18 +405,24 @@ export class AuthService {
       try {
         let q = (admin as any)
           .from('user_profiles')
-          .select('id, username')
+          .select('id, username, phone, email')
           .ilike('username', username)
         if (params.excludeUserId) {
           q = q.neq('id', params.excludeUserId)
         }
         const { data: prof } = await q.limit(1).maybeSingle()
         if (prof) {
-          return {
-            available: false,
-            conflictField: 'username',
-            error: `Username '${username}' is already taken. Please choose another username.`,
-            errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ইউজারনেম নির্বাচন করুন।`,
+          const isSameUser =
+            (params.excludeUserId && prof.id === params.excludeUserId) ||
+            (params.phone && prof.phone === params.phone) ||
+            (params.email && prof.email && prof.email.toLowerCase() === params.email.toLowerCase())
+          if (!isSameUser) {
+            return {
+              available: false,
+              conflictField: 'username',
+              error: `Username '${username}' is already taken. Please choose another username.`,
+              errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ইউজারনেম নির্বাচন করুন।`,
+            }
           }
         }
       } catch {}
@@ -460,7 +466,13 @@ export class AuthService {
         }
 
         const users = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
-        const userConflict = users.find((u) => u.id !== params.excludeUserId && u.username?.toLowerCase() === username)
+        const userConflict = users.find(
+          (u) =>
+            u.id !== params.excludeUserId &&
+            (!params.phone || u.phone !== params.phone) &&
+            (!params.email || !u.email || u.email.toLowerCase() !== params.email.toLowerCase()) &&
+            u.username?.toLowerCase() === username
+        )
         if (userConflict) {
           return {
             available: false,
