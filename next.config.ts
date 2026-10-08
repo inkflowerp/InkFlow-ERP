@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: allowedActionOrigins,
+      bodySizeLimit: '10mb',
     },
     optimizePackageImports: [
       'lucide-react',

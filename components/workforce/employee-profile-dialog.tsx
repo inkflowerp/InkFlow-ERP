@@ -37,6 +37,8 @@ import {
   GraduationCap,
   Eye,
   Download,
+  Camera,
+  Loader2,
 } from 'lucide-react'
 import {
   Dialog,
@@ -51,6 +53,7 @@ import type { EmployeeRecord, DocumentAttachment } from '@/types/workforce.types
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import { cn } from '@/lib/utils'
+import { updateEmployeeAction } from '@/actions/workforce.actions'
 
 export interface EmployeeProfileDialogProps {
   employee: EmployeeRecord | null
@@ -59,6 +62,7 @@ export interface EmployeeProfileDialogProps {
   tenantSlug: string
   onEdit?: (employee: EmployeeRecord) => void
   onSendInvitation?: (employeeId: string) => Promise<void>
+  onPhotoUpdated?: (updatedEmployee: EmployeeRecord) => void
 }
 
 const ROLE_SCOPES: Record<string, { title: string; badge: string; scopes: string[]; limitations: string[] }> = {
@@ -289,6 +293,42 @@ function calculateTenure(joiningDateStr?: string | null): string {
   }
 }
 
+function compressImage(file: File, maxDimension = 600, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = reject
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onerror = reject
+      img.onload = () => {
+        let { width, height } = img
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width)
+            width = maxDimension
+          } else {
+            width = Math.round((width * maxDimension) / height)
+            height = maxDimension
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(event.target?.result as string)
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+        const compressed = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressed)
+      }
+      img.src = event.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export function EmployeeProfileDialog({
   employee,
   open,
@@ -296,6 +336,7 @@ export function EmployeeProfileDialog({
   tenantSlug,
   onEdit,
   onSendInvitation,
+  onPhotoUpdated,
 }: EmployeeProfileDialogProps) {
   const { tBilingual } = useI18n()
   const { company } = useTenant()
@@ -306,6 +347,16 @@ export function EmployeeProfileDialog({
   const [printMode, setPrintMode] = useState<'none' | 'dossier' | 'id_badge'>('none')
   const [badgeSide, setBadgeSide] = useState<'both' | 'front' | 'back'>('both')
   const [imgError, setImgError] = useState(false)
+  const avatarFileRef = React.useRef<HTMLInputElement>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [avatarSuccessMsg, setAvatarSuccessMsg] = useState<string | null>(null)
+
+  const photoUrl = employee?.profile_picture_url || (employee as any)?.avatar_url || (employee as any)?.photo_url || null
+
+  // Always reset imgError whenever employee id or photoUrl changes
+  React.useEffect(() => {
+    setImgError(false)
+  }, [employee?.id, photoUrl])
 
   // Listen to afterprint to reset printMode cleanly
   React.useEffect(() => {
@@ -319,7 +370,31 @@ export function EmployeeProfileDialog({
   const companyName = company?.name || company?.legal_name || 'PrintFlow Commercial Press'
   const companyAddress = company?.address || 'Main Press Facility & Factory'
   const companyPhone = company?.phone || '+880 1700-000000'
-  const photoUrl = employee.profile_picture_url || (employee as any).avatar_url || (employee as any).photo_url || null
+
+  const handleDirectAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !employee) return
+    if (!file.type.startsWith('image/')) return
+    setIsUploadingAvatar(true)
+    try {
+      const compressed = await compressImage(file, 600, 0.85)
+      setImgError(false)
+      const res = await updateEmployeeAction(employee.id, {
+        profile_picture_url: compressed,
+        avatar_url: compressed,
+      })
+      if (res?.success && res?.data) {
+        onPhotoUpdated?.(res.data)
+        setAvatarSuccessMsg('Photo updated')
+        setTimeout(() => setAvatarSuccessMsg(null), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to update employee photo:', err)
+    } finally {
+      setIsUploadingAvatar(false)
+      e.target.value = ''
+    }
+  }
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(employee.employee_id_number)
@@ -394,9 +469,9 @@ export function EmployeeProfileDialog({
         <div className="bg-muted border-b border-border p-4 sm:p-5 shrink-0 space-y-3.5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5 min-w-0">
-              {/* Avatar with Status Ring */}
-              <div className="relative shrink-0">
-                <div className="w-16 h-16 rounded-2xl bg-muted font-bold text-xl flex items-center justify-center shadow-xs border border-border overflow-hidden">
+              {/* Avatar with Status Ring & Instant Upload Trigger */}
+              <div className="relative shrink-0 group">
+                <div className="w-16 h-16 rounded-2xl bg-muted font-bold text-xl flex items-center justify-center shadow-xs border border-border overflow-hidden relative">
                   {photoUrl && !imgError ? (
                     <img
                       src={photoUrl}
@@ -407,6 +482,24 @@ export function EmployeeProfileDialog({
                   ) : (
                     <span className="text-foreground">{employee.name.slice(0, 2).toUpperCase()}</span>
                   )}
+                  {/* Quick-Upload Overlay */}
+                  <button
+                    type="button"
+                    onClick={() => avatarFileRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    aria-label="Change employee profile photo"
+                    title="Change employee profile photo"
+                    className="absolute inset-0 bg-background/80 backdrop-blur-xs flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-foreground"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-semibold mt-0.5">{tBilingual('Change', 'পরিবর্তন')}</span>
+                      </>
+                    )}
+                  </button>
                 </div>
                 <div
                   className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${
@@ -417,6 +510,13 @@ export function EmployeeProfileDialog({
                       : 'bg-destructive'
                   }`}
                   title={`Status: ${employee.status}`}
+                />
+                <input
+                  ref={avatarFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={handleDirectAvatarChange}
                 />
               </div>
 

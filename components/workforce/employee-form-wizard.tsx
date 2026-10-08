@@ -288,6 +288,42 @@ const DEPARTMENT_ROLES: Record<string, string[]> = {
   ],
 }
 
+function compressImage(file: File, maxDimension = 600, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = reject
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onerror = reject
+      img.onload = () => {
+        let { width, height } = img
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width)
+            width = maxDimension
+          } else {
+            width = Math.round((width * maxDimension) / height)
+            height = maxDimension
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(event.target?.result as string)
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+        const compressed = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressed)
+      }
+      img.src = event.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 function generateEmployeeCode(): string {
   const year = new Date().getFullYear()
   const randomSeq = Math.floor(Math.random() * 9000) + 1000
@@ -327,7 +363,18 @@ export function EmployeeFormWizard({
 
   // Form State
   const [formData, setFormData] = useState<Partial<EmployeeRecord>>(() => {
-    if (initialData) return { ...initialData }
+    if (initialData) {
+      const initialPhoto =
+        initialData.profile_picture_url ||
+        (initialData as any).avatar_url ||
+        (initialData as any).photo_url ||
+        null
+      return {
+        ...initialData,
+        profile_picture_url: initialPhoto,
+        avatar_url: initialPhoto,
+      }
+    }
     return {
       name: '',
       name_bn: '',
@@ -581,28 +628,45 @@ export function EmployeeFormWizard({
   }
 
   // Photo handlers
-  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
       setErrorMsg('Please select a valid image file (JPG, PNG, or WebP).')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg('Photo file size must be less than 5 MB.')
+    if (file.size > 8 * 1024 * 1024) {
+      setErrorMsg('Photo file size must be less than 8 MB.')
       return
     }
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string
-      updateField('profile_picture_url', dataUrl)
+    try {
+      const compressedDataUrl = await compressImage(file, 600, 0.85)
+      setFormData((prev) => ({
+        ...prev,
+        profile_picture_url: compressedDataUrl,
+        avatar_url: compressedDataUrl,
+      }))
+    } catch {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string
+        setFormData((prev) => ({
+          ...prev,
+          profile_picture_url: dataUrl,
+          avatar_url: dataUrl,
+        }))
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
     e.target.value = ''
   }
 
   const handleRemovePhoto = () => {
-    updateField('profile_picture_url', null)
+    setFormData((prev) => ({
+      ...prev,
+      profile_picture_url: null,
+      avatar_url: null,
+    }))
     if (photoInputRef.current) {
       photoInputRef.current.value = ''
     }

@@ -333,21 +333,22 @@ export class WorkforceService {
         console.warn('[WorkforceService.updateEmployee] Portal login sync warning:', err)
       }
     }
-    if (updated?.user_id) {
+    const targetUserId = updated?.user_id || effectiveExcludeUserId
+    if (targetUserId) {
       try {
         const admin = createAdminClient()
-        const photo = updated.profile_picture_url || (updated as any).avatar_url || null
+        const photo = updated ? (updated.profile_picture_url || (updated as any).avatar_url || null) : null
         const userUpdates: any = {
-          full_name: updated.name,
-          full_name_bn: updated.name_bn || null,
-          phone: updated.mobile || null,
+          full_name: updated?.name,
+          full_name_bn: updated?.name_bn || null,
+          phone: updated?.mobile || null,
           updated_at: new Date().toISOString(),
         }
-        if (photo) {
+        if (photo !== undefined) {
           userUpdates.avatar_url = photo
         }
-        await (admin as any).from('user_profiles').update(userUpdates).eq('id', updated.user_id)
-        await (admin as any).from('profiles').update(userUpdates).eq('id', updated.user_id)
+        await (admin as any).from('user_profiles').update(userUpdates).eq('id', targetUserId)
+        await (admin as any).from('profiles').update(userUpdates).eq('id', targetUserId)
       } catch (e) {
         console.warn('[WorkforceService.updateEmployee] User profile sync warning:', e)
       }

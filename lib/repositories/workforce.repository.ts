@@ -499,11 +499,19 @@ export class WorkforceRepository {
       if (s.employee_id_number) empMap.set(s.employee_id_number, s)
     }
 
-    // 2. Overlay DB employees (preserving extended rich fields and photos from store if present)
+    // 2. Overlay DB employees (preserving extended rich fields and photos from store if present or newer)
     for (const d of dbEmployees) {
       const existing = empMap.get(d.id) || (d.employee_id_number ? empMap.get(d.employee_id_number) : null)
       if (existing) {
-        const photo = d.profile_picture_url || d.avatar_url || existing.profile_picture_url || (existing as any).avatar_url || null
+        const isExistingNewer =
+          existing.updated_at && d.updated_at && new Date(existing.updated_at).getTime() >= new Date(d.updated_at).getTime()
+
+        const photo = isExistingNewer
+          ? (existing.profile_picture_url !== undefined
+              ? (existing.profile_picture_url || (existing as any).avatar_url || null)
+              : (d.profile_picture_url || d.avatar_url || null))
+          : (d.profile_picture_url || d.avatar_url || existing.profile_picture_url || (existing as any).avatar_url || null)
+
         empMap.set(d.id, {
           ...existing,
           ...d,
@@ -526,19 +534,34 @@ export class WorkforceRepository {
   static async getEmployeeById(id: string, companyId: string): Promise<EmployeeRecord | null> {
     try {
       const admin = createAdminClient()
-      const { data, error } = await (admin as any)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      let query = (admin as any)
         .from('employees')
         .select('*, branches(name)')
         .eq('company_id', companyId)
-        .eq('id', id)
-        .maybeSingle()
+
+      if (isUuid) {
+        query = query.eq('id', id)
+      } else {
+        query = query.or(`employee_id_number.eq.${id},mobile.eq.${id}`)
+      }
+
+      const { data, error } = await query.limit(1).maybeSingle()
 
       if (!error && data) {
         const storeEmp =
-          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id) ||
-          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id)
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id || e.employee_id_number === id || e.id === data.id) ||
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id || e.employee_id_number === id || e.id === data.id)
 
-        const photo = data.profile_picture_url || data.avatar_url || storeEmp?.profile_picture_url || (storeEmp as any)?.avatar_url || null
+        const isStoreNewer =
+          storeEmp?.updated_at && data.updated_at && new Date(storeEmp.updated_at).getTime() > new Date(data.updated_at).getTime()
+
+        const photo = isStoreNewer
+          ? (storeEmp?.profile_picture_url !== undefined
+              ? (storeEmp.profile_picture_url || (storeEmp as any)?.avatar_url || null)
+              : (data.profile_picture_url || data.avatar_url || null))
+          : (data.profile_picture_url || data.avatar_url || storeEmp?.profile_picture_url || (storeEmp as any)?.avatar_url || null)
+
         return {
           ...(storeEmp || {}),
           ...data,
@@ -708,6 +731,19 @@ export class WorkforceRepository {
 
     // 1. Update DataStore in all scopes (companyId, cleanSlug, and global)
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const matchPredicate = (e: EmployeeRecord): boolean =>
+      Boolean(e.id === id || e.employee_id_number === id || (updates.employee_id_number && e.employee_id_number === updates.employee_id_number))
+
+    PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, matchPredicate, payload, companyId)
+    if (cleanSlug !== companyId) {
+      PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, matchPredicate, payload, cleanSlug)
+    }
+    if (compSlug !== companyId) {
+      PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, matchPredicate, payload, compSlug)
+    }
+    PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, matchPredicate, payload)
+
     PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, companyId)
     if (cleanSlug !== companyId) {
       PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, payload, cleanSlug)
@@ -719,75 +755,137 @@ export class WorkforceRepository {
       const admin = createAdminClient()
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-      if (isUuid) {
-        const dbUpdates: any = { updated_at: payload.updated_at }
-        if (updates.name !== undefined) dbUpdates.name = updates.name
-        if (updates.name_bn !== undefined) dbUpdates.name_bn = updates.name_bn
-        if (updates.mobile !== undefined) dbUpdates.mobile = updates.mobile
-        if (updates.address !== undefined) dbUpdates.address = updates.address
-        if (updates.role !== undefined) dbUpdates.role = updates.role
-        if (updates.department !== undefined) dbUpdates.department = updates.department
-        if (updates.base_salary !== undefined) dbUpdates.base_salary = updates.base_salary
-        if (updates.daily_rate !== undefined) dbUpdates.daily_rate = updates.daily_rate
-        if (updates.overtime_hourly_rate !== undefined) dbUpdates.overtime_hourly_rate = updates.overtime_hourly_rate
-        if (updates.current_advance_balance !== undefined) dbUpdates.current_advance_balance = updates.current_advance_balance
-        if (updates.status !== undefined) dbUpdates.status = updates.status
-        if (updates.salary_basis !== undefined) dbUpdates.salary_type = updates.salary_basis === 'daily_rate' ? 'daily_rate' : 'monthly'
+      let targetDbId: string | null = isUuid ? id : null
 
-        if (updatedPhoto !== undefined) {
-          dbUpdates.profile_picture_url = updatedPhoto
-          dbUpdates.avatar_url = updatedPhoto
+      if (!targetDbId) {
+        // Resolve UUID from DB via employee_id_number or mobile
+        const empCode = updates.employee_id_number || id
+        const { data: matched } = await (admin as any)
+          .from('employees')
+          .select('id')
+          .eq('company_id', companyId)
+          .or(`employee_id_number.eq.${empCode},mobile.eq.${updates.mobile || id}`)
+          .limit(1)
+          .maybeSingle()
+
+        if (matched?.id) {
+          targetDbId = matched.id
         }
-        if (updates.branch_id !== undefined) dbUpdates.branch_id = updates.branch_id
-        if (updates.branch_name !== undefined) dbUpdates.branch_name = updates.branch_name
-        if (updates.user_id !== undefined) dbUpdates.user_id = updates.user_id
-        if (updates.duty_settings !== undefined) dbUpdates.duty_settings = updates.duty_settings
-        if (updates.portal_credentials !== undefined) dbUpdates.portal_credentials = updates.portal_credentials
-        if (updates.salary_structure !== undefined) dbUpdates.salary_structure = updates.salary_structure
-        if (updates.bank_payment_info !== undefined) dbUpdates.bank_payment_info = updates.bank_payment_info
-        if (updates.mfs_payment_info !== undefined) dbUpdates.mfs_payment_info = updates.mfs_payment_info
-        if (updates.commission_settings !== undefined) dbUpdates.commission_settings = updates.commission_settings
-        if (updates.document_attachments !== undefined) dbUpdates.document_attachments = updates.document_attachments
-        if ((updates as any).blood_group !== undefined) dbUpdates.blood_group = (updates as any).blood_group
-        if ((updates as any).nid_number !== undefined) dbUpdates.nid_number = (updates as any).nid_number
-        if ((updates as any).date_of_birth !== undefined) dbUpdates.date_of_birth = (updates as any).date_of_birth
-        if ((updates as any).permanent_address !== undefined) dbUpdates.permanent_address = (updates as any).permanent_address
-        if ((updates as any).educational_qualification !== undefined) dbUpdates.educational_qualification = (updates as any).educational_qualification
-        if ((updates as any).emergency_contact_name !== undefined) dbUpdates.emergency_contact_name = (updates as any).emergency_contact_name
-        if ((updates as any).emergency_contact_phone !== undefined) dbUpdates.emergency_contact_phone = (updates as any).emergency_contact_phone
-        if ((updates as any).emergency_contact_relation !== undefined) dbUpdates.emergency_contact_relation = (updates as any).emergency_contact_relation
-        if (updates.allowed_monthly_leaves !== undefined) dbUpdates.allowed_monthly_leaves = updates.allowed_monthly_leaves
-        if (updates.payment_method !== undefined) dbUpdates.payment_method = updates.payment_method
-        if (updates.is_daily_worker !== undefined) dbUpdates.is_daily_worker = updates.is_daily_worker
-        if (updates.contract_end_date !== undefined) dbUpdates.contract_end_date = updates.contract_end_date
+      }
 
+      const dbUpdates: any = { updated_at: payload.updated_at }
+      if (updates.name !== undefined) dbUpdates.name = updates.name
+      if (updates.name_bn !== undefined) dbUpdates.name_bn = updates.name_bn
+      if (updates.mobile !== undefined) dbUpdates.mobile = updates.mobile
+      if (updates.address !== undefined) dbUpdates.address = updates.address
+      if (updates.role !== undefined) dbUpdates.role = updates.role
+      if (updates.department !== undefined) dbUpdates.department = updates.department
+      if (updates.base_salary !== undefined) dbUpdates.base_salary = updates.base_salary
+      if (updates.daily_rate !== undefined) dbUpdates.daily_rate = updates.daily_rate
+      if (updates.overtime_hourly_rate !== undefined) dbUpdates.overtime_hourly_rate = updates.overtime_hourly_rate
+      if (updates.current_advance_balance !== undefined) dbUpdates.current_advance_balance = updates.current_advance_balance
+      if (updates.status !== undefined) dbUpdates.status = updates.status
+      if (updates.salary_basis !== undefined) dbUpdates.salary_type = updates.salary_basis === 'daily_rate' ? 'daily_rate' : 'monthly'
+
+      if (updatedPhoto !== undefined) {
+        dbUpdates.profile_picture_url = updatedPhoto
+        dbUpdates.avatar_url = updatedPhoto
+      }
+      if (updates.branch_id !== undefined) dbUpdates.branch_id = updates.branch_id
+      if (updates.branch_name !== undefined) dbUpdates.branch_name = updates.branch_name
+      if (updates.user_id !== undefined) dbUpdates.user_id = updates.user_id
+      if (updates.duty_settings !== undefined) dbUpdates.duty_settings = updates.duty_settings
+      if (updates.portal_credentials !== undefined) dbUpdates.portal_credentials = updates.portal_credentials
+      if (updates.salary_structure !== undefined) dbUpdates.salary_structure = updates.salary_structure
+      if (updates.bank_payment_info !== undefined) dbUpdates.bank_payment_info = updates.bank_payment_info
+      if (updates.mfs_payment_info !== undefined) dbUpdates.mfs_payment_info = updates.mfs_payment_info
+      if (updates.commission_settings !== undefined) dbUpdates.commission_settings = updates.commission_settings
+      if (updates.document_attachments !== undefined) dbUpdates.document_attachments = updates.document_attachments
+      if ((updates as any).blood_group !== undefined) dbUpdates.blood_group = (updates as any).blood_group
+      if ((updates as any).nid_number !== undefined) dbUpdates.nid_number = (updates as any).nid_number
+      if ((updates as any).date_of_birth !== undefined) dbUpdates.date_of_birth = (updates as any).date_of_birth
+      if ((updates as any).permanent_address !== undefined) dbUpdates.permanent_address = (updates as any).permanent_address
+      if ((updates as any).educational_qualification !== undefined) dbUpdates.educational_qualification = (updates as any).educational_qualification
+      if ((updates as any).emergency_contact_name !== undefined) dbUpdates.emergency_contact_name = (updates as any).emergency_contact_name
+      if ((updates as any).emergency_contact_phone !== undefined) dbUpdates.emergency_contact_phone = (updates as any).emergency_contact_phone
+      if ((updates as any).emergency_contact_relation !== undefined) dbUpdates.emergency_contact_relation = (updates as any).emergency_contact_relation
+      if (updates.allowed_monthly_leaves !== undefined) dbUpdates.allowed_monthly_leaves = updates.allowed_monthly_leaves
+      if (updates.payment_method !== undefined) dbUpdates.payment_method = updates.payment_method
+      if (updates.is_daily_worker !== undefined) dbUpdates.is_daily_worker = updates.is_daily_worker
+      if (updates.contract_end_date !== undefined) dbUpdates.contract_end_date = updates.contract_end_date
+
+      let dbResult: any = null
+
+      if (targetDbId) {
         const { data, error } = await (admin as any)
           .from('employees')
           .update(dbUpdates)
           .eq('company_id', companyId)
-          .eq('id', id)
+          .eq('id', targetDbId)
           .select()
-          .single()
+          .maybeSingle()
 
-        if (!error && data) {
-          const storeEmp =
-            (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find((e) => e.id === id) ||
-            (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find((e) => e.id === id)
-          const merged = { ...(storeEmp || {}), ...data, ...updates }
-          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, companyId)
-          if (cleanSlug !== companyId) {
-            PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged, cleanSlug)
-          }
-          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, id, merged)
-          return merged
+        if (!error && data) dbResult = data
+      } else {
+        const empCode = updates.employee_id_number || id
+        const { data, error } = await (admin as any)
+          .from('employees')
+          .update(dbUpdates)
+          .eq('company_id', companyId)
+          .eq('employee_id_number', empCode)
+          .select()
+          .maybeSingle()
+
+        if (!error && data) dbResult = data
+      }
+
+      if (dbResult) {
+        const storeEmp =
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []).find(
+            (e) => e.id === id || e.employee_id_number === id || (targetDbId ? e.id === targetDbId : false)
+          ) ||
+          (PrintFlowDataStore.get<EmployeeRecord[]>(STORAGE_KEYS.EMPLOYEES) || []).find(
+            (e) => e.id === id || e.employee_id_number === id || (targetDbId ? e.id === targetDbId : false)
+          )
+
+        const finalPhoto =
+          updatedPhoto !== undefined
+            ? updatedPhoto
+            : (dbResult.profile_picture_url || dbResult.avatar_url || storeEmp?.profile_picture_url || (storeEmp as any)?.avatar_url || null)
+
+        const merged: EmployeeRecord = {
+          ...(storeEmp || {}),
+          ...dbResult,
+          ...updates,
+          profile_picture_url: finalPhoto,
+          avatar_url: finalPhoto,
         }
+
+        const predicate = (e: EmployeeRecord): boolean =>
+          Boolean(e.id === id || e.employee_id_number === id || (targetDbId ? e.id === targetDbId : false))
+
+        PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, predicate, merged, companyId)
+        if (cleanSlug !== companyId) {
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, predicate, merged, cleanSlug)
+        }
+        if (compSlug !== companyId) {
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, predicate, merged, compSlug)
+        }
+        PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, predicate, merged)
+
+        if (targetDbId && targetDbId !== id) {
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, targetDbId, merged, companyId)
+          PrintFlowDataStore.updateItem<EmployeeRecord>(STORAGE_KEYS.EMPLOYEES, targetDbId, merged)
+        }
+
+        return merged
       }
     } catch (e) {
       console.warn('[WorkforceRepository.updateEmployee] DB update fallback:', e)
     }
 
     const emps = await this.getEmployees(companyId)
-    return emps.find((e) => e.id === id) || null
+    return emps.find((e) => e.id === id || e.employee_id_number === id) || null
   }
 
   static async deleteEmployee(id: string, companyId: string): Promise<boolean> {
@@ -800,6 +898,12 @@ export class WorkforceRepository {
           .delete()
           .eq('company_id', companyId)
           .eq('id', id)
+      } else {
+        await (admin as any)
+          .from('employees')
+          .delete()
+          .eq('company_id', companyId)
+          .or(`employee_id_number.eq.${id},mobile.eq.${id}`)
       }
     } catch (e) {
       console.warn('[WorkforceRepository.deleteEmployee] DB delete fallback:', e)

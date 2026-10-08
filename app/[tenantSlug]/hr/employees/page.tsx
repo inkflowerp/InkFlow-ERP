@@ -85,13 +85,27 @@ export default function EmployeesPage() {
  if (editingEmployee) {
  const res = await updateEmployeeAction(editingEmployee.id, formData)
  if (res.success && res.data) {
- setEmployees((prev) => prev.map((e) => (e.id === editingEmployee.id ? res.data! : e)))
- if (selectedProfileEmployee?.id === editingEmployee.id) {
-   setSelectedProfileEmployee(res.data)
+   const updated = res.data
+   setEmployees((prev) =>
+     prev.map((e) =>
+       e.id === editingEmployee.id ||
+       e.id === updated.id ||
+       (e.employee_id_number && e.employee_id_number === editingEmployee.employee_id_number)
+         ? updated
+         : e
+     )
+   )
+   if (
+     selectedProfileEmployee?.id === editingEmployee.id ||
+     selectedProfileEmployee?.id === updated.id ||
+     (selectedProfileEmployee?.employee_id_number &&
+       selectedProfileEmployee.employee_id_number === editingEmployee.employee_id_number)
+   ) {
+     setSelectedProfileEmployee(updated)
+   }
+   setWizardOpen(false)
+   return true
  }
- setWizardOpen(false)
- return true
-      }
  throw new Error(res.error || 'Failed to update employee')
     } else {
  const res = await createEmployeeAction(formData as any)
@@ -157,6 +171,17 @@ export default function EmployeesPage() {
  tenantSlug={slug}
  onEdit={handleEditEmployee}
  onSendInvitation={handleSendInvitation}
+ onPhotoUpdated={(updated) => {
+   setSelectedProfileEmployee(updated)
+   setEmployees((prev) =>
+     prev.map((e) =>
+       e.id === updated.id ||
+       (e.employee_id_number && e.employee_id_number === updated.employee_id_number)
+         ? updated
+         : e
+     )
+   )
+ }}
           />
 
           {/* Progressive 7-Step Creation Wizard */}

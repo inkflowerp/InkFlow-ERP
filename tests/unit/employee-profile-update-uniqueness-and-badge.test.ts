@@ -103,4 +103,53 @@ describe('Employee Profile Update Uniqueness & ID Badge Formatting', () => {
     assert.strictEqual(formatRoleTitle('production_manager', undefined, 'management'), 'Production Manager')
     assert.strictEqual(formatRoleTitle(null, null, null), 'Official Staff')
   })
+
+  test('4. Updating employee photo persists on profile_picture_url and avatar_url for non-UUID employee ID', async () => {
+    const empId = 'emp-2026-8701'
+    const photoDataUrl = 'data:image/jpeg;base64,mockjpegphotosample'
+
+    const updated = await WorkforceService.updateEmployee(
+      empId,
+      companyId,
+      {
+        profile_picture_url: photoDataUrl,
+      }
+    )
+
+    assert.ok(updated, 'Update result must not be null')
+    assert.strictEqual(updated.profile_picture_url, photoDataUrl, 'profile_picture_url must be updated')
+    assert.strictEqual((updated as any).avatar_url, photoDataUrl, 'avatar_url must be synced with profile_picture_url')
+
+    // Verify getEmployeeById retrieves updated photo
+    const fetched = await WorkforceService.getEmployeeById(empId, companyId)
+    assert.ok(fetched, 'Employee must be retrievable by ID')
+    assert.strictEqual(fetched.profile_picture_url, photoDataUrl)
+    assert.strictEqual((fetched as any).avatar_url, photoDataUrl)
+
+    // Verify getEmployees list contains updated photo
+    const list = await WorkforceService.getEmployees(companyId)
+    const empInList = list.find((e) => e.id === empId || e.employee_id_number === 'EMP-2026-8701')
+    assert.ok(empInList, 'Employee must be present in employees list')
+    assert.strictEqual(empInList.profile_picture_url, photoDataUrl)
+  })
+
+  test('5. Removing employee photo sets profile_picture_url and avatar_url to null', async () => {
+    const empId = 'emp-2026-8701'
+
+    const updated = await WorkforceService.updateEmployee(
+      empId,
+      companyId,
+      {
+        profile_picture_url: null,
+      }
+    )
+
+    assert.ok(updated)
+    assert.strictEqual(updated.profile_picture_url, null)
+    assert.strictEqual((updated as any).avatar_url, null)
+
+    const fetched = await WorkforceService.getEmployeeById(empId, companyId)
+    assert.ok(fetched)
+    assert.strictEqual(fetched.profile_picture_url, null)
+  })
 })
