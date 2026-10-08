@@ -521,7 +521,7 @@ pre,
    ============================================================================== */
 @page {
   size: A4 portrait;
-  margin: 10mm 12mm 12mm 12mm;
+  margin: 8mm;
 }
 
 @page thermal80 {
@@ -603,9 +603,13 @@ pre,
   }
 
   /* Unclip dialog wrapper when printable document is inside a modal */
+  body:has([data-print-isolate="true"]) div.fixed.inset-0,
+  body:has([data-print-isolate="true"]) div.fixed.inset-0 > div,
   body:has([data-print-isolate="true"]) div:has(> [role="dialog"]:has([data-print-isolate="true"])),
   body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]),
-  body:has([data-print-isolate="true"]) [data-slot="dialog-content"]:has([data-print-isolate="true"]) {
+  body:has([data-print-isolate="true"]) [data-slot="dialog-content"]:has([data-print-isolate="true"]),
+  body:has([data-print-isolate="true"]) [data-slot="dialog-body"]:has([data-print-isolate="true"]),
+  body:has([data-print-isolate="true"]) form:has([data-print-isolate="true"]) {
     display: block !important;
     position: static !important;
     inset: auto !important;
@@ -626,8 +630,12 @@ pre,
   /* Hide modal header, footer, close button when printing isolated document from modal */
   body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) > button,
   body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) [data-slot="dialog-header"],
-  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) [data-slot="dialog-footer"] {
+  body:has([data-print-isolate="true"]) [role="dialog"]:has([data-print-isolate="true"]) [data-slot="dialog-footer"],
+  body:has([data-print-isolate="true"]) [data-slot="dialog-header"],
+  body:has([data-print-isolate="true"]) [data-slot="dialog-footer"],
+  body:has([data-print-isolate="true"]) button[aria-label="Close dialog"] {
     display: none !important;
+    visibility: hidden !important;
   }
 
   /* Isolate printable document when present */
@@ -642,6 +650,31 @@ pre,
     color: #0f172a !important;
     border: none !important;
     box-shadow: none !important;
+  }
+
+  /* A4 Attendance QR Poster Canvas Isolation & Exact Page Fit */
+  [data-print-isolate="true"][data-qr-poster-canvas="true"],
+  [data-qr-poster-canvas="true"] {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 275mm !important;
+    max-height: 275mm !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   /* 3. Document Canvas Full-Width Unwrapping */

@@ -112,23 +112,23 @@ export function ModalDialog({
  const dialogInner = (
     <>
       {/* FIXED HEADER */}
-      <DialogHeader className={headerClassName}>
+      <DialogHeader className={cn('print:hidden', headerClassName)}>
         <DialogTitle>{title}</DialogTitle>
         {description && <DialogDescription className="mt-1">{description}</DialogDescription>}
       </DialogHeader>
 
       {/* SCROLLABLE BODY */}
-      <DialogBody className={bodyClassName}>
+      <DialogBody className={cn('print:p-0 print:overflow-visible', bodyClassName)}>
         {children}
       </DialogBody>
 
       {/* FIXED FOOTER */}
       {footer ? (
-        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20', footerClassName)}>
+        <div className={cn('shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20 print:hidden', footerClassName)}>
           {footer}
         </div>
       ) : !hideFooter ? (
-        <DialogFooter className={footerClassName}>
+        <DialogFooter className={cn('print:hidden', footerClassName)}>
           <Button
  type="button"variant="secondary"onClick={handleClose}
  disabled={isConfirmLoading}

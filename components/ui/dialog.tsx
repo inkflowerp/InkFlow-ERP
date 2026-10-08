@@ -128,18 +128,20 @@ export function Dialog({ open, onOpenChange, children, className, maxWidth, styl
 
  const modalNode = (
     <DialogContext.Provider value={contextValue}>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 xs:p-3 sm:p-4 overflow-y-auto print:static print:inset-auto print:block print:p-0 print:m-0 print:w-full print:max-w-none print:h-auto print:max-h-none print:overflow-visible">
         {/* Backdrop: rgba(15,23,42,.45) with no blur */}
         <div
- className="fixed inset-0 bg-surface-inset transition-opacity animate-in fade-in-0"onClick={() => onOpenChangeRef.current?.(false)}
- aria-hidden="true"/>
+          className="fixed inset-0 bg-surface-inset transition-opacity animate-in fade-in-0 print:hidden"
+          onClick={() => onOpenChangeRef.current?.(false)}
+          aria-hidden="true"
+        />
         {/* Content Container */}
         <div
- style={style}
- className={cn(
-            'relative z-[100] w-[95vw] sm:w-full my-auto max-h-[90vh] flex flex-col animate-in fade-in-0 zoom-in-95',
- maxWidth || 'max-w-lg',
- className
+          style={style}
+          className={cn(
+            'relative z-[100] w-[95vw] sm:w-full my-auto max-h-[90vh] flex flex-col animate-in fade-in-0 zoom-in-95 print:static print:w-full print:max-w-none print:m-0 print:p-0 print:h-auto print:max-h-none print:border-none print:shadow-none print:overflow-visible',
+            maxWidth || 'max-w-lg',
+            className
           )}
         >
           {children}
@@ -166,20 +168,26 @@ export function DialogContent({
 
  return (
     <div
- ref={context?.contentRef}
- tabIndex={-1}
- role="dialog"aria-modal="true"aria-labelledby={context?.titleId}
- style={style}
- className={cn(
-        'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-xs transition-all overflow-hidden outline-none',
- className
+      ref={context?.contentRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={context?.titleId}
+      data-slot="dialog-content"
+      style={style}
+      className={cn(
+        'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-border bg-card text-card-foreground shadow-xs transition-all overflow-hidden outline-none print:static print:w-full print:max-w-none print:m-0 print:p-0 print:h-auto print:max-h-none print:border-none print:shadow-none print:rounded-none print:overflow-visible print:bg-transparent',
+        className
       )}
     >
       {onClose && (
         <button
- type="button"onClick={onClose}
- className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-30 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"aria-label="Close dialog">
-          <X className="h-4 w-4"/>
+          type="button"
+          onClick={onClose}
+          className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 z-30 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 print:hidden"
+          aria-label="Close dialog"
+        >
+          <X className="h-4 w-4" />
         </button>
       )}
       {children}
@@ -188,11 +196,12 @@ export function DialogContent({
 }
 
 export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
- return (
+  return (
     <div
- className={cn(
-        'flex flex-col space-y-1.5 text-left shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border bg-card z-20 pr-12',
- className
+      data-slot="dialog-header"
+      className={cn(
+        'flex flex-col space-y-1.5 text-left shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border bg-card z-20 pr-12 print:hidden',
+        className
       )}
       {...props}
     />
@@ -200,9 +209,10 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
 }
 
 export function DialogBody({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
- return (
+  return (
     <div
- className={cn('flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 overscroll-contain', className)}
+      data-slot="dialog-body"
+      className={cn('flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 overscroll-contain print:overflow-visible print:p-0 print:m-0 print:h-auto print:max-h-none', className)}
       {...props}
     >
       {children}
@@ -226,11 +236,12 @@ export function DialogDescription({ className, ...props }: React.HTMLAttributes<
 }
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
- return (
+  return (
     <div
- className={cn(
-        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20 mt-0',
- className
+      data-slot="dialog-footer"
+      className={cn(
+        'flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 border-t border-border bg-muted/40 z-20 mt-0 print:hidden',
+        className
       )}
       {...props}
     />
