@@ -32,110 +32,175 @@ export function PrintLetterheadArt({
       aria-hidden="true"
     >
       {/* 1. TOP HEADER ARTWORK */}
-      <div className="absolute top-0 left-0 right-0 h-[17%] w-full flex items-start justify-between">
+      <div className="absolute top-0 left-0 right-0 h-[17.5%] w-full flex items-start justify-between">
         {/* Top Left: Logo & Corporate Identity */}
-        <div className="pt-4 pl-5 sm:pt-5 sm:pl-6 z-10 max-w-[55%]">
+        <div className="pt-3.5 pl-4 sm:pt-4 sm:pl-5 z-10 max-w-[48%]">
           <div className="flex items-center gap-2">
-            {/* PrintFlow Stylized Logo Mark */}
-            <div className="flex items-center gap-1.5">
-              <svg
-                viewBox="0 0 32 32"
-                fill="none"
-                className="h-7 w-7 shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M6 16C6 10.477 10.477 6 16 6C21.523 6 26 10.477 26 16C26 21.523 21.523 26 16 26"
-                  stroke="#10B981"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                />
-                <circle cx="16" cy="16" r="3.5" fill="#047857" />
-                <path
-                  d="M8 22L16 14L24 22"
-                  stroke="#059669"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <div>
-                <span className="text-lg sm:text-xl font-black tracking-tight text-[#064E3B] leading-none block">
-                  {companyName}
+            {/* PrintFlow Stylized Petal Ribbon Swirl Mark */}
+            <svg
+              viewBox="0 0 36 36"
+              fill="none"
+              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Upper emerald ribbon loop */}
+              <path
+                d="M6 18C6 11.373 11.373 6 18 6C24.627 6 29 10 29 15C29 20 23 23 18 20C14 17.6 12 14 15 10"
+                stroke="#10B981"
+                strokeWidth="3.6"
+                strokeLinecap="round"
+              />
+              {/* Lower dark green ribbon loop */}
+              <path
+                d="M30 18C30 24.627 24.627 30 18 30C11.373 30 7 26 7 21C7 16 13 13 18 16C22 18.4 24 22 21 26"
+                stroke="#064E3B"
+                strokeWidth="3.6"
+                strokeLinecap="round"
+              />
+              {/* Center golden highlight node */}
+              <circle cx="18" cy="18" r="3" fill="#EAB308" />
+            </svg>
+
+            <div>
+              <div className="flex items-baseline leading-none">
+                <span className="text-xl sm:text-2xl font-black text-[#111827] tracking-tight">
+                  {companyName === 'PrintFlow' ? 'Print' : companyName}
                 </span>
-                <span
-                  style={{ fontSize: '8px', lineHeight: '10px' }}
-                  className="font-bold tracking-widest text-[#059669] uppercase block mt-0.5"
-                >
-                  SIGNAGE • PRINT • GROW TOGETHER
-                </span>
+                {companyName === 'PrintFlow' && (
+                  <span className="text-xl sm:text-2xl font-black text-[#10B981] tracking-tight">
+                    Flow
+                  </span>
+                )}
               </div>
+              <span
+                style={{ fontSize: '7px', letterSpacing: '0.12em' }}
+                className="font-bold text-[#4B5563] uppercase block mt-1 tracking-wider whitespace-nowrap"
+              >
+                SIGNAGE &nbsp;|&nbsp; PRINT &nbsp;|&nbsp; GROW TOGETHER
+              </span>
             </div>
           </div>
 
-          {/* Contact Details */}
+          {/* Contact Details with Circular Micro-Icons */}
           <div
-            style={{ fontSize: '8px', lineHeight: '11px' }}
-            className="mt-1.5 space-y-0.5 text-[#374151] font-medium leading-tight"
+            style={{ fontSize: '8px', lineHeight: '13px' }}
+            className="mt-2 space-y-1 text-[#374151] font-medium"
           >
-            <div className="flex items-center gap-1">
-              <span className="text-[#059669] font-bold">⌂</span>
-              <span>{address}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#111827] text-white shrink-0">
+                <svg className="w-2 h-2" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                </svg>
+              </span>
+              <span className="truncate">{address}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <span className="text-[#059669] font-bold">☎</span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#111827] text-white shrink-0">
+                  <svg className="w-2 h-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z" />
+                  </svg>
+                </span>
                 <span>{phone}</span>
               </span>
-              <span className="flex items-center gap-1">
-                <span className="text-[#059669] font-bold">✉</span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#111827] text-white shrink-0">
+                  <svg className="w-2 h-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                  </svg>
+                </span>
                 <span>{email}</span>
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[#059669] font-bold">🌐</span>
-              <span className="text-[#065F46] font-semibold">{website}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#111827] text-white shrink-0">
+                <svg className="w-2 h-2" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1a2 2 0 0 0 2 2v1.93zm6.9-2.54A8 8 0 0 0 19 12c0-.68-.1-1.34-.28-1.96l-4.72 4.72a2 2 0 0 0-.58 1.41v1.17c1.37-.43 2.59-1.25 3.48-2.34z" />
+                </svg>
+              </span>
+              <span>{website}</span>
             </div>
           </div>
         </div>
 
-        {/* Top Right: Flowing Curved Header Banner */}
-        <div className="relative w-[48%] h-full">
+        {/* Top Right: Layered Organic Blade & Swoosh Header Banner */}
+        <div className="relative w-[52%] h-full">
           <svg
-            viewBox="0 0 320 120"
+            viewBox="0 0 450 140"
             fill="none"
             preserveAspectRatio="none"
             className="w-full h-full"
             xmlns="http://www.w3.org/2000/svg"
           >
-            {/* Background decorative wave curves */}
+            {/* Outermost pale mint wing/blade (far left) */}
             <path
-              d="M0 0C60 40 140 30 200 10L320 0V120H150C80 120 40 60 0 0Z"
+              d="M 40 0 C 15 20, 0 35, 0 52 C 0 75, 45 110, 110 140 L 450 140 L 450 0 Z"
               fill="#D1FAE5"
+              fillOpacity="0.75"
+            />
+
+            {/* Middle vivid emerald wing/blade */}
+            <path
+              d="M 90 0 C 65 25, 45 45, 45 62 C 45 88, 85 118, 145 140 L 450 140 L 450 0 Z"
+              fill="#10B981"
+            />
+
+            {/* Main deep forest green banner body */}
+            <path
+              d="M 140 0 C 110 30, 85 55, 85 72 C 85 102, 130 126, 210 132 C 290 138, 380 135, 450 126 L 450 0 Z"
+              fill="#064E3B"
+            />
+
+            {/* Bottom bright emerald contour stripe */}
+            <path
+              d="M 85 72 C 85 104, 130 128, 210 134 C 290 140, 380 137, 450 128"
+              stroke="#10B981"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+
+            {/* Top origami geometric facets / accents */}
+            <polygon
+              points="170,0 215,30 265,0"
+              fill="#047857"
+              fillOpacity="0.5"
+            />
+            <polygon
+              points="280,0 330,38 410,0"
+              fill="#059669"
               fillOpacity="0.4"
             />
-            <path
-              d="M30 0C100 45 180 35 240 15L320 0V110H160C110 110 70 70 30 0Z"
-              fill="#059669"
-              fillOpacity="0.85"
-            />
-            <path
-              d="M70 0C130 50 200 40 260 20L320 0V105H180C140 105 100 65 70 0Z"
-              fill="#064E3B"
+            <polygon
+              points="360,0 405,28 450,0"
+              fill="#10B981"
+              fillOpacity="0.3"
             />
           </svg>
 
-          {/* Title overlay on dark green curve */}
-          <div className="absolute top-2.5 sm:top-3.5 right-3.5 sm:right-5 text-right z-10 text-white">
-            <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight uppercase">
+          {/* Title Overlay in Dark Green Banner */}
+          <div className="absolute top-2.5 sm:top-3.5 right-4 sm:right-7 w-[68%] flex flex-col items-center justify-center text-center z-10 text-white">
+            <h1
+              style={{ fontSize: '24px', letterSpacing: '0.04em' }}
+              className="font-black leading-tight uppercase text-white drop-shadow-xs"
+            >
               {documentTypeTitleEn}
             </h1>
-            <p className="text-xs sm:text-sm font-bold text-white/90 leading-none mt-0.5">
-              {documentTypeTitleBn}
-            </p>
+
+            {/* Bengali Subheading with Gold Accent Bar */}
+            <div className="flex items-center justify-center gap-2 mt-0.5 sm:mt-1">
+              <div className="w-10 sm:w-12 h-[2.5px] bg-[#EAB308] rounded-full shrink-0" />
+              <span
+                style={{ fontSize: '15px' }}
+                className="font-bold text-white leading-none tracking-normal"
+              >
+                {documentTypeTitleBn}
+              </span>
+            </div>
+
             <p
-              style={{ fontSize: '7.5px', lineHeight: '9px' }}
-              className="font-semibold text-white/80 uppercase tracking-widest mt-1"
+              style={{ fontSize: '7.5px', letterSpacing: '0.18em' }}
+              className="font-bold text-white/90 uppercase tracking-widest mt-1 text-center whitespace-nowrap"
             >
               YOUR PRINTING & SIGNAGE PARTNER
             </p>
@@ -162,142 +227,198 @@ export function PrintLetterheadArt({
         </div>
       )}
 
-      {/* 3. BOTTOM FOOTER ARTWORK */}
-      <div className="absolute bottom-0 left-0 right-0 h-[10%] w-full flex flex-col justify-end">
-        {/* Category Service Pills Bar */}
-        <div className="relative w-full">
-          {/* Decorative swooshes */}
-          <svg
-            viewBox="0 0 600 45"
-            fill="none"
-            preserveAspectRatio="none"
-            className="w-full h-8 block"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 45C100 15 220 5 350 15C480 25 550 40 600 45H0Z"
-              fill="#10B981"
-              fillOpacity="0.3"
-            />
-            <path
-              d="M0 45C120 22 250 15 400 22C490 27 560 38 600 45H0Z"
-              fill="#F59E0B"
-              fillOpacity="0.4"
-            />
-            <path
-              d="M0 45C150 28 300 22 450 28C530 32 580 40 600 45H0Z"
-              fill="#064E3B"
-            />
-          </svg>
-
-          {/* Quick service feature icons row */}
-          <div
-            style={{ fontSize: '7px', lineHeight: '9px' }}
-            className="absolute -top-3 left-0 right-0 px-4 flex items-center justify-center gap-1 sm:gap-2 font-bold text-[#065F46]"
-          >
-            {[
-              {
-                label: 'LED SIGNAGE',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                    <circle cx="12" cy="12" r="5" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'DIGITAL PRINT',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <path d="M6 14h12v8H6z" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'ACP SIGNAGE',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="4" y="2" width="16" height="20" rx="2" />
-                    <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'ACRYLIC SIGNAGE',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'VEHICLE BRANDING',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="1" y="3" width="15" height="13" />
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                    <circle cx="5.5" cy="18.5" r="2.5" />
-                    <circle cx="18.5" cy="18.5" r="2.5" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'PVC PRINT',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                ),
-              },
-              {
-                label: 'CUSTOM PRINT',
-                svg: (
-                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                ),
-              },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white border border-[#10B981]/30 shadow-2xs whitespace-nowrap"
+      {/* 3. BOTTOM FOOTER ARTWORK & SERVICE BADGES */}
+      <div className="absolute bottom-0 left-0 right-0 h-[10.5%] w-full flex flex-col justify-end">
+        {/* 7 Core Service Badges Row */}
+        <div className="relative w-full bg-white/95 border-t border-[#E5E7EB] py-1 px-2 z-10">
+          <div className="grid grid-cols-7 divide-x divide-[#E5E7EB] text-center">
+            {/* 1. LED SIGNAGE */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <rect x="3" y="4" width="18" height="12" rx="2" />
+                <path d="M7 10h2M12 8v4M15 8h2" />
+                <path d="M8 16v4M16 16v4M5 20h14" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
               >
-                {s.svg}
-                <span>{s.label}</span>
-              </div>
-            ))}
+                LED SIGNAGE
+              </span>
+            </div>
+
+            {/* 2. DIGITAL PRINT */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="7" rx="1" />
+                <circle cx="18" cy="12" r="1" fill="#111827" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                DIGITAL PRINT
+              </span>
+            </div>
+
+            {/* 3. ACP SIGNAGE */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 12l10 5 10-5" />
+                <path d="M2 17l10 5 10-5" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                ACP SIGNAGE
+              </span>
+            </div>
+
+            {/* 4. ACRYLIC SIGNAGE */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <rect x="5" y="3" width="14" height="18" rx="2" />
+                <circle cx="8" cy="6" r="1" fill="#111827" />
+                <circle cx="16" cy="6" r="1" fill="#111827" />
+                <circle cx="8" cy="18" r="1" fill="#111827" />
+                <circle cx="16" cy="18" r="1" fill="#111827" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                ACRYLIC SIGNAGE
+              </span>
+            </div>
+
+            {/* 5. VEHICLE BRANDING */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <path d="M3 15V6a2 2 0 0 1 2-2h10l4 5v6H3z" />
+                <circle cx="7.5" cy="16.5" r="2.5" />
+                <circle cx="16.5" cy="16.5" r="2.5" />
+                <path d="M15 9h4" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                VEHICLE BRANDING
+              </span>
+            </div>
+
+            {/* 6. PVC PRINT */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                <path d="M16 3v4a2 2 0 0 0 2 2h4" />
+                <path d="M8 13h8M8 17h5" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                PVC PRINT
+              </span>
+            </div>
+
+            {/* 7. CUSTOM PRINT */}
+            <div className="px-1 flex flex-col items-center justify-center">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
+                <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a2 2 0 0 0 1.51 1.63L6 11.23V20a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8.77l1.63-.44a2 2 0 0 0 1.51-1.63l.58-3.47a2 2 0 0 0-1.34-2.23z" />
+              </svg>
+              <span
+                style={{ fontSize: '6.5px' }}
+                className="font-bold text-[#374151] uppercase tracking-tight mt-0.5 leading-none"
+              >
+                CUSTOM PRINT
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Bottom Contact Strip */}
-        <div
-          style={{ fontSize: '8px', lineHeight: '11px' }}
-          className="bg-[#064E3B] text-white px-4 py-1.5 flex items-center justify-between font-medium"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-white/90">
-              <span>🌐</span>
-              <span>{website}</span>
-            </span>
-            <span className="flex items-center gap-1 text-white/90">
-              <span>✉</span>
-              <span>{email}</span>
-            </span>
-            <span className="flex items-center gap-1 text-white/90">
-              <span>☎</span>
-              <span>{phone}</span>
-            </span>
+        {/* Bottom Dark Green Bar + Right Side Organic Wave */}
+        <div className="relative w-full">
+          {/* Bottom Right Golden & Emerald Swoop */}
+          <div className="absolute bottom-0 right-0 w-[32%] h-12 pointer-events-none overflow-hidden z-20">
+            <svg
+              viewBox="0 0 200 60"
+              fill="none"
+              preserveAspectRatio="none"
+              className="w-full h-full"
+            >
+              {/* Amber / Gold upward wave */}
+              <path
+                d="M 0 60 C 50 60 80 40 120 18 C 150 2 180 0 200 12 L 200 60 Z"
+                fill="#F59E0B"
+              />
+              {/* Emerald green wave */}
+              <path
+                d="M 20 60 C 70 60 100 42 135 22 C 165 6 185 8 200 20 L 200 60 Z"
+                fill="#10B981"
+              />
+              {/* Dark forest green base */}
+              <path
+                d="M 50 60 C 95 60 125 46 155 30 C 180 18 190 20 200 28 L 200 60 Z"
+                fill="#064E3B"
+              />
+            </svg>
           </div>
 
-          <div className="flex items-center gap-2 text-white/90">
-            <div className="flex items-center gap-1">
-              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">f</span>
-              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">x</span>
-              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">in</span>
+          {/* Contact Strip */}
+          <div
+            style={{ fontSize: '8px', lineHeight: '11px' }}
+            className="bg-[#064E3B] text-white px-4 py-1.5 flex items-center justify-between font-medium z-10 relative"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-white/90">
+                <span>🌐</span>
+                <span>{website}</span>
+              </span>
+              <span className="text-white/40">|</span>
+              <span className="flex items-center gap-1 text-white/90">
+                <span>✉</span>
+                <span>{email}</span>
+              </span>
+              <span className="text-white/40">|</span>
+              <span className="flex items-center gap-1 text-white/90">
+                <span>☎</span>
+                <span>{phone}</span>
+              </span>
             </div>
-            <span>/printflowbd</span>
+
+            <div className="flex items-center gap-2 text-white/90 pr-12">
+              <div className="flex items-center gap-1">
+                {/* Facebook icon */}
+                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white text-[#064E3B]">
+                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95C18.05 21.45 22 17.19 22 12z" />
+                  </svg>
+                </span>
+                {/* Instagram icon */}
+                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white text-[#064E3B]">
+                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                  </svg>
+                </span>
+                {/* YouTube icon */}
+                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white text-[#064E3B]">
+                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                </span>
+                {/* LinkedIn icon */}
+                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white text-[#064E3B]">
+                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </span>
+              </div>
+              <span className="tracking-wide">/printflowbd</span>
+            </div>
           </div>
         </div>
       </div>
