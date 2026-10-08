@@ -1,6 +1,6 @@
-import { CompanyUserWithProfile, RoleRow } from '@/types/tenant.types'
-import { getResponsibilityPresetsForRole, getPracticalDefaultDataScope, isUserBusinessOwner } from '@/lib/auth/rbac.client'
-import { ROLE_NAMES_BN } from './roles-matrix-tab'
+import type { CompanyUserWithProfile, RoleRow } from '../../types/tenant.types.ts'
+import { getResponsibilityPresetsForRole, getPracticalDefaultDataScope, isUserBusinessOwner } from '../../lib/auth/rbac.client.ts'
+import { ROLE_NAMES_BN } from '../../lib/auth/role-constants.ts'
 
 export interface ResolvedRole {
   name: string

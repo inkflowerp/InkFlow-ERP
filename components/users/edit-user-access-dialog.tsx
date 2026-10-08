@@ -26,8 +26,9 @@ import {
   getPracticalDefaultDataScope,
   DEFAULT_RESPONSIBILITY_MATRICES,
   isUserBusinessOwner,
+  normalizeResponsibilitySlug,
 } from '@/lib/auth/rbac.client'
-import { resolveUserRole, resolveUserDataScope } from './user-resolvers'
+import { resolveUserRole, resolveUserDataScope, resolveUserResponsibilities } from './user-resolvers'
 import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
 import { useToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
@@ -125,7 +126,8 @@ export function EditUserAccessDialog({
       const rId = matchedRole?.id || roles[0]?.id || ''
       setSelectedRoleId(rId)
 
-      let initialResps = [...(user.responsibilities || [])]
+      const resolvedResps = resolveUserResponsibilities(user, resolved.slug)
+      let initialResps = Array.from(new Set([...(user.responsibilities || []), ...resolvedResps]))
       if (userIsOwner && !initialResps.includes('business_owner')) {
         initialResps.unshift('business_owner')
       }
@@ -178,9 +180,22 @@ export function EditUserAccessDialog({
   }
 
   const toggleResponsibility = (resp: string) => {
-    setSelectedResponsibilities((prev) =>
-      prev.includes(resp) ? prev.filter((r) => r !== resp) : [...prev, resp]
-    )
+    setSelectedResponsibilities((prev) => {
+      const exists = prev.some(
+        (r) =>
+          r.toLowerCase() === resp.toLowerCase() ||
+          normalizeResponsibilitySlug(r) === normalizeResponsibilitySlug(resp)
+      )
+      if (exists) {
+        return prev.filter(
+          (r) =>
+            r.toLowerCase() !== resp.toLowerCase() &&
+            normalizeResponsibilitySlug(r) !== normalizeResponsibilitySlug(resp)
+        )
+      } else {
+        return [...prev, resp]
+      }
+    })
   }
 
   const toggleAdditionalBranch = (bId: string) => {
@@ -245,6 +260,9 @@ export function EditUserAccessDialog({
       )
 
       let finalResponsibilities = [...selectedResponsibilities]
+      if (targetRole?.slug && !finalResponsibilities.some((r) => normalizeResponsibilitySlug(r) === targetRole.slug)) {
+        finalResponsibilities.unshift(targetRole.slug)
+      }
       if (shouldBeOwner && !finalResponsibilities.includes('business_owner')) {
         finalResponsibilities.unshift('business_owner')
       }
@@ -395,7 +413,11 @@ export function EditUserAccessDialog({
 
           <div className="flex flex-wrap gap-1.5 p-3 border border-border rounded-lg bg-muted/40">
             {PRACTICAL_RESPONSIBILITIES.map((resp) => {
-              const isChecked = selectedResponsibilities.includes(resp)
+              const isChecked = selectedResponsibilities.some(
+                (r) =>
+                  r.toLowerCase() === resp.toLowerCase() ||
+                  normalizeResponsibilitySlug(r) === normalizeResponsibilitySlug(resp)
+              )
               return (
                 <button
                   key={resp}

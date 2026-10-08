@@ -122,9 +122,16 @@ export function resolveTenantRole(
     'installer',
     'general_staff',
     'staff',
-  ].includes(raw)
+  ].includes(raw) ||
+    raw.includes('operat') ||
+    raw.includes('printer') ||
+    raw.includes('design') ||
+    raw.includes('graphic') ||
+    raw.includes('sale') ||
+    raw.includes('account') ||
+    raw.includes('deliver')
 
-  if (isOwner && !isExplicitStaff) return 'business_owner'
+  if (isOwner) return 'business_owner'
 
   if (raw === 'business_owner' || raw === 'platform_owner' || raw === 'owner') {
     return 'business_owner'
@@ -132,7 +139,7 @@ export function resolveTenantRole(
   if (raw === 'branch_manager' || raw.includes('branch') || raw.includes('outlet') || raw.includes('showroom')) {
     return 'branch_manager'
   }
-  if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager') {
+  if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager' || raw.includes('sale')) {
     return 'sales_manager'
   }
   if (
@@ -195,22 +202,6 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
 
   // Assigned Staff Roles take absolute precedence over accidental owner fallback
   if (
-    rawRole === 'machine_operator' ||
-    rawRole === 'operator' ||
-    rawRole === 'technician' ||
-    rawRole.includes('operat') ||
-    rawRole.includes('printer') ||
-    rawRole.includes('press') ||
-    rawRole.includes('offset') ||
-    rawRole.includes('finisher') ||
-    rawRole.includes('machinist') ||
-    rawRole.includes('die-cut') ||
-    rawRole.includes('fabricat') ||
-    explicitResp === 'operator' ||
-    explicitResp === 'machine_operator'
-  ) return 'operator'
-
-  if (
     rawRole === 'graphic_designer' ||
     rawRole === 'designer' ||
     rawRole.includes('design') ||
@@ -223,6 +214,22 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
   ) {
     return 'designer'
   }
+
+  if (
+    rawRole === 'machine_operator' ||
+    rawRole === 'operator' ||
+    rawRole === 'technician' ||
+    rawRole.includes('operat') ||
+    rawRole.includes('printer') ||
+    (rawRole.includes('press') && !rawRole.includes('prepress') && !rawRole.includes('pre-press')) ||
+    rawRole.includes('offset') ||
+    rawRole.includes('finisher') ||
+    rawRole.includes('machinist') ||
+    rawRole.includes('die-cut') ||
+    rawRole.includes('fabricat') ||
+    explicitResp === 'operator' ||
+    explicitResp === 'machine_operator'
+  ) return 'operator'
 
   if (
     rawRole === 'branch_manager' ||

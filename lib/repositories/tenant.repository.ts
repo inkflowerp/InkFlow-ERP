@@ -9,7 +9,7 @@ import type {
 } from '../../types/tenant.types.ts'
 import type { DataScope } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
-import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES } from '../auth/rbac.client.ts'
+import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES, normalizeResponsibilitySlug } from '../auth/rbac.client.ts'
 import { parseAndNormalizePhone } from '../auth/identifier-helper.ts'
 import { PrintFlowDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
@@ -1568,15 +1568,13 @@ export class TenantRepository {
 
     // Normalize responsibilities to match RBAC matrix slugs
     const responsibilities = (rawResponsibilities.length > 0 ? rawResponsibilities : (employeeRole ? [employeeRole] : ['general_staff'])).map((r: string) => {
-      const lower = (r || '').toLowerCase().trim()
-      if (lower === 'sales' || lower === 'sales_executive') return 'sales_manager'
-      if (lower === 'operator' || lower === 'technician' || lower === 'machine_operator') return 'operator'
-      if (lower === 'designer' || lower === 'graphic_designer') return 'designer'
-      if (lower === 'accounts' || lower === 'billing') return 'accountant'
-      if (lower === 'delivery' || lower === 'installer') return 'delivery_coordinator'
-      if (lower === 'production') return 'production_manager'
-      return lower || 'general_staff'
+      return normalizeResponsibilitySlug(r)
     })
+
+    const roleSlug = roles[0]?.slug || employeeRole
+    if (roleSlug && !responsibilities.includes(normalizeResponsibilitySlug(roleSlug))) {
+      responsibilities.push(normalizeResponsibilitySlug(roleSlug))
+    }
 
     let isTenantMembershipOwner = false
     try {
@@ -1622,6 +1620,16 @@ export class TenantRepository {
         'store_manager',
         'general_staff',
         'staff',
+        'branch_manager',
+        'hr_manager',
+        'hr',
+        'printing',
+        'finishing',
+        'fabrication',
+        'material_request',
+        'installation',
+        'customers',
+        'quotations',
       ].includes(r))
     )
 

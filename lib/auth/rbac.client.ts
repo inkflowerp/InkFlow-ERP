@@ -279,6 +279,414 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
     hr: {},
     whatsapp: {},
   },
+
+  sales: {
+    customers: { view: true, create: true, edit: true, export: true },
+    quotations: { view: true, create: true, edit: true, approve: true, send: true, print: true },
+    orders: { view: true, create: true, edit: true, assign: true, print: true },
+    design: { view: true, send: true, download: true },
+    invoices: { view: true, create: true, edit: true, approve: true, cancel: true, print: true, download: true, send: true },
+    payments: { view: true, create: true, print: true },
+    production: { view: true },
+    machineries: { view: true },
+    delivery: { view: true, assign: true },
+    inventory: { view: true },
+    reports: { view: true, export: true },
+    settings: { view: true },
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true, export: true },
+    pricing: { view: true, create: true, edit: true, manage: true },
+    users: { view: true },
+    hr: {},
+    whatsapp: { view: true, send: true },
+  },
+
+  quotations: {
+    customers: { view: true, create: true },
+    quotations: { view: true, create: true, edit: true, approve: true, send: true, print: true },
+    orders: { view: true },
+    design: { view: true },
+    invoices: { view: true, print: true },
+    payments: { view: true },
+    production: {},
+    machineries: {},
+    delivery: {},
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true, create: true, edit: true },
+    users: {},
+    hr: {},
+    whatsapp: { view: true, send: true },
+  },
+
+  customers: {
+    customers: { view: true, create: true, edit: true, export: true },
+    quotations: { view: true },
+    orders: { view: true },
+    design: {},
+    invoices: { view: true },
+    payments: { view: true },
+    production: {},
+    machineries: {},
+    delivery: {},
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
+    users: {},
+    hr: {},
+    whatsapp: { view: true, send: true },
+  },
+
+  design: {
+    customers: { view: true },
+    quotations: { view: true },
+    orders: { view: true, create: true, edit: true, print: true },
+    design: { view: true, create: true, edit: true, send: true, download: true, approve: true, manage: true },
+    invoices: {},
+    payments: {},
+    production: { view: true },
+    machineries: { view: true },
+    delivery: {},
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, create: true, edit: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  production: {
+    customers: { view: true },
+    quotations: { view: true },
+    orders: { view: true, edit: true, print: true },
+    design: { view: true, download: true },
+    invoices: {},
+    payments: {},
+    production: { view: true, create: true, edit: true, assign: true, complete: true, cancel: true },
+    machineries: { view: true, create: true, edit: true, delete: true, assign: true, manage: true, export: true },
+    delivery: { view: true, assign: true },
+    inventory: { view: true, create: true, edit: true, approve: true },
+    reports: { view: true },
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true },
+    pricing: { view: true },
+    users: { view: true },
+    hr: { view: true },
+    whatsapp: { view: true, send: true },
+  },
+
+  printing: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: { view: true, download: true },
+    invoices: {},
+    payments: {},
+    production: { view: true, edit: true, complete: true, cancel: true },
+    machineries: { view: true, edit: true },
+    delivery: {},
+    inventory: { view: true },
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  machine_operation: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: { view: true, download: true },
+    invoices: {},
+    payments: {},
+    production: { view: true, edit: true, complete: true },
+    machineries: { view: true, edit: true },
+    delivery: {},
+    inventory: { view: true },
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  machineries: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true },
+    machineries: { view: true, create: true, edit: true, manage: true },
+    delivery: {},
+    inventory: { view: true },
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  finishing: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true, edit: true, complete: true },
+    machineries: { view: true },
+    delivery: { view: true },
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  fabrication: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true, edit: true, complete: true },
+    machineries: { view: true },
+    delivery: { view: true },
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  inventory: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true },
+    machineries: { view: true },
+    delivery: { view: true },
+    inventory: { view: true, create: true, edit: true, approve: true },
+    reports: { view: true },
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true, create: true, edit: true },
+    pricing: { view: true },
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  material_request: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true },
+    machineries: {},
+    delivery: {},
+    inventory: { view: true, create: true },
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: {},
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  accounts: {
+    customers: { view: true, edit: true },
+    quotations: { view: true },
+    orders: { view: true },
+    design: {},
+    invoices: { view: true, create: true, edit: true, cancel: true, print: true, download: true, send: true },
+    payments: { view: true, create: true, edit: true, delete: true, print: true },
+    production: {},
+    machineries: { view: true },
+    delivery: { view: true },
+    inventory: { view: true },
+    reports: { view: true, export: true },
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
+    users: {},
+    hr: { view: true, create: true, edit: true, approve: true },
+    whatsapp: { view: true, send: true },
+  },
+
+  delivery: {
+    customers: { view: true },
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: { view: true, print: true },
+    payments: {},
+    production: { view: true },
+    machineries: { view: true },
+    delivery: { view: true, create: true, edit: true, assign: true, complete: true, cancel: true },
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: { view: true, send: true },
+  },
+
+  installation: {
+    customers: { view: true },
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: { view: true },
+    machineries: {},
+    delivery: { view: true, edit: true, complete: true },
+    inventory: {},
+    reports: {},
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: {},
+    pricing: {},
+    users: {},
+    hr: {},
+    whatsapp: {},
+  },
+
+  hr_manager: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: {},
+    machineries: {},
+    delivery: {},
+    inventory: {},
+    reports: { view: true },
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: {},
+    pricing: {},
+    users: { view: true },
+    hr: { view: true, create: true, edit: true, approve: true, manage: true },
+    whatsapp: { view: true, send: true },
+  },
+
+  hr: {
+    customers: {},
+    quotations: {},
+    orders: { view: true },
+    design: {},
+    invoices: {},
+    payments: {},
+    production: {},
+    machineries: {},
+    delivery: {},
+    inventory: {},
+    reports: { view: true },
+    settings: {},
+    branches: {},
+    tasks: { view: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: {},
+    pricing: {},
+    users: { view: true },
+    hr: { view: true, create: true, edit: true, approve: true, manage: true },
+    whatsapp: { view: true, send: true },
+  },
 }
 
 export const DEFAULT_ROLE_MATRICES: Record<PrimaryRole, RolePermissionMatrix> = {
@@ -467,57 +875,127 @@ export function extractResponsibilities(user: UserPermissionContext | string): R
 }
 
 export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
-  const map: Record<string, ResponsibilitySlug> = {
+  const s = (slug || '').toLowerCase().trim().replace(/[\s-]+/g, '_')
+
+  const exactMap: Record<string, ResponsibilitySlug> = {
+    // Owner
     owner: 'business_owner',
     business_owner: 'business_owner',
     admin: 'business_owner',
+    platform_owner: 'business_owner',
+
+    // Branch
     branch_manager: 'branch_manager',
     branch_incharge: 'branch_manager',
     outlet_manager: 'branch_manager',
     showroom_manager: 'branch_manager',
-    manager: 'sales_manager',
+
+    // Sales & Customers
     sales: 'sales_manager',
     sales_manager: 'sales_manager',
+    sales_rep: 'sales_manager',
+    sales_representative: 'sales_manager',
+    sales_executive: 'sales_manager',
+    counter_sales: 'sales_manager',
+    quotation: 'quotations',
+    quotations: 'quotations',
+    quote: 'quotations',
+    customer: 'customers',
+    customers: 'customers',
+    customer_management: 'customers',
+    crm: 'customers',
+
+    // Design
     designer: 'designer',
     graphic_designer: 'designer',
+    design: 'designer',
+    prepress: 'designer',
+    pre_press: 'designer',
+    artwork: 'designer',
+
+    // Production & Machine
     production: 'production_manager',
     production_manager: 'production_manager',
+    production_floor_incharge: 'production_manager',
+    supervisor: 'production_manager',
+    manager: 'production_manager',
     operator: 'operator',
     machine_operator: 'operator',
+    machine_operation: 'operator',
     print_operator: 'operator',
     pressman: 'operator',
     press_operator: 'operator',
     offset_printer: 'operator',
     digital_operator: 'operator',
-    finishing_operator: 'operator',
+    printing: 'printing',
+    finishing: 'finishing',
+    finishing_operator: 'finishing',
+    finishing_fabrication: 'operator',
+    finishing_and_fabrication: 'operator',
+    fabrication: 'fabrication',
+
+    // Inventory & Material
+    store: 'store_manager',
     store_manager: 'store_manager',
+    store_keeper: 'store_manager',
+    store_inventory: 'store_manager',
+    store_and_inventory: 'store_manager',
+    inventory: 'store_manager',
     inventory_manager: 'store_manager',
+    material_request: 'material_request',
+    requisition: 'material_request',
+
+    // Accounts
     accountant: 'accountant',
+    accounts: 'accountant',
+    accounts_cashier: 'accountant',
+    accounts_and_cashier: 'accountant',
+    billing: 'accountant',
     finance: 'accountant',
-    installer: 'delivery_coordinator',
+    cashier: 'accountant',
+
+    // Delivery & Installation
     delivery: 'delivery_coordinator',
     delivery_coordinator: 'delivery_coordinator',
+    delivery_man: 'delivery_coordinator',
+    installer: 'delivery_coordinator',
+    installation: 'installation',
+    courier: 'delivery_coordinator',
+    field_staff: 'delivery_coordinator',
+
+    // HR & Workforce
+    hr: 'hr_manager',
+    hr_manager: 'hr_manager',
+    workforce: 'hr_manager',
+    payroll: 'hr_manager',
+
+    // General Staff
     general_staff: 'general_staff',
     staff: 'general_staff',
   }
-  const s = (slug || '').toLowerCase().trim()
-  if (map[s]) return map[s]
+  if (exactMap[s]) return exactMap[s]
 
   // Substring pattern matching for descriptive titles (e.g. "Senior Graphic Designer & Prepress", "Branch Manager")
   if (s.includes('branch') || s.includes('outlet') || s.includes('showroom')) {
     return 'branch_manager'
   }
-  if (s.includes('design') || s.includes('graphic') || s.includes('prepress') || s.includes('pre-press') || s.includes('artwork')) {
+  if (s.includes('design') || s.includes('graphic') || s.includes('prepress') || s.includes('pre_press') || s.includes('artwork')) {
     return 'designer'
   }
-  if (s.includes('sale') || s.includes('marketing') || s.includes('crm')) {
+  if (s.includes('quote') || s.includes('quotat') || s.includes('estimate')) {
+    return 'quotations'
+  }
+  if (s.includes('custom') || s.includes('client')) {
+    return 'customers'
+  }
+  if (s.includes('sale') || s.includes('marketing') || s.includes('counter')) {
     return 'sales_manager'
   }
   if (s.includes('account') || s.includes('bill') || s.includes('finance') || s.includes('cashier')) {
     return 'accountant'
   }
-  if (s.includes('product') || s.includes('factory') || s.includes('supervisor')) {
-    return 'production_manager'
+  if (s.includes('hr') || s.includes('payroll') || s.includes('human_resource')) {
+    return 'hr_manager'
   }
   if (s.includes('deliver') || s.includes('install') || s.includes('courier')) {
     return 'delivery_coordinator'
@@ -525,17 +1003,24 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
   if (s.includes('store') || s.includes('inventor') || s.includes('stock')) {
     return 'store_manager'
   }
+  if (s.includes('requisit') || s.includes('material_req')) {
+    return 'material_request'
+  }
+  if (s.includes('product') || s.includes('factory') || s.includes('supervisor') || s.includes('incharge')) {
+    return 'production_manager'
+  }
   if (
     s.includes('operat') ||
     s.includes('technician') ||
     s.includes('pressman') ||
     s.includes('machinist') ||
     s.includes('printer') ||
-    s.includes('printmaster') ||
+    s.includes('print') ||
     s.includes('press') ||
     s.includes('offset') ||
     s.includes('finisher') ||
-    s.includes('die-cut') ||
+    s.includes('finish') ||
+    s.includes('die_cut') ||
     s.includes('binder') ||
     s.includes('fabricat')
   ) {

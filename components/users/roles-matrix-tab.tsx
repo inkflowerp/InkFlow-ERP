@@ -44,6 +44,9 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
+import { ROLE_NAMES_BN, ROLE_DESCRIPTIONS_BN } from '@/lib/auth/role-constants'
+
+export { ROLE_NAMES_BN, ROLE_DESCRIPTIONS_BN }
 
 
 interface RoleItem {
@@ -73,55 +76,6 @@ const HIGH_RISK_PERMISSIONS = new Set([
 ])
 
 type ModuleCategory = 'all' | 'sales' | 'production' | 'inventory' | 'hr' | 'system'
-
-
-export const ROLE_NAMES_BN: Record<string, string> = {
-  business_owner: 'ব্যবসা স্বত্বাধিকারী',
-  sales_manager: 'সেলস ম্যানেজার',
-  designer: 'গ্রাফিক ডিজাইনার',
-  production_manager: 'প্রোডাকশন ম্যানেজার',
-  operator: 'মেশিন অপারেটর',
-  store_manager: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
-  accountant: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
-  delivery_coordinator: 'ডেলিভারি ও চালান সমন্বয়ক',
-  general_staff: 'সাধারণ কর্মী',
-  Staff: 'সাধারণ কর্মী',
-  staff: 'সাধারণ কর্মী',
-  branch_manager: 'শাখা ব্যবস্থাপক',
-  manager: 'ব্যবস্থাপক',
-  'Business Owner': 'ব্যবসা স্বত্বাধিকারী',
-  'Sales Manager': 'সেলস ম্যানেজার',
-  'Graphic Designer': 'গ্রাফিক ডিজাইনার',
-  'Production Manager': 'প্রোডাকশন ম্যানেজার',
-  'Machine Operator': 'মেশিন অপারেটর',
-  'Store & Inventory Manager': 'স্টোর ও ইনভেন্টরি ম্যানেজার',
-  'Accountant & Billing Officer': 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
-  'Delivery & Challan Coordinator': 'ডেলিভারি ও চালান সমন্বয়ক',
-  'General Staff': 'সাধারণ কর্মী',
-  'Branch Manager': 'শাখা ব্যবস্থাপক',
-  'Manager': 'ব্যবস্থাপক',
-}
-
-export const ROLE_DESCRIPTIONS_BN: Record<string, string> = {
-  business_owner: 'সার্বজনীন প্রশাসনিক ক্ষমতা এবং প্রাতিষ্ঠানিক পরিচালনা।',
-  sales_manager: 'কোটেশন, মূল্য নির্ধারণ, গ্রাহক সম্পর্ক, ইনভয়েসিং এবং অর্ডার ব্যবস্থাপনা।',
-  designer: 'আর্টওয়ার্ক প্রুফ, গ্রাহক অনুমোদন, প্রি-প্রেস যাচাই এবং ডিজাইন সংশোধন।',
-  production_manager: 'কারখানা মেশিন কিউ, কাঁচামাল বরাদ্দ, কাজের ধাপ ও মান নিয়ন্ত্রণ।',
-  operator: 'প্রিন্ট প্রেস পরিচালনা, ফিনিশিং কাজ, টাস্ক সম্পন্নকরণ এবং মেশিন লগ।',
-  store_manager: 'কাঁচামাল রোল, কালি, বোর্ড, স্টোর লেজার এবং উপাদান সরবরাহ।',
-  accountant: 'ইনভয়েস, রসিদ, পেমেন্ট রেকর্ড, ব্যাংকিং এবং আর্থিক রিপোর্ট।',
-  delivery_coordinator: 'ডেলিভারি চালান, সাইট ইনস্টলেশন অনুমোদন এবং সরবরাহ রুট সমন্বয়।',
-  general_staff: 'মৌলিক অপারেশনাল অ্যাক্সেসসহ সাধারণ ওয়ার্কস্পেস সদস্য।',
-  'Sales Manager': 'কোটেশন, মূল্য নির্ধারণ, গ্রাহক সম্পর্ক, ইনভয়েসিং এবং অর্ডার ব্যবস্থাপনা।',
-  'Business Owner': 'সার্বজনীন প্রশাসনিক ক্ষমতা এবং প্রাতিষ্ঠানিক পরিচালনা।',
-  'Graphic Designer': 'আর্টওয়ার্ক প্রুফ, গ্রাহক অনুমোদন, প্রি-প্রেস যাচাই এবং ডিজাইন সংশোধন।',
-  'Production Manager': 'কারখানা মেশিন কিউ, কাঁচামাল বরাদ্দ, কাজের ধাপ ও মান নিয়ন্ত্রণ।',
-  'Machine Operator': 'প্রিন্ট প্রেস পরিচালনা, ফিনিশিং কাজ, টাস্ক সম্পন্নকরণ এবং মেশিন লগ।',
-  'Store & Inventory Manager': 'কাঁচামাল রোল, কালি, বোর্ড, স্টোর লেজার এবং উপাদান সরবরাহ।',
-  'Accountant & Billing Officer': 'ইনভয়েস, রসিদ, পেমেন্ট রেকর্ড, ব্যাংকিং এবং আর্থিক রিপোর্ট।',
-  'Delivery & Challan Coordinator': 'ডেলিভারি চালান, সাইট ইনস্টলেশন অনুমোদন এবং সরবরাহ রুট সমন্বয়।',
-  'General Staff': 'মৌলিক অপারেশনাল অ্যাক্সেসসহ সাধারণ ওয়ার্কস্পেস সদস্য।',
-}
 
 const MODULE_CATEGORIES: Record<ModuleCategory, { labelEn: string; labelBn: string; modules: PermissionModule[] }> = {
  all: {
