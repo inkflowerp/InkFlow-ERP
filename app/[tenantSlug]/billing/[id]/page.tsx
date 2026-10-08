@@ -49,6 +49,7 @@ import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { InvoicePdfDocument } from '@/components/pdf/documents/invoice-pdf-document'
 import { useDocumentTemplate } from '@/hooks/use-document-template'
 import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
+import { LiveA4Preview } from '@/components/settings/document-template/print-a4-preview'
 
 export default function InvoiceCockpitPage() {
  const params = useParams()
@@ -59,6 +60,12 @@ export default function InvoiceCockpitPage() {
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
  const companyId = company?.id || 'comp-default'
  const { template: docTemplate } = useDocumentTemplate(slug, 'invoice')
+
+ const effectiveCompanyName = company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Vision Sign')
+ const effectiveAddress = company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+ const effectivePhone = company?.phone || '+880 1712 345678'
+ const effectiveEmail = company?.email || (company?.slug ? `billing@${company.slug}.com` : 'info@printflow.bd')
+ const effectiveWebsite = company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
 
  const [isMounted, setIsMounted] = useState(false)
  const [invoice, setInvoice] = useState<InvoiceRecord | null>(null)
@@ -290,14 +297,14 @@ export default function InvoiceCockpitPage() {
                 <InvoicePdfDocument
                   invoice={invoice}
                   template={docTemplate}
- company={{
- name: company?.name,
- tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Packaging Solutions',
- address: company?.address,
- phone: company?.phone,
- email: company?.email,
- website: company?.website,
- binNumber: (company as any)?.bin_no || (company as any)?.bin_number,
+                  company={{
+                    name: effectiveCompanyName,
+                    tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Packaging Solutions',
+                    address: effectiveAddress,
+                    phone: effectivePhone,
+                    email: effectiveEmail,
+                    website: effectiveWebsite,
+                    binNumber: (company as any)?.bin_no || (company as any)?.bin_number,
                   }}
                 />
               }
@@ -368,47 +375,63 @@ export default function InvoiceCockpitPage() {
       </div>
 
       {/* =========================================================================
- DOCUMENT PRESENTATION CONTAINER (Printable)
+          DOCUMENT PRESENTATION CONTAINER (Printable)
          ========================================================================= */}
-      <div
-        id="invoice-print-area"
-        data-print-isolate="true"
-        data-print-sheet="true"
-        style={
-          docTemplate?.use_letterhead
-            ? {
-                paddingTop: `${docTemplate.padding_top || 42}mm`,
-                paddingRight: `${docTemplate.padding_right || 10}mm`,
-                paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
-                paddingLeft: `${docTemplate.padding_left || 10}mm`,
-              }
-            : undefined
-        }
-        className="relative bg-card text-foreground print:bg-white print:text-foreground p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full print:max-w-none overflow-hidden"
-      >
-        {docTemplate?.use_letterhead && (
-          docTemplate.letterhead_file?.url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={docTemplate.letterhead_file.url}
-              alt="Letterhead"
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
-            />
-          ) : (
-            <PrintLetterheadArt
-              documentTypeTitleEn="TAX INVOICE"
-              documentTypeTitleBn="চালান বিল"
-              companyName={company?.name || 'PrintFlow'}
-              companyLogoUrl={company?.logo_url || undefined}
-              phone={company?.phone || '+880 1712 345678'}
-              email={company?.email || 'info@printflow.bd'}
-              website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
-              address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
-              mode={docTemplate.letterhead_mode}
-            />
-          )
-        )}
-        <div className="relative z-10 space-y-6">
+      {docMode === 'sales_invoice' ? (
+        <div id="invoice-print-area" className="w-full flex justify-center">
+          <LiveA4Preview
+            settings={docTemplate}
+            invoiceData={invoice}
+            showControls={false}
+            companyName={effectiveCompanyName}
+            companyAddress={effectiveAddress}
+            companyPhone={effectivePhone}
+            companyEmail={effectiveEmail}
+            companyWebsite={effectiveWebsite}
+            companyLogoUrl={company?.logo_url || undefined}
+            onPrintPdf={() => window.print()}
+          />
+        </div>
+      ) : (
+        <div
+          id="invoice-print-area"
+          data-print-isolate="true"
+          data-print-sheet="true"
+          style={
+            docTemplate?.use_letterhead
+              ? {
+                  paddingTop: `${docTemplate.padding_top || 42}mm`,
+                  paddingRight: `${docTemplate.padding_right || 10}mm`,
+                  paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+                  paddingLeft: `${docTemplate.padding_left || 10}mm`,
+                }
+              : undefined
+          }
+          className="relative bg-card text-foreground print:bg-white print:text-foreground p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full print:max-w-none overflow-hidden"
+        >
+          {docTemplate?.use_letterhead && (
+            docTemplate.letterhead_file?.url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={docTemplate.letterhead_file.url}
+                alt="Letterhead"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
+              />
+            ) : (
+              <PrintLetterheadArt
+                documentTypeTitleEn="TAX INVOICE"
+                documentTypeTitleBn="চালান বিল"
+                companyName={effectiveCompanyName}
+                companyLogoUrl={company?.logo_url || undefined}
+                phone={effectivePhone}
+                email={effectiveEmail}
+                website={effectiveWebsite}
+                address={effectiveAddress}
+                mode={docTemplate.letterhead_mode}
+              />
+            )
+          )}
+          <div className="relative z-10 space-y-6">
         {/* MODE 1: NBR MUSHAK 6.3 VAT TAX INVOICE (মূসক-৬.৩ কর চালানপত্র) */}
         {docMode === 'vat_invoice' && (
           <div className="space-y-6 text-xs text-foreground print:text-foreground">
@@ -518,265 +541,6 @@ export default function InvoiceCockpitPage() {
           </div>
         )}
 
-        {/* MODE 2: COMMERCIAL SALES INVOICE (কমার্শিয়াল চালান ও বিল) */}
-        {docMode === 'sales_invoice' && (
-          <div className="space-y-6 text-xs text-foreground">
-            {/* Header */}
-            <div className="flex justify-between items-start pb-6 border-b border-border">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-base">
- P
-                  </div>
-                  <h1 className="text-xl font-black tracking-tight">{company?.name || 'PrintFlow Enterprise'}</h1>
-                </div>
-                {(company?.address || company?.phone) && (
-                  <p className="text-muted-foreground">
-                    {company?.address || ''}
-                    {company?.address && company?.phone ? ' • ' : ''}
-                    {company?.phone ? `Phone: ${company.phone}` : ''}
-                  </p>
-                )}
-                {company?.email && <p className="text-muted-foreground">Email: {company.email}</p>}
-                {company?.bin_no && <p className="text-muted-foreground tabular-nums text-xs">BIN: <strong>{company.bin_no}</strong></p>}
-              </div>
-              <div className="text-right space-y-1">
-                <div className="text-2xl font-black tabular-nums text-primary text-primary">
-                  {tBilingual('INVOICE', 'চালান')}
-                </div>
-                <div className="tabular-nums font-bold text-sm text-foreground">
-                  {invoice.invoice_number}
-                </div>
-                <div className="text-muted-foreground">
-                  {tBilingual('Date:', 'তারিখ:')} <strong className="text-foreground tabular-nums">{invoice.invoice_date}</strong>
-                </div>
-                <div className="text-destructive font-bold">
- Due Date: <span className="tabular-nums">{invoice.due_date}</span>
-                </div>
-                {invoice.reference_no && (
-                  <div className="text-muted-foreground text-xs">
- Ref / PO No: <strong className="tabular-nums text-foreground">{invoice.reference_no}</strong>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Bill To & Dispatch Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted border border-border">
-              <div>
-                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
- Billed To / গ্রাহকের বিবরণ:
-                </span>
-                <div className="font-bold text-sm text-foreground">{invoice.customer_name}</div>
-                {invoice.customer_name_bn && <div className="text-xs text-muted-foreground">{invoice.customer_name_bn}</div>}
-                {invoice.customer_company && <div className="text-xs text-muted-foreground font-semibold">{invoice.customer_company}</div>}
-                <div className="text-muted-foreground tabular-nums mt-0.5">
-                  {invoice.customer_phone ? (
-                    <a
- href={`tel:${invoice.customer_phone}`}
- className="text-primary text-primary hover:underline inline-flex items-center gap-1 font-bold"title="Call Customer">
-                      <span>📞</span>
-                      <span>{invoice.customer_phone}</span>
-                    </a>
-                  ) : (
-                    <span>📞 No phone</span>
-                  )}
-                </div>
-                {invoice.customer_address && <div className="text-muted-foreground mt-0.5">📍 {invoice.customer_address}</div>}
-                {invoice.customer_bin && <div className="text-muted-foreground tabular-nums text-xs mt-0.5">BIN: {invoice.customer_bin}</div>}
-              </div>
-
-              <div className="text-left sm:text-right space-y-1">
-                <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
- Fulfillment & Delivery:
-                </span>
-                <div className="tabular-nums font-bold text-primary">
-                  {invoice.order_number ? `Order #${invoice.order_number}` : 'Direct Contract'}
-                </div>
-                {invoice.delivery_date && (
-                  <div className="text-muted-foreground text-xs">
- Delivery Date: <strong>{invoice.delivery_date}</strong>
-                  </div>
-                )}
-                {invoice.delivery_method && (
-                  <div className="text-muted-foreground text-xs">
- Method: <strong className="capitalize">{invoice.delivery_method.replace('_', ' ')}</strong>
-                  </div>
-                )}
-                {isOverdue && (
-                  <div className="text-xs font-bold text-destructive bg-danger-surface bg-danger-surface px-2 py-0.5 rounded inline-block">
-                    ⚠️ {daysOverdue} Days Overdue
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Items Table with Domain Specifications */}
-            <table className="w-full text-left">
-              <thead className="bg-muted font-bold text-xs text-muted-foreground border-b">
-                <tr>
-                  <th className="py-2.5 px-3">SL</th>
-                  <th className="py-2.5 px-3">Item Description & Specifications</th>
-                  <th className="py-2.5 px-3 text-center">Dimensions</th>
-                  <th className="py-2.5 px-3 text-center">Qty</th>
-                  <th className="py-2.5 px-3 text-right">Unit Rate</th>
-                  <th className="py-2.5 px-3 text-right">Total (৳)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border dark:divide-border">
-                {invoice.items.map((item: any, idx: number) => (
-                  <tr key={item.id || idx} className="hover:bg-muted dark:hover:bg-muted/30">
-                    <td className="py-3 px-3 text-muted-foreground tabular-nums text-center">{idx + 1}</td>
-                    <td className="py-3 px-3 space-y-1">
-                      <div className="font-bold text-foreground">
-                        {item.item_name || item.item_description}
-                      </div>
-                      {docTemplate?.item_display_mode !== 'compact' && item.description_bn && (
-                        <div className="text-xs text-muted-foreground">{item.description_bn}</div>
-                      )}
-                      {docTemplate?.item_display_mode !== 'compact' && item.material_spec && (
-                        <div className="text-xs text-muted-foreground font-medium">
-                          • Substrate: {item.material_spec}
-                        </div>
-                      )}
-
-                      {/* Offset Specs */}
-                      {docTemplate?.item_display_mode !== 'compact' && item.offset_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
-                          {item.offset_specs.paper_gsm && <span className="bg-muted px-1.5 py-0.5 rounded">GSM: {item.offset_specs.paper_gsm}</span>}
-                          {item.offset_specs.color_mode && <span className="bg-muted px-1.5 py-0.5 rounded">Color: {item.offset_specs.color_mode}</span>}
-                          {item.offset_specs.binding_type && <span className="bg-muted px-1.5 py-0.5 rounded">Binding: {item.offset_specs.binding_type}</span>}
-                          {item.offset_specs.numbering_range && <span className="bg-muted px-1.5 py-0.5 rounded">No: {item.offset_specs.numbering_range}</span>}
-                        </div>
-                      )}
-
-                      {/* 3D Signage Specs */}
-                      {docTemplate?.item_display_mode !== 'compact' && item.signage_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
-                          {item.signage_specs.letter_height_inch && <span className="bg-muted px-1.5 py-0.5 rounded">Height: {item.signage_specs.letter_height_inch}&quot;</span>}
-                          {item.signage_specs.led_module_type && <span className="bg-muted px-1.5 py-0.5 rounded">LED: {item.signage_specs.led_module_type}</span>}
-                          {item.signage_specs.frame_structure && <span className="bg-muted px-1.5 py-0.5 rounded">Frame: {item.signage_specs.frame_structure}</span>}
-                        </div>
-                      )}
-
-                      {item.finishing && item.finishing !== 'None' && (
-                        <div className="text-xs text-primary text-primary font-semibold">
-                          ✨ Finishing: {item.finishing}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums text-muted-foreground">{item.dimensions_spec || '—'}</td>
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-foreground">
-                      {item.quantity} {item.unit}
-                    </td>
-                    <td className="py-3 px-3 text-right tabular-nums">{formatBDT(item.unit_price)}</td>
-                    <td className="py-3 px-3 text-right tabular-nums font-bold text-foreground">
-                      {formatBDT(item.total_price)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* In Words & Financial Settlement HUD */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 pt-4 border-t border-border items-start">
-              {/* Left Column: In Words & Remittance Accounts */}
-              <div className="sm:col-span-7 space-y-3">
-                <div className="p-3 bg-muted rounded-xl border border-border text-xs">
-                  <span className="text-xs uppercase font-bold text-muted-foreground block mb-0.5">টাকায় ও কথায় (In Words):</span>
-                  <div className="font-bold text-foreground italic">
-                    {numberToWordsBDT(invoice.grand_total)}
-                  </div>
-                </div>
-
-                {/* Company Payment Remittance Details */}
-                <div className="p-3 bg-primary/10/50 bg-primary/10 rounded-xl border border-primary/20 border-border/50 space-y-1.5 text-xs">
-                  <div className="font-bold text-primary text-primary flex items-center gap-1.5">
-                    <CreditCard className="h-3.5 w-3.5 text-primary"/>
-                    <span>{tBilingual('Official Payment:', 'মূল্য পরিশোধের তথ্য:')}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground tabular-nums">
-                    <div>
-                      <span>bKash Merchant:</span> <strong>{company?.phone || '01700-000000'}</strong> (Make Payment)
-                    </div>
-                    <div>
-                      <span>Nagad Wallet:</span> <strong>{company?.phone || '01800-000000'}</strong> (Send Money/Merchant)
-                    </div>
-                    <div className="col-span-2">
-                      <span>Bank Transfer:</span> <strong>Dutch-Bangla Bank / City Bank</strong> (A/C: {company?.name || 'PrintFlow Enterprise'})
-                    </div>
-                  </div>
-                  {invoice.payment_method_note && (
-                    <div className="text-xs text-primary text-primary pt-1 border-t border-primary/20/60 font-medium">
- Note: {invoice.payment_method_note}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column: Financial Totals */}
-              <div className="sm:col-span-5 space-y-1.5 tabular-nums text-xs">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>{tBilingual('Subtotal:', 'মোট বিল:')}</span>
-                  <span>{formatBDT(invoice.subtotal)}</span>
-                </div>
-                {invoice.discount_amount > 0 && (
-                  <div className="flex justify-between text-warning font-medium">
-                    <span>{tBilingual('Discount:', 'ছাড়:')}</span>
-                    <span>- {formatBDT(invoice.discount_amount)}</span>
-                  </div>
-                )}
-                {invoice.vat_amount > 0 && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>{tBilingual(`NBR VAT (${invoice.vat_percentage}%):`, `এনবিআর ভ্যাট (${invoice.vat_percentage}%):`)}</span>
-                    <span>+ {formatBDT(invoice.vat_amount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-sm text-foreground pt-1.5 border-t">
-                  <span>{tBilingual('Grand Total:', 'সর্বমোট বিল:')}</span>
-                  <span>{formatBDT(invoice.grand_total)}</span>
-                </div>
-                <div className="flex justify-between text-primary text-primary font-bold">
-                  <span>{tBilingual('Advance / Paid:', 'অগ্রিম পরিশোধ:')}</span>
-                  <span>{formatBDT(invoice.paid_amount)}</span>
-                </div>
-                {invoice.write_off_amount > 0 && (
-                  <div className="flex justify-between text-muted-foreground line-through">
-                    <span>{tBilingual('Waiver / Adjustment:', 'ছাড় / সমন্বয়:')}</span>
-                    <span>{formatBDT(invoice.write_off_amount)}</span>
-                  </div>
-                )}
-                <div className={cn(
-                  'flex justify-between font-black text-sm pt-1.5 border-t',
- invoice.due_amount > 0 ? 'text-destructive text-destructive' : 'text-success text-success'
-                )}>
-                  <span>{tBilingual('Due Balance:', 'বকেয়া বিল:')}</span>
-                  <span>{formatBDT(invoice.due_amount)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Terms & Signatures */}
-            {(invoice.terms_and_conditions || docTemplate?.terms_and_conditions) && (
-              <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
-                <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions || docTemplate?.terms_and_conditions}
-              </div>
-            )}
-
-            <div className="pt-10 flex justify-between items-end text-xs text-muted-foreground">
-              <div className="text-center">
-                <div className="border-t border-input w-44 pt-1 font-semibold">
-                  {tBilingual('Customer Signature', 'গ্রাহকের স্বাক্ষর')}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="border-t border-input w-44 pt-1 font-bold text-foreground">
- Authorized Signatory & Seal
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* MODE 3: OFFICIAL PAYMENT MONEY RECEIPT (মানি রিসিট - MR) */}
         {docMode === 'payment_receipt' && (
@@ -843,6 +607,7 @@ export default function InvoiceCockpitPage() {
         )}
         </div>
       </div>
+      )}
 
       {/* Non-Print: Payment Allocations & Non-Destructive Write-Off Logs */}
       <div className="print:hidden grid grid-cols-1 md:grid-cols-2 gap-6">

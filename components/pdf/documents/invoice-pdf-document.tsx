@@ -231,7 +231,7 @@ const InvoicePdfContent = ({ invoice, company, template }: { invoice: InvoiceRec
                       <Text variant="xs"weight="bold"noMargin>
                         {item.item_name || item.item_description ||"Printing Work"}
                       </Text>
-                      {specs ? (
+                      {specs && template?.item_display_mode !== 'compact' ? (
                         <Text variant="xs"color="mutedForeground"noMargin style={{ marginTop: 2, fontSize: 8 }}>
                           {specs}
                         </Text>

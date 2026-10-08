@@ -30,6 +30,9 @@ import {
   DEFAULT_TEMPLATE_SETTINGS,
 } from '@/types/document-template.types'
 import { PrintLetterheadArt } from './print-letterhead-art'
+import { QuotationRecord } from '@/types/quotation.types'
+import { InvoiceRecord } from '@/types/billing.types'
+import { formatBDT } from '@/lib/formatters'
 
 interface LiveA4PreviewProps {
   settings: DocumentTemplateSettings
@@ -44,6 +47,9 @@ interface LiveA4PreviewProps {
   onPreviewPdf?: () => void
   onPrintPdf?: () => void
   onDownloadPdf?: () => void
+  quotationData?: QuotationRecord | null
+  invoiceData?: InvoiceRecord | null
+  showControls?: boolean
 }
 
 export function LiveA4Preview({
@@ -59,6 +65,9 @@ export function LiveA4Preview({
   onPreviewPdf,
   onPrintPdf,
   onDownloadPdf,
+  quotationData,
+  invoiceData,
+  showControls = true,
 }: LiveA4PreviewProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(100)
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -73,10 +82,32 @@ export function LiveA4Preview({
   const paddingRightPct = Math.min(Math.max((settings.padding_right / 210) * 100, 4), 20)
 
   // Determine current active document key
-  const effectiveDocType = settings.document_type || activeDocType || 'quotation'
+  const effectiveDocType: DocumentTypeKey = quotationData
+    ? 'quotation'
+    : invoiceData
+    ? 'invoice'
+    : settings.document_type || activeDocType || 'quotation'
 
   // Dynamic document headers based on effectiveDocType
   const getDocTypeHeader = () => {
+    if (quotationData) {
+      return {
+        en: 'QUOTATION',
+        bn: 'কোটেশন',
+        code: quotationData.quotation_number,
+        title: 'Quotation',
+        recipientLabel: 'Bill To',
+      }
+    }
+    if (invoiceData) {
+      return {
+        en: 'TAX INVOICE',
+        bn: 'চালান বিল',
+        code: invoiceData.invoice_number,
+        title: 'Invoice',
+        recipientLabel: 'Bill To',
+      }
+    }
     switch (effectiveDocType) {
       case 'invoice':
         return { en: 'TAX INVOICE', bn: 'চালান বিল', code: 'INV-2025-1001', title: 'Invoice', recipientLabel: 'Bill To' }
@@ -139,6 +170,101 @@ export function LiveA4Preview({
 
   const sampleItems = getDynamicSampleItems()
 
+  // Resolve items from real records or fallback sample
+  const itemsToRender = quotationData?.items?.length
+    ? quotationData.items.map((item, idx) => ({
+        id: idx + 1,
+        title: item.description || 'Printing Item',
+        subtext: item.material_spec || item.finishing || '',
+        specs:
+          item.dimensions_spec ||
+          (item.width && item.height
+            ? `${item.width} x ${item.height} ${item.dimension_unit || 'ft'}`
+            : '-'),
+        qty: `${item.quantity} ${item.unit || 'pcs'}`,
+        unitPrice: formatBDT(item.unit_rate || item.unit_price || 0).replace('৳', '').trim(),
+        total: formatBDT(item.item_total || item.quantity * (item.unit_rate || item.unit_price || 0)).replace('৳', '').trim(),
+      }))
+    : invoiceData?.items?.length
+    ? invoiceData.items.map((item: any, idx) => ({
+        id: idx + 1,
+        title: item.item_name || item.item_description || 'Invoiced Work',
+        subtext: item.material_spec || item.description_bn || '',
+        specs:
+          item.dimensions_spec ||
+          (item.width && item.height
+            ? `${item.width} x ${item.height} ${item.dimension_unit || 'ft'}`
+            : '-'),
+        qty: `${item.quantity} ${item.unit || 'pcs'}`,
+        unitPrice: formatBDT(item.unit_price || item.unit_rate || 0).replace('৳', '').trim(),
+        total: formatBDT(item.total_price || item.item_total || item.quantity * (item.unit_price || 0)).replace('৳', '').trim(),
+      }))
+    : sampleItems
+
+  // Resolve customer card details
+  const recipientName = quotationData
+    ? quotationData.customer_name
+    : invoiceData
+    ? invoiceData.customer_name
+    : effectiveDocType === 'purchase_order'
+    ? 'Alstrong Composites BD'
+    : 'ABC Enterprises Ltd.'
+
+  const recipientSubtext = quotationData
+    ? (quotationData.customer_company ? `Attn: ${quotationData.customer_name} (${quotationData.customer_company})` : `Attn: ${quotationData.customer_name}`)
+    : invoiceData
+    ? (invoiceData.customer_company ? `Attn: ${invoiceData.customer_name} (${invoiceData.customer_company})` : `Attn: ${invoiceData.customer_name}`)
+    : effectiveDocType === 'purchase_order'
+    ? 'Attn: Mr. Mominul Islam (Sales Dept)'
+    : 'Attn: Mr. Rahim Uddin'
+
+  const recipientId = quotationData
+    ? (quotationData.customer_id ? `Customer ID: ${quotationData.customer_id}` : '')
+    : invoiceData
+    ? (invoiceData.customer_id ? `Customer ID: ${invoiceData.customer_id}` : '')
+    : effectiveDocType === 'purchase_order'
+    ? 'Supplier ID: SUP-0042'
+    : 'Customer ID: CUS-0001'
+
+  const recipientAddress = quotationData
+    ? (quotationData.customer_address || '')
+    : invoiceData
+    ? (invoiceData.customer_address || '')
+    : '123 Business Avenue, Gulshan, Dhaka-1212'
+
+  const recipientContact = quotationData
+    ? `Phone: ${quotationData.customer_phone || ''}${quotationData.customer_email ? ` • Email: ${quotationData.customer_email}` : ''}`
+    : invoiceData
+    ? `Phone: ${invoiceData.customer_phone || ''}${invoiceData.customer_bin ? ` • BIN: ${invoiceData.customer_bin}` : ''}`
+    : 'Phone: +880 1711 222333 • Email: rahim@abc.com'
+
+  // Resolve document metadata
+  const metaDate = quotationData
+    ? quotationData.quotation_date
+    : invoiceData
+    ? invoiceData.invoice_date
+    : '08 Oct 2025'
+
+  const metaDueDate = quotationData
+    ? quotationData.valid_until
+    : invoiceData
+    ? invoiceData.due_date
+    : '15 Oct 2025'
+
+  const metaStaff = quotationData
+    ? (quotationData.salesperson_name || 'Sales Person')
+    : invoiceData
+    ? (invoiceData.created_by_name || 'Accounts Dept')
+    : 'Shahid Hossain'
+
+  const metaRef = quotationData
+    ? (quotationData.reference_no || 'Quotation Estimate')
+    : invoiceData
+    ? (invoiceData.reference_no || (invoiceData.order_number ? `Order #${invoiceData.order_number}` : 'Commercial Invoice'))
+    : effectiveDocType === 'purchase_order'
+    ? 'Factory Media Restock'
+    : 'Signage for Office'
+
   const sampleDocOptions: { key: DocumentTypeKey; label: string }[] = [
     { key: 'quotation', label: 'Sample Quotation' },
     { key: 'invoice', label: 'Sample Invoice' },
@@ -163,20 +289,25 @@ export function LiveA4Preview({
     ]
   }
 
-  const activeTerms = settings.terms_and_conditions?.trim()
+  const activeTerms = quotationData?.terms_and_conditions?.trim()
+    ? quotationData.terms_and_conditions.split('\n').filter(Boolean)
+    : invoiceData?.terms_and_conditions?.trim()
+    ? invoiceData.terms_and_conditions.split('\n').filter(Boolean)
+    : settings.terms_and_conditions?.trim()
     ? settings.terms_and_conditions.split('\n').filter(Boolean)
     : getDynamicDefaultTerms()
 
   return (
-    <div className="bg-card border border-border rounded-2xl shadow-xs overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 print:w-full print:rounded-none">
+    <div className={showControls ? "bg-card border border-border rounded-2xl shadow-xs overflow-hidden flex flex-col h-full print:border-none print:shadow-none print:bg-transparent print:p-0 print:m-0 print:w-full print:rounded-none" : "w-full flex justify-center bg-transparent border-none shadow-none p-0 m-0 print:p-0 print:m-0 print:w-full"}>
       {/* 1. TOP PREVIEW TOOLBAR */}
-      <div className="p-3.5 sm:px-5 border-b border-border flex items-center justify-between gap-3 bg-muted/20 shrink-0 print:hidden">
-        <div className="flex items-center gap-2 min-w-0">
-          <Eye className="h-4 w-4 text-primary shrink-0" />
-          <span className="text-sm font-bold text-foreground">
-            Live Preview
-          </span>
-        </div>
+      {showControls && (
+        <div className="p-3.5 sm:px-5 border-b border-border flex items-center justify-between gap-3 bg-muted/20 shrink-0 print:hidden">
+          <div className="flex items-center gap-2 min-w-0">
+            <Eye className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm font-bold text-foreground">
+              Live Preview
+            </span>
+          </div>
 
         <div className="flex items-center gap-2 shrink-0">
           {/* Sample Document Switcher Dropdown */}
@@ -229,17 +360,18 @@ export function LiveA4Preview({
           )}
         </div>
       </div>
+      )}
 
       {/* 2. LIVE A4 DOCUMENT CANVAS WRAPPER */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 flex items-start justify-center bg-muted/30 print:p-0 print:m-0 print:bg-white print:overflow-visible">
+      <div className={`flex-1 overflow-auto p-4 sm:p-6 flex items-start justify-center ${showControls ? 'bg-muted/30' : 'bg-transparent p-0 sm:p-0'} print:p-0 print:m-0 print:bg-white print:overflow-visible`}>
         <div
           ref={canvasRef}
           style={{
-            transform: `scale(${zoomLevel / 100})`,
+            transform: showControls ? `scale(${zoomLevel / 100})` : 'none',
             transformOrigin: 'top center',
             transition: 'transform 0.15s ease-out',
           }}
-          className="w-full max-w-[620px] shadow-md rounded-xs transition-transform print:transform-none print:w-full print:max-w-none print:shadow-none print:border-none print:m-0 print:p-0"
+          className={`w-full ${showControls ? 'max-w-[620px] shadow-md' : 'max-w-[760px] shadow-lg'} rounded-xs transition-transform print:transform-none print:w-full print:max-w-none print:shadow-none print:border-none print:m-0 print:p-0`}
         >
           {/* Actual A4 Sheet (210mm x 297mm Ratio) */}
           <div
@@ -306,32 +438,40 @@ export function LiveA4Preview({
                         style={{ fontSize: '12px', lineHeight: '14px' }}
                         className="font-black text-[#111827] leading-tight"
                       >
-                        {effectiveDocType === 'purchase_order' ? 'Alstrong Composites BD' : 'ABC Enterprises Ltd.'}
+                        {recipientName}
                       </h4>
-                      <p
-                        style={{ fontSize: '9px', lineHeight: '11px' }}
-                        className="font-semibold text-[#374151]"
-                      >
-                        {effectiveDocType === 'purchase_order' ? 'Attn: Mr. Mominul Islam (Sales Dept)' : 'Attn: Mr. Rahim Uddin'}
-                      </p>
-                      <p
-                        style={{ fontSize: '8.5px', lineHeight: '10px' }}
-                        className="text-[#6B7280]"
-                      >
-                        {effectiveDocType === 'purchase_order' ? 'Supplier ID: SUP-0042' : 'Customer ID: CUS-0001'}
-                      </p>
-                      <p
-                        style={{ fontSize: '8px', lineHeight: '10px' }}
-                        className="text-[#6B7280]"
-                      >
-                        123 Business Avenue, Gulshan, Dhaka-1212
-                      </p>
-                      <p
-                        style={{ fontSize: '8px', lineHeight: '10px' }}
-                        className="text-[#6B7280]"
-                      >
-                        Phone: +880 1711 222333 • Email: rahim@abc.com
-                      </p>
+                      {recipientSubtext && (
+                        <p
+                          style={{ fontSize: '9px', lineHeight: '11px' }}
+                          className="font-semibold text-[#374151]"
+                        >
+                          {recipientSubtext}
+                        </p>
+                      )}
+                      {recipientId && (
+                        <p
+                          style={{ fontSize: '8.5px', lineHeight: '10px' }}
+                          className="text-[#6B7280]"
+                        >
+                          {recipientId}
+                        </p>
+                      )}
+                      {recipientAddress && (
+                        <p
+                          style={{ fontSize: '8px', lineHeight: '10px' }}
+                          className="text-[#6B7280]"
+                        >
+                          {recipientAddress}
+                        </p>
+                      )}
+                      {recipientContact && (
+                        <p
+                          style={{ fontSize: '8px', lineHeight: '10px' }}
+                          className="text-[#6B7280]"
+                        >
+                          {recipientContact}
+                        </p>
+                      )}
                     </div>
 
                     {/* Document Meta Numbers (No Colons, Clean 2-Column: 8px to 9.5px) */}
@@ -358,7 +498,7 @@ export function LiveA4Preview({
                           </span>
                         </div>
                         <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
-                          08 Oct 2025
+                          {metaDate}
                         </span>
                       </div>
 
@@ -380,13 +520,7 @@ export function LiveA4Preview({
                         </div>
                         <div className="text-right leading-none">
                           <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">
-                            15 Oct 2025
-                          </span>
-                          <span
-                            style={{ fontSize: '8px' }}
-                            className="inline-block text-[#6B7280] font-normal ml-1"
-                          >
-                            (7 Days)
+                            {metaDueDate}
                           </span>
                         </div>
                       </div>
@@ -406,7 +540,7 @@ export function LiveA4Preview({
                           </span>
                         </div>
                         <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
-                          Shahid Hossain
+                          {metaStaff}
                         </span>
                       </div>
 
@@ -419,7 +553,7 @@ export function LiveA4Preview({
                           </span>
                         </div>
                         <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
-                          {effectiveDocType === 'purchase_order' ? 'Factory Media Restock' : 'Signage for Office'}
+                          {metaRef}
                         </span>
                       </div>
                     </div>
@@ -433,7 +567,7 @@ export function LiveA4Preview({
                           <th className="py-1 px-1.5 w-[5%] text-center" style={{ fontSize: '9px' }}>
                             SL
                           </th>
-                          <th className="py-1 px-1.5 w-[37%] text-left" style={{ fontSize: '9px' }}>
+                          <th className={`py-1 px-1.5 ${settings.item_display_mode === 'detailed' ? 'w-[37%]' : 'w-[59%]'} text-left`} style={{ fontSize: '9px' }}>
                             Item Description
                           </th>
                           {settings.item_display_mode === 'detailed' && (
@@ -463,7 +597,7 @@ export function LiveA4Preview({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#F1F5F9] bg-white">
-                        {sampleItems.map((item) => (
+                        {itemsToRender.map((item) => (
                           <tr key={item.id} className="hover:bg-[#F8FAFC]/60">
                             <td className="py-1 px-1.5 text-center text-[#6B7280]" style={{ fontSize: '8.5px' }}>
                               {item.id}
@@ -629,7 +763,11 @@ export function LiveA4Preview({
                           <CreditCard className="h-2.5 w-2.5 text-[#111827] shrink-0" />
                           <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Payment Terms</span>
                           <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">50% Adv, 50% Before Delivery</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                            {quotationData?.advance_percentage
+                              ? `${quotationData.advance_percentage}% Adv, ${100 - quotationData.advance_percentage}% Before Delivery`
+                              : '50% Adv, 50% Before Delivery'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <ShieldCheck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
@@ -689,6 +827,88 @@ export function LiveA4Preview({
                             <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">6,075</span>
                           </div>
                         </>
+                      ) : quotationData ? (
+                        <>
+                          <div className="flex justify-between py-0.5">
+                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                              {formatBDT(quotationData.subtotal).replace('৳', '').trim()}
+                            </span>
+                          </div>
+                          {quotationData.discount_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-destructive tabular-nums">
+                                - {formatBDT(quotationData.discount_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {quotationData.vat_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT ({quotationData.vat_rate || 7.5}%)</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                                + {formatBDT(quotationData.vat_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {typeof quotationData.advance_amount === 'number' && quotationData.advance_amount > 0 && (
+                            <div className="flex justify-between py-0.5 border-t border-[#E5E7EB] mt-0.5 pt-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Advance ({quotationData.advance_percentage || 50}%)</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-[#064E3B] tabular-nums">
+                                {formatBDT(quotationData.advance_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {typeof quotationData.due_on_delivery === 'number' && quotationData.due_on_delivery > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Due on Delivery</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                                {formatBDT(quotationData.due_on_delivery).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      ) : invoiceData ? (
+                        <>
+                          <div className="flex justify-between py-0.5">
+                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                              {formatBDT(invoiceData.subtotal).replace('৳', '').trim()}
+                            </span>
+                          </div>
+                          {invoiceData.discount_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-destructive tabular-nums">
+                                - {formatBDT(invoiceData.discount_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {invoiceData.vat_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                                + {formatBDT(invoiceData.vat_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {invoiceData.paid_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Paid Amount</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-success tabular-nums">
+                                {formatBDT(invoiceData.paid_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                          {invoiceData.due_amount > 0 && (
+                            <div className="flex justify-between py-0.5">
+                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium text-warning">Balance Due</span>
+                              <span style={{ fontSize: '9px' }} className="font-bold text-warning tabular-nums">
+                                {formatBDT(invoiceData.due_amount).replace('৳', '').trim()}
+                              </span>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <>
                           <div className="flex justify-between py-0.5">
@@ -719,7 +939,11 @@ export function LiveA4Preview({
                           : 'Grand Total (BDT)'}
                       </span>
                       <span style={{ fontSize: '12px' }} className="font-black tabular-nums tracking-tight">
-                        {effectiveDocType === 'challan'
+                        {quotationData
+                          ? formatBDT(quotationData.grand_total).replace('৳', '').trim()
+                          : invoiceData
+                          ? formatBDT(invoiceData.grand_total).replace('৳', '').trim()
+                          : effectiveDocType === 'challan'
                           ? 'Good Condition'
                           : effectiveDocType === 'receipt'
                           ? '18,000'
@@ -786,7 +1010,11 @@ export function LiveA4Preview({
                         </div>
                         <div className="border-t border-[#9CA3AF] pt-0.5">
                           <p style={{ fontSize: '9px' }} className="font-bold text-[#111827] leading-tight">
-                            {effectiveDocType === 'challan'
+                            {quotationData
+                              ? (quotationData.salesperson_name || 'Shahid Hossain')
+                              : invoiceData
+                              ? (invoiceData.created_by_name || 'Accounts Dept')
+                              : effectiveDocType === 'challan'
                               ? 'Abul Kalam'
                               : effectiveDocType === 'receipt'
                               ? 'Nazmul Huda'
@@ -843,63 +1071,65 @@ export function LiveA4Preview({
       </div>
 
       {/* 3. BOTTOM PREVIEW FOOTER & PAGINATION */}
-      <div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-muted/20 shrink-0 print:hidden">
-        <div className="flex items-center gap-1.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            className="h-7 w-7 p-0 cursor-pointer"
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-          <span className="font-bold text-foreground tabular-nums px-2">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            className="h-7 w-7 p-0 cursor-pointer"
-            aria-label="Next page"
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+      {showControls && (
+        <div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-muted/20 shrink-0 print:hidden">
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              className="h-7 w-7 p-0 cursor-pointer"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <span className="font-bold text-foreground tabular-nums px-2">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              className="h-7 w-7 p-0 cursor-pointer"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {/* Zoom Selector Dropdown */}
-          <select
-            value={zoomLevel}
-            onChange={(e) => setZoomLevel(Number(e.target.value))}
-            className="h-7 rounded-md border border-input bg-card px-2 text-xs font-semibold tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
-            aria-label="Zoom Level"
-          >
-            <option value={75}>75%</option>
-            <option value={100}>100%</option>
-            <option value={125}>125%</option>
-            <option value={150}>150%</option>
-          </select>
+          <div className="flex items-center gap-2">
+            {/* Zoom Selector Dropdown */}
+            <select
+              value={zoomLevel}
+              onChange={(e) => setZoomLevel(Number(e.target.value))}
+              className="h-7 rounded-md border border-input bg-card px-2 text-xs font-semibold tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+              aria-label="Zoom Level"
+            >
+              <option value={75}>75%</option>
+              <option value={100}>100%</option>
+              <option value={125}>125%</option>
+              <option value={150}>150%</option>
+            </select>
 
-          {/* Fullscreen / Expand Trigger */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setZoomLevel((z) => (z === 100 ? 125 : 100))}
-            className="h-7 w-7 p-0 cursor-pointer"
-            title="Toggle zoom preview"
-            aria-label="Toggle zoom preview"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </Button>
+            {/* Fullscreen / Expand Trigger */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel((z) => (z === 100 ? 125 : 100))}
+              className="h-7 w-7 p-0 cursor-pointer"
+              title="Toggle zoom preview"
+              aria-label="Toggle zoom preview"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

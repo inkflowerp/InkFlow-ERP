@@ -207,7 +207,7 @@ const QuotationPdfContent = ({ quotation, company, template }: { quotation: Quot
                       <Text variant="xs"weight="bold"noMargin>
                         {item.description ||"Printing Item"}
                       </Text>
-                      {specs ? (
+                      {specs && template?.item_display_mode !== 'compact' ? (
                         <Text variant="xs"color="mutedForeground"noMargin style={{ marginTop: 2, fontSize: 8 }}>
                           {specs}
                         </Text>
@@ -246,7 +246,7 @@ const QuotationPdfContent = ({ quotation, company, template }: { quotation: Quot
  Terms & Delivery Conditions:
                 </Text>
                 <Text variant="xs"noMargin color="foreground"style={{ marginTop: 2 }}>
-                  {quotation.terms_and_conditions ||"1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance."}
+                  {quotation.terms_and_conditions || template?.terms_and_conditions ||"1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance."}
                 </Text>
               </View>
 

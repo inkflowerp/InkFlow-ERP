@@ -61,7 +61,7 @@ import {
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { QuotationPdfDocument } from '@/components/pdf/documents/quotation-pdf-document'
 import { useDocumentTemplate } from '@/hooks/use-document-template'
-import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
+import { LiveA4Preview } from '@/components/settings/document-template/print-a4-preview'
 import {
  formatBDT,
  toBengaliNumerals,
@@ -87,6 +87,12 @@ function QuotationDetailContent() {
  const { tBilingual } = useI18n()
  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
  const { template: docTemplate } = useDocumentTemplate(slug, 'quotation')
+
+ const effectiveCompanyName = company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Vision Sign')
+ const effectiveAddress = company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+ const effectivePhone = company?.phone || '+880 1712 345678'
+ const effectiveEmail = company?.email || (company?.slug ? `sales@${company.slug}.com` : 'info@printflow.bd')
+ const effectiveWebsite = company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
 
   // Local datastore fallback
  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
@@ -645,24 +651,37 @@ function QuotationDetailContent() {
 
               {/* CONVERSION & UTILITY */}
               <div className="flex flex-wrap items-center gap-2">
+                {/* Print Direct */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.print()}
+                  className="h-9 text-xs font-semibold text-foreground border-input hover:bg-muted cursor-pointer"
+                  title="Print quotation document"
+                >
+                  <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                  Print
+                </Button>
+
                 {/* Print / Vector PDF Engine */}
                 <PdfActionButtons
- document={
+                  document={
                     <QuotationPdfDocument
- quotation={quote}
- template={docTemplate}
- company={{
- name: company?.name,
- tagline: company?.legal_name || 'Printing & Signage Specialists',
- address: company?.address,
- phone: company?.phone,
- email: company?.email,
- binNumber: company?.bin_no,
+                      quotation={quote}
+                      template={docTemplate}
+                      company={{
+                        name: effectiveCompanyName,
+                        tagline: company?.legal_name || 'Printing & Signage Specialists',
+                        address: effectiveAddress,
+                        phone: effectivePhone,
+                        email: effectiveEmail,
+                        website: effectiveWebsite,
+                        binNumber: company?.bin_no,
                       }}
                     />
                   }
- filename={`QUO-${quote.quotation_number}`}
- title={`Quotation #${quote.quotation_number}`}
+                  filename={`QUO-${quote.quotation_number}`}
+                  title={`Quotation #${quote.quotation_number}`}
                 />
 
                 {/* Convert to Job Order */}
@@ -732,353 +751,23 @@ function QuotationDetailContent() {
         )}
 
         {/* =========================================================================
- PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
- Standard A4 layout with print-optimized styling
+            PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
+            Synchronized with Settings -> Document Templates
            ========================================================================= */}
-        <div
-          id="quotation-print-area"
-          data-print-isolate="true"
-          data-print-sheet="true"
-          style={
-            docTemplate?.use_letterhead
-              ? {
-                  paddingTop: `${docTemplate.padding_top || 42}mm`,
-                  paddingRight: `${docTemplate.padding_right || 10}mm`,
-                  paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
-                  paddingLeft: `${docTemplate.padding_left || 10}mm`,
-                }
-              : undefined
-          }
-          className="relative bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none print:w-full print:max-w-none overflow-hidden"
-        >
-          {docTemplate?.use_letterhead && (
-            docTemplate.letterhead_file?.url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={docTemplate.letterhead_file.url}
-                alt="Letterhead"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
-              />
-            ) : (
-              <PrintLetterheadArt
-                documentTypeTitleEn="QUOTATION"
-                documentTypeTitleBn="কোটেশন"
-                companyName={company?.name || 'PrintFlow'}
-                companyLogoUrl={company?.logo_url || undefined}
-                phone={company?.phone || '+880 1712 345678'}
-                email={company?.email || 'info@printflow.bd'}
-                website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
-                address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
-                mode={docTemplate.letterhead_mode}
-              />
-            )
-          )}
-          <div className="relative z-10 space-y-6">
-          {/* Document Header */}
-          <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
-            {!docTemplate?.use_letterhead ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-11 w-11 rounded-xl bg-primary text-white font-black text-2xl flex items-center justify-center shadow-xs">
-                    {(company?.name || 'P').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
-                      {company?.name || 'PrintFlow Printing & Signage Solutions'}
-                    </h2>
-                    {company?.name_bn && (
-                      <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
-                    )}
-                  </div>
-                </div>
-                {company?.address && (
-                  <p className="text-xs text-muted-foreground print:text-muted-foreground pt-1">
-                    {company.address}
-                  </p>
-                )}
-                <div className="text-xs text-muted-foreground print:text-muted-foreground flex flex-wrap gap-3 pt-0.5">
-                  {company?.phone && <span>Phone: {company.phone}</span>}
-                  {company?.bin_no && <span>• BIN / মূসক: {company.bin_no}</span>}
-                  {company?.tin_no && <span>• TIN: {company.tin_no}</span>}
-                </div>
-              </div>
-            ) : (
-              <div />
-            )}
-
-            <div className="text-right space-y-1">
-              <div className="text-2xl font-black text-primary text-primary uppercase tracking-wide print:text-primary">
-                {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
-              </div>
-              <div className="text-sm tabular-nums font-bold text-foreground print:text-foreground">
-                {quote.quotation_number}
-              </div>
-              <div className="text-xs text-muted-foreground print:text-muted-foreground">
- Date: <strong>{quote.quotation_date}</strong>
-              </div>
-              <div className="text-xs text-destructive text-destructive font-semibold print:text-destructive">
- Valid Until: <strong>{quote.valid_until}</strong>
-              </div>
-              {quote.reference_no && (
-                <div className="text-xs text-foreground print:text-foreground tabular-nums">
- Ref / PO: <strong>{quote.reference_no}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Customer & Project Meta Box */}
-          <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-muted border border-border text-xs print:bg-muted print:border-border">
-            <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
-                {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
-              </span>
-              <div className="text-sm font-bold text-foreground print:text-foreground">
-                {languageMode === 'bn' && quote.customer_name_bn ? quote.customer_name_bn : quote.customer_name}
-                {quote.customer_company && (
-                  <span className="font-normal text-xs text-muted-foreground print:text-muted-foreground ml-1">({quote.customer_company})</span>
-                )}
-              </div>
-              {quote.customer_address && <div className="text-muted-foreground print:text-muted-foreground">{quote.customer_address}</div>}
-              <div className="text-muted-foreground print:text-muted-foreground tabular-nums">Mobile: {quote.customer_phone}</div>
-              {quote.customer_email && <div className="text-muted-foreground print:text-muted-foreground">Email: {quote.customer_email}</div>}
-              {quote.customer_type && (
-                <div className="text-muted-foreground print:text-muted-foreground uppercase text-xs font-bold pt-0.5">
- Category: {quote.customer_type}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1 text-right sm:text-left">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground print:text-muted-foreground">
-                {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
-              </span>
-              <div className="text-foreground print:text-foreground">
- Sales Representative: <strong>{quote.salesperson_name}</strong>
-              </div>
-              {quote.delivery_date && (
-                <div className="text-foreground print:text-foreground">
- Target Delivery: <strong>{quote.delivery_date}</strong>
-                </div>
-              )}
-              {quote.delivery_method && (
-                <div className="text-foreground print:text-foreground capitalize">
- Delivery Method: <strong>{quote.delivery_method.replace('_', ' ')}</strong>
-                </div>
-              )}
-              {quote.delivery_location && (
-                <div className="text-foreground print:text-foreground">
- Delivery Location: <strong>{quote.delivery_location}</strong>
-                </div>
-              )}
-              {quote.customer_bin && (
-                <div className="text-foreground print:text-foreground tabular-nums">
- Customer BIN: <strong>{quote.customer_bin}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Itemized Table */}
-          <div className="my-6">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-surface-inset text-foreground print:bg-surface-inset">
-                  <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
-                  <th className="py-2.5 px-3 font-bold">
-                    {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}
-                  </th>
-                  <th className="py-2.5 px-3 font-bold text-center">
-                    {languageMode === 'bn' ? 'পরিমাপ (W × H)' : 'Dimensions'}
-                  </th>
-                  <th className="py-2.5 px-3 font-bold text-center">
-                    {languageMode === 'bn' ? 'ক্ষেত্রফল / সংখ্যা' : 'Area / Qty'}
-                  </th>
-                  <th className="py-2.5 px-3 font-bold text-right">
-                    {languageMode === 'bn' ? 'একক দর (৳)' : 'Unit Rate (৳)'}
-                  </th>
-                  <th className="py-2.5 px-3 font-bold text-right">
-                    {languageMode === 'bn' ? 'মোট মূল্য (৳)' : 'Total (৳)'}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border border-b border-border print:divide-border print:border-border">
-                {quote.items.map((item, idx) => {
- const catPreset = (item as any).category_preset
- const offsetSpecs = (item as any).offset_specs
- const signageSpecs = (item as any).signage_specs
-
- return (
-                    <tr key={item.id} className="hover:bg-muted dark:hover:bg-muted/50 print:hover:bg-transparent">
-                      <td className="py-3 px-3 text-center tabular-nums font-bold text-muted-foreground print:text-muted-foreground">
-                        {idx + 1}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-foreground print:text-foreground">
-                            {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
-                          </span>
-                          {catPreset && (
-                            <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 bg-primary/10 text-primary print:border-input">
-                              {catPreset === 'digital'
-                                ? 'Digital Flex/Vinyl'
-                                : catPreset === 'offset'
-                                ? 'Offset Press'
-                                : catPreset === 'signage'
-                                ? '3D Signage'
-                                : catPreset === 'ready'
-                                ? 'Merchandise'
-                                : catPreset}
-                            </span>
-                          )}
-                        </div>
-
-                        {item.material_spec && (
-                          <div className="text-xs text-muted-foreground print:text-muted-foreground">
-                            <strong>Material:</strong> {item.material_spec}
-                          </div>
-                        )}
-
-                        {/* Specialized Offset Specs */}
-                        {docTemplate?.item_display_mode !== 'compact' && offsetSpecs && (
-                          <div className="text-xs text-primary text-primary print:text-primary bg-primary/10/80 bg-primary/10 p-1.5 rounded mt-1">
-                            <span>Offset Specs: </span>
-                            {offsetSpecs.paper_gsm && <strong>{offsetSpecs.paper_gsm} GSM Paper • </strong>}
-                            {offsetSpecs.print_mode && <span>{offsetSpecs.print_mode} • </span>}
-                            {offsetSpecs.binding && <span>Binding: {offsetSpecs.binding} • </span>}
-                            {offsetSpecs.pages && <span>Pages: {offsetSpecs.pages}</span>}
-                          </div>
-                        )}
-
-                        {/* Specialized Signage Specs */}
-                        {docTemplate?.item_display_mode !== 'compact' && signageSpecs && (
-                          <div className="text-xs text-warning text-warning print:text-warning bg-warning-surface/80 bg-warning-surface p-1.5 rounded mt-1">
-                            <span>Signage Specs: </span>
-                            {signageSpecs.lighting && <strong>Lighting: {signageSpecs.lighting} • </strong>}
-                            {signageSpecs.structure && <span>Structure: {signageSpecs.structure} • </span>}
-                            {signageSpecs.frame && <span>Frame: {signageSpecs.frame}</span>}
-                          </div>
-                        )}
-
-                        {item.finishing && item.finishing !== 'None' && (
-                          <div className="text-xs text-primary text-primary print:text-primary font-medium mt-0.5">
- Finishing: {item.finishing}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-center tabular-nums">
-                        {item.width > 0 && item.height > 0 ? `${item.width} × ${item.height} ${item.dimension_unit}` : '-'}
-                      </td>
-                      <td className="py-3 px-3 text-center tabular-nums font-semibold">
-                        {item.area_sft > 0 ? `${item.area_sft} sft` : `${item.quantity} ${item.unit}`}
-                      </td>
-                      <td className="py-3 px-3 text-right tabular-nums font-medium">
-                        {formatBDT(item.unit_rate)}
-                      </td>
-                      <td className="py-3 px-3 text-right tabular-nums font-bold text-foreground print:text-foreground">
-                        {formatBDT(item.item_total)}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Financial Summary & Terms */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-6 items-start">
-            {/* Terms, Notes & Bank Accounts */}
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="font-bold text-foreground uppercase tracking-wider text-xs print:text-foreground">
-                  {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
-                </span>
-                <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-xs leading-relaxed mt-1">
-                  {quote.terms_and_conditions || docTemplate?.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
-                </pre>
-              </div>
-
-              {/* Payment Remittance Details */}
-              <div className="p-3 rounded-xl bg-muted border border-border text-foreground print:bg-muted print:border-border print:text-foreground space-y-1">
-                <span className="font-bold block text-xs uppercase text-foreground print:text-foreground">
-                  {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
-                </span>
-                <div className="text-xs space-y-0.5">
-                  <div>• <strong>bKash / Nagad (Merchant):</strong> 01711-000000 (Counter 1)</div>
-                  <div>• <strong>Bank:</strong> City Bank Ltd, Motijheel Branch, A/C: 1102938471001</div>
-                  <div>• <strong>Account Name:</strong> {company?.name || 'PrintFlow Solutions'}</div>
-                </div>
-              </div>
-
-              {quote.notes && (
-                <div className="p-2.5 rounded-lg bg-warning-surface/50 border border-warning-border text-foreground print:bg-muted print:border-border print:text-foreground">
-                  <strong>Special Note:</strong> {quote.notes}
-                </div>
-              )}
-            </div>
-
-            {/* Subtotal, Discount, VAT, Grand Total & Advance Breakdown */}
-            <div className="space-y-2 text-xs border border-border rounded-xl p-4 bg-muted print:bg-muted print:border-border">
-              <div className="flex justify-between py-1 text-muted-foreground print:text-muted-foreground">
-                <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
-                <span className="tabular-nums font-semibold">{formatBDT(quote.subtotal)}</span>
-              </div>
-
-              {quote.discount_amount > 0 && (
-                <div className="flex justify-between py-1 text-destructive text-destructive font-semibold print:text-destructive">
-                  <span>{languageMode === 'bn' ? 'বিশেষ ছাড় (Special Discount):' : 'Negotiated Discount:'}</span>
-                  <span className="tabular-nums">- {formatBDT(quote.discount_amount)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between py-1 text-muted-foreground print:text-muted-foreground">
-                <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}% - Mushak 6.3):` : `NBR VAT (${quote.vat_rate}%):`}</span>
-                <span className="tabular-nums">+ {formatBDT(quote.vat_amount)}</span>
-              </div>
-
-              <div className="flex justify-between py-2 border-t-2 border-border print:border-border font-black text-sm text-foreground print:text-foreground">
-                <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
-                <span className="tabular-nums text-base text-primary text-primary print:text-primary">{formatBDT(quote.grand_total)}</span>
-              </div>
-
-              {/* Advance & Due Breakdown */}
-              <div className="border-t border-dashed border-input print:border-input pt-2 space-y-1">
-                <div className="flex justify-between py-0.5 text-warning text-warning font-bold print:text-warning">
-                  <span>{languageMode === 'bn' ? `প্রয়োজনীয় অগ্রিম (${advancePct}% Advance Required):` : `Advance Required (${advancePct}%):`}</span>
-                  <span className="tabular-nums">{formatBDT(advanceAmt)}</span>
-                </div>
-                <div className="flex justify-between py-0.5 text-muted-foreground font-semibold print:text-muted-foreground">
-                  <span>{languageMode === 'bn' ? 'ডেলিভারির সময় প্রদেয় (Balance on Delivery):' : 'Balance on Delivery:'}</span>
-                  <span className="tabular-nums">{formatBDT(dueOnDeliv)}</span>
-                </div>
-              </div>
-
-              <div className="text-xs text-muted-foreground print:text-muted-foreground pt-1.5 italic border-t border-border">
-                {languageMode === 'bn'
-                  ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
-                  : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
-              </div>
-            </div>
-          </div>
-
-          {/* Signature Block */}
-          <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-input print:border-input text-xs">
-            <div className="text-center space-y-1">
-              <div className="font-bold text-foreground print:text-foreground">{quote.salesperson_name}</div>
-              <div className="text-xs text-muted-foreground print:text-muted-foreground">
-                {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
-              </div>
-            </div>
-
-            <div className="text-center space-y-1">
-              <div className="font-bold text-foreground print:text-foreground">Authorized Signatory</div>
-              <div className="text-xs text-muted-foreground print:text-muted-foreground">
-                {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'PrintFlow Solutions'}`}
-              </div>
-            </div>
-          </div>
+        <div id="quotation-print-area" className="w-full flex justify-center">
+          <LiveA4Preview
+            settings={docTemplate}
+            quotationData={quote}
+            showControls={false}
+            companyName={effectiveCompanyName}
+            companyAddress={effectiveAddress}
+            companyPhone={effectivePhone}
+            companyEmail={effectiveEmail}
+            companyWebsite={effectiveWebsite}
+            companyLogoUrl={company?.logo_url || undefined}
+            onPrintPdf={() => window.print()}
+          />
         </div>
-      </div>
 
         {/* =========================================================================
  NON-PRINT ACTIVITY TIMELINE

@@ -232,4 +232,54 @@ describe('Document Templates Settings & Navigation Tests', () => {
       'Header actions must include Download PDF button'
     )
   })
+
+  it('11. Verifies quotation and invoice pages and PDF documents synchronize with LiveA4Preview and template', () => {
+    // 1. LiveA4Preview props
+    const previewPath = path.resolve(
+      process.cwd(),
+      'components/settings/document-template/print-a4-preview.tsx'
+    )
+    const previewContent = fs.readFileSync(previewPath, 'utf-8')
+    assert.ok(previewContent.includes('quotationData?: QuotationRecord | null'), 'Must accept quotationData')
+    assert.ok(previewContent.includes('invoiceData?: InvoiceRecord | null'), 'Must accept invoiceData')
+    assert.ok(previewContent.includes('showControls?: boolean'), 'Must accept showControls')
+
+    // 2. Quotation detail page uses LiveA4Preview
+    const quotePagePath = path.resolve(
+      process.cwd(),
+      'app/[tenantSlug]/quotations/[id]/page.tsx'
+    )
+    const quoteContent = fs.readFileSync(quotePagePath, 'utf-8')
+    assert.ok(quoteContent.includes('<LiveA4Preview'), 'Quotation page must render LiveA4Preview')
+    assert.ok(quoteContent.includes('quotationData={quote}'), 'Quotation page must pass quotationData')
+    assert.ok(quoteContent.includes('showControls={false}'), 'Quotation page must set showControls false')
+
+    // 3. Billing invoice detail page uses LiveA4Preview
+    const invoicePagePath = path.resolve(
+      process.cwd(),
+      'app/[tenantSlug]/billing/[id]/page.tsx'
+    )
+    const invoiceContent = fs.readFileSync(invoicePagePath, 'utf-8')
+    assert.ok(invoiceContent.includes('<LiveA4Preview'), 'Invoice page must render LiveA4Preview')
+    assert.ok(invoiceContent.includes('invoiceData={invoice}'), 'Invoice page must pass invoiceData')
+    assert.ok(invoiceContent.includes('showControls={false}'), 'Invoice page must set showControls false')
+
+    // 4. Vector PDF documents synchronize with template
+    const quotePdfPath = path.resolve(
+      process.cwd(),
+      'components/pdf/documents/quotation-pdf-document.tsx'
+    )
+    const quotePdfContent = fs.readFileSync(quotePdfPath, 'utf-8')
+    assert.ok(quotePdfContent.includes('template?.terms_and_conditions'), 'Quotation PDF must sync template terms')
+    assert.ok(quotePdfContent.includes("template?.item_display_mode !== 'compact'"), 'Quotation PDF must support compact mode')
+
+    const invoicePdfPath = path.resolve(
+      process.cwd(),
+      'components/pdf/documents/invoice-pdf-document.tsx'
+    )
+    const invoicePdfContent = fs.readFileSync(invoicePdfPath, 'utf-8')
+    assert.ok(invoicePdfContent.includes('template?.terms_and_conditions'), 'Invoice PDF must sync template terms')
+    assert.ok(invoicePdfContent.includes("template?.item_display_mode !== 'compact'"), 'Invoice PDF must support compact mode')
+  })
 })
+
