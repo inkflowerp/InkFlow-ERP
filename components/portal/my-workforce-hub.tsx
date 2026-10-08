@@ -166,9 +166,11 @@ export function MyWorkforceHub() {
                 <Badge className="bg-primary/20 text-primary border-border/30 text-xs">
                   {tBilingual('Employee Self-Service Portal', 'কর্মচারী পোর্টাল ও সেলফ সার্ভিস')}
                 </Badge>
-                <Badge variant="outline" className="border-border text-xs">
-                  {employee?.employee_id_number || '#EMP-1001'}
-                </Badge>
+                {employee?.employee_id_number && (
+                  <Badge variant="outline" className="border-border text-xs">
+                    {employee.employee_id_number}
+                  </Badge>
+                )}
                 {employee?.branch_name && (
                   <span className="text-xs text-primary flex items-center gap-1">
                     <Building className="h-3 w-3"/>
@@ -181,9 +183,13 @@ export function MyWorkforceHub() {
                 {employee ? tBilingual(employee.name, employee.name_bn || employee.name) : 'Team Member'}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{employee?.role || 'Print Operator'}</span> •{' '}
-                <span className="capitalize">{employee?.department || 'printing'} Department</span> •{' '}
-                <span className="capitalize">{employee?.employee_type || 'permanent'}</span>
+                <span className="font-semibold text-foreground">{employee?.role || 'Staff Member'}</span>
+                {employee?.department && (
+                  <> • <span className="capitalize">{employee.department} Department</span></>
+                )}
+                {employee?.employee_type && (
+                  <> • <span className="capitalize">{employee.employee_type}</span></>
+                )}
               </p>
             </div>
           </div>
@@ -666,17 +672,23 @@ export function MyWorkforceHub() {
                   <span className="tabular-nums text-foreground">{formatBDT(salaryStructure.basic)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
-                  <span>{tBilingual('House Rent Allowance (20%)', 'বাড়ি ভাড়া ভাতা (২০%)')}</span>
+                  <span>{tBilingual('House Rent Allowance', 'বাড়ি ভাড়া ভাতা')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.house)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
-                  <span>{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
+                  <span>{tBilingual('Medical Allowance', 'চিকিৎসা ভাতা')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.medical)}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
-                  <span>{tBilingual('Transport Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
+                  <span>{tBilingual('Transport Allowance', 'যাতায়াত ভাতা')}</span>
                   <span className="tabular-nums">{formatBDT(salaryStructure.transport)}</span>
                 </div>
+                {salaryStructure.food > 0 && (
+                  <div className="flex items-center justify-between py-1.5 border-b border-border text-muted-foreground">
+                    <span>{tBilingual('Food Allowance', 'খাবার ভাতা')}</span>
+                    <span className="tabular-nums">{formatBDT(salaryStructure.food)}</span>
+                  </div>
+                )}
                 {salaryStructure.totalOtEarnings > 0 && (
                   <div className="flex items-center justify-between py-1.5 border-b border-border text-success text-success font-semibold">
                     <span>{tBilingual('Overtime (OT) Bonus', 'ওভারটাইম অর্জন')}</span>

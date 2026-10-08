@@ -284,6 +284,201 @@ export const getEmployeesAction = withTenantAction(
 
 })
 
+export const getMyWorkforceDataAction = withTenantAction(
+  {
+    entityType: 'workforce',
+  },
+  async (
+    ctx,
+    companyIdParam?: string
+  ): Promise<
+    ServerActionResult<{
+      employee: EmployeeRecord | null
+      attendances: AttendanceDailySummaryRecord[]
+      advances: SalaryAdvanceRecord[]
+      overtimes: OvertimeRecord[]
+    }>
+  > => {
+    try {
+      const tenant = ctx.tenant || (await requireTenantUser(companyIdParam))
+      let employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+
+      // Fallback auto-link by email or phone if user_id was not yet attached
+      if (!employee) {
+        try {
+          const allEmployees = await WorkforceRepository.getEmployees(tenant.companyId)
+          const normEmail = tenant.userEmail?.toLowerCase().trim()
+          const normPhone = tenant.phone?.replace(/\D/g, '')
+
+          const matched = allEmployees.find((e) => {
+            if (e.status === 'terminated') return false
+            if (normEmail && e.email && e.email.toLowerCase().trim() === normEmail) return true
+            if (normPhone && e.mobile) {
+              const empPhone = e.mobile.replace(/\D/g, '')
+              if (empPhone && (empPhone === normPhone || empPhone.endsWith(normPhone) || normPhone.endsWith(empPhone))) {
+                return true
+              }
+            }
+            return false
+          })
+
+          if (matched) {
+            await WorkforceRepository.updateEmployee(matched.id, tenant.companyId, { user_id: tenant.userId })
+            matched.user_id = tenant.userId
+            employee = matched
+          }
+        } catch {}
+      }
+
+      let attendances: AttendanceDailySummaryRecord[] = []
+      let advances: SalaryAdvanceRecord[] = []
+      let overtimes: OvertimeRecord[] = []
+
+      if (employee) {
+        const [atts, advs, ots] = await Promise.all([
+          WorkforceRepository.getDailyAttendanceSummaries(tenant.companyId, { employeeId: employee.id }),
+          WorkforceRepository.getSalaryAdvances(tenant.companyId, { employeeId: employee.id }),
+          WorkforceRepository.getOvertimeRecords(tenant.companyId, { employeeId: employee.id }),
+        ])
+        attendances = atts
+        advances = advs
+        overtimes = ots
+      }
+
+      return {
+        success: true,
+        data: {
+          employee,
+          attendances,
+          advances,
+          overtimes,
+        },
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to fetch personal workforce data.' }
+    }
+  }
+)
+
+export const recordSelfAttendancePunchAction = withTenantAction(
+  {
+    entityType: 'workforce',
+  },
+  async (
+    ctx,
+    params: {
+      type: 'clock_in' | 'clock_out'
+      notes?: string
+    },
+    companyIdParam?: string
+  ): Promise<ServerActionResult<AttendanceDailySummaryRecord>> => {
+    try {
+      const tenant = ctx.tenant || (await requireTenantUser(companyIdParam))
+      let employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+      if (!employee) {
+        return { success: false, error: 'Employee record not found for your account.' }
+      }
+
+      const now = new Date()
+      const timeStr = now.toTimeString().slice(0, 5)
+      const isoStr = now.toISOString()
+      const todayStr = isoStr.slice(0, 10)
+
+      if (params.type === 'clock_in') {
+        const startTimeStr = employee.duty_settings?.office_start_time || '09:00'
+        const graceMin = employee.duty_settings?.late_grace_minutes || 15
+        const [startH, startM] = startTimeStr.split(':').map(Number)
+        const [curH, curM] = timeStr.split(':').map(Number)
+        const startMinutes = startH * 60 + startM
+        const curMinutes = curH * 60 + curM
+        const diff = curMinutes - (startMinutes + graceMin)
+        const lateMinutes = diff > 0 ? diff : 0
+        const status = lateMinutes > 0 ? 'late' : 'present'
+
+        const record = await WorkforceService.recordAttendanceSummary({
+          companyId: tenant.companyId,
+          employeeId: employee.id,
+          attendanceDate: todayStr,
+          status: status as any,
+          checkInTime: timeStr,
+          attendanceSource: 'qr_geo',
+          notes: params.notes || 'Employee Portal Self-Punch In',
+          actorId: tenant.userId,
+          actorName: employee.name || tenant.fullName,
+        })
+        return { success: true, data: record }
+      } else {
+        const existing = await WorkforceRepository.getDailyAttendanceSummaries(tenant.companyId, {
+          employeeId: employee.id,
+          date: todayStr,
+        })
+        const todayRec = existing[0]
+
+        const record = await WorkforceService.recordAttendanceSummary({
+          companyId: tenant.companyId,
+          employeeId: employee.id,
+          attendanceDate: todayStr,
+          status: todayRec?.status || 'present',
+          checkInTime: todayRec?.check_in_time || undefined,
+          checkOutTime: timeStr,
+          attendanceSource: 'qr_geo',
+          notes: params.notes || 'Employee Portal Self-Punch Out',
+          actorId: tenant.userId,
+          actorName: employee.name || tenant.fullName,
+        })
+        return { success: true, data: record }
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to record attendance punch.' }
+    }
+  }
+)
+
+export const requestSelfSalaryAdvanceAction = withTenantAction(
+  {
+    entityType: 'workforce',
+  },
+  async (
+    ctx,
+    params: {
+      amount: number
+      reason: string
+    },
+    companyIdParam?: string
+  ): Promise<ServerActionResult<SalaryAdvanceRecord>> => {
+    try {
+      const tenant = ctx.tenant || (await requireTenantUser(companyIdParam))
+      let employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+      if (!employee) {
+        return { success: false, error: 'Employee record not found for your account.' }
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10)
+      const record = await WorkforceRepository.createSalaryAdvance({
+        id: `adv_${Date.now()}`,
+        company_id: tenant.companyId,
+        branch_id: employee.branch_id || null,
+        advance_voucher_number: `ADV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+        employee_id: employee.id,
+        employee_name: employee.name,
+        amount: params.amount,
+        deducted_amount: 0,
+        remaining_amount: params.amount,
+        disbursed_date: todayStr,
+        payment_method: 'cash',
+        reason: params.reason,
+        status: 'pending',
+        is_settled: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      return { success: true, data: record }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to submit advance request.' }
+    }
+  }
+)
+
 export const getEmployeeByIdAction = withTenantAction(
   {
     permission: "hr.view",
