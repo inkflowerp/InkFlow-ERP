@@ -14,6 +14,8 @@ import { requireTenantUser, getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { WorkforceService } from '@/services/workforce.service'
 import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
 import { AttendanceService } from '@/services/attendance.service'
+import { AttendanceRepository } from '@/lib/repositories/attendance.repository'
+import { formatAttendanceTime } from '@/lib/attendance/geofence-utils'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import type {
   EmployeeRecord,
@@ -343,6 +345,50 @@ export const getMyWorkforceDataAction = withTenantAction(
         attendances = atts
         advances = advs
         overtimes = ots
+
+        // Bidirectional sync: if daily summaries has no entry for today, check attendance_records for today
+        const todayStr = new Date().toISOString().slice(0, 10)
+        const hasTodayAtt = attendances.some((a) => a.attendance_date === todayStr)
+        if (!hasTodayAtt) {
+          try {
+            const todayPunches = await AttendanceRepository.getTodayAttendanceForEmployee(employee.id, tenant.companyId, todayStr)
+            if (todayPunches.length > 0) {
+              const inPunch = todayPunches.find((p) => p.attendance_type === 'CHECK_IN')
+              const outPunch = todayPunches.find((p) => p.attendance_type === 'CHECK_OUT')
+              if (inPunch || outPunch) {
+                const inTime = inPunch ? formatAttendanceTime(inPunch.checked_at, 'Asia/Dhaka').slice(0, 5) : undefined
+                const outTime = outPunch ? formatAttendanceTime(outPunch.checked_at, 'Asia/Dhaka').slice(0, 5) : undefined
+                const synthSummary: AttendanceDailySummaryRecord = {
+                  id: `att-synth-${employee.id}-${todayStr}`,
+                  company_id: tenant.companyId,
+                  branch_id: employee.branch_id || null,
+                  employee_id: employee.id,
+                  employee_name: employee.name,
+                  employee_role: employee.role,
+                  employee_department: employee.department,
+                  attendance_date: todayStr,
+                  status: 'present',
+                  check_in_time: inTime,
+                  check_in_at: inPunch?.checked_at,
+                  check_out_time: outTime,
+                  check_out_at: outPunch?.checked_at,
+                  late_minutes: 0,
+                  early_leave_minutes: 0,
+                  worked_minutes: 0,
+                  potential_ot_minutes: 0,
+                  approved_ot_minutes: 0,
+                  attendance_source: 'qr_geo',
+                  notes: inPunch?.notes || 'QR Verified Attendance',
+                  created_at: inPunch?.checked_at || new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+                attendances.unshift(synthSummary)
+              }
+            }
+          } catch (syncErr) {
+            console.warn('[getMyWorkforceDataAction] Sync punch check warning:', syncErr)
+          }
+        }
       }
 
       return {
@@ -406,6 +452,35 @@ export const recordSelfAttendancePunchAction = withTenantAction(
           actorId: tenant.userId,
           actorName: employee.name || tenant.fullName,
         })
+
+        // Also record into attendance_records for complete cross-portal synchronization
+        try {
+          await AttendanceRepository.recordAttendance({
+            company_id: tenant.companyId,
+            employee_id: employee.id,
+            user_id: tenant.userId,
+            branch_id: employee.branch_id || null,
+            location_id: null,
+            attendance_date: todayStr,
+            attendance_type: 'CHECK_IN',
+            checked_at: isoStr,
+            latitude: 0,
+            longitude: 0,
+            gps_accuracy_meters: 0,
+            distance_from_location_meters: 0,
+            verification_status: 'verified',
+            verification_reason: 'Employee Portal 1-Tap Punch In',
+            notes: params.notes || 'Employee Portal Self-Punch In',
+            device_info: { source: 'portal_self_service', time: timeStr },
+          })
+        } catch (syncErr) {
+          console.warn('[recordSelfAttendancePunchAction] attendance_records sync warning:', syncErr)
+        }
+
+        revalidatePath(`/${tenant.companySlug}/attendance`)
+        revalidatePath(`/${tenant.companySlug}/portal`)
+        revalidatePath(`/${tenant.companySlug}/hr`)
+        revalidatePath(`/${tenant.companySlug}/hr/attendance`)
         return { success: true, data: record }
       } else {
         const existing = await WorkforceRepository.getDailyAttendanceSummaries(tenant.companyId, {
@@ -426,6 +501,35 @@ export const recordSelfAttendancePunchAction = withTenantAction(
           actorId: tenant.userId,
           actorName: employee.name || tenant.fullName,
         })
+
+        // Also record into attendance_records for complete cross-portal synchronization
+        try {
+          await AttendanceRepository.recordAttendance({
+            company_id: tenant.companyId,
+            employee_id: employee.id,
+            user_id: tenant.userId,
+            branch_id: employee.branch_id || null,
+            location_id: null,
+            attendance_date: todayStr,
+            attendance_type: 'CHECK_OUT',
+            checked_at: isoStr,
+            latitude: 0,
+            longitude: 0,
+            gps_accuracy_meters: 0,
+            distance_from_location_meters: 0,
+            verification_status: 'verified',
+            verification_reason: 'Employee Portal 1-Tap Punch Out',
+            notes: params.notes || 'Employee Portal Self-Punch Out',
+            device_info: { source: 'portal_self_service', time: timeStr },
+          })
+        } catch (syncErr) {
+          console.warn('[recordSelfAttendancePunchAction] attendance_records sync warning:', syncErr)
+        }
+
+        revalidatePath(`/${tenant.companySlug}/attendance`)
+        revalidatePath(`/${tenant.companySlug}/portal`)
+        revalidatePath(`/${tenant.companySlug}/hr`)
+        revalidatePath(`/${tenant.companySlug}/hr/attendance`)
         return { success: true, data: record }
       }
     } catch (err: any) {

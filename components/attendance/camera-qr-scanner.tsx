@@ -359,29 +359,22 @@ export function CameraQrScanner({
           {/* Scanning Reticle & Corner Brackets */}
           {cameraStatus === 'active' && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="relative w-44 h-44 sm:w-52 sm:h-52 border-2 border-primary/40 rounded-xl bg-primary/5 backdrop-contrast-125 overflow-hidden shadow-xs">
-                {/* Animated Laser Bar with Trailing Sweep */}
-                <div
-                  className="animate-qr-scan absolute left-0 right-0 h-1 bg-primary z-10"
-                  style={{ animation: 'qr-scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
-                >
-                  <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 h-4 w-12 rounded-full bg-primary/30 blur-xs" />
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 border-2 border-primary/40 rounded-2xl bg-primary/5 backdrop-contrast-125 overflow-hidden shadow-xs">
+                {/* High-Precision Laser Scanning Beam */}
+                <div className="animate-qr-scan absolute inset-x-0 h-0.5 bg-primary z-10 pointer-events-none shadow-xs will-change-[top,opacity]">
+                  {/* Subtle directional light wake trailing the scanning beam */}
+                  <div className="absolute inset-x-0 -top-5 h-5 bg-primary/10 pointer-events-none" />
+                  <div className="absolute inset-x-0 -bottom-5 h-5 bg-primary/10 pointer-events-none" />
                 </div>
 
-                {/* Vertical Sweep Light Wave */}
-                <div
-                  className="animate-qr-scan absolute left-0 right-0 h-16 -mt-8 bg-primary/10 pointer-events-none"
-                  style={{ animation: 'qr-scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
-                />
-
                 {/* Corner Accents */}
-                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg" />
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-xl" />
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-xl" />
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-xl" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-xl" />
 
                 {/* Center Target Crosshairs */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
                   <div className="h-8 w-8 border border-dashed border-primary/60 rounded-full animate-pulse-subtle" />
                 </div>
               </div>

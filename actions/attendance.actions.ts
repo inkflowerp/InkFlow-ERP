@@ -171,7 +171,9 @@ export const recordAttendanceAction = withTenantAction(
     }
 
     revalidatePath(`/${tenant.companySlug}/attendance`)
+    revalidatePath(`/${tenant.companySlug}/portal`)
     revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/attendance`)
 
     return {
       success: true,
@@ -463,7 +465,7 @@ export const getEmployeeTodayStatusAction = withTenantAction(
     let hasCheckedIn = !!earliestCheckIn
     let hasCheckedOut = !!latestCheckOut
 
-    // Fallback check on public.attendances table if no punch records found in attendance_records
+    // Fallback check on daily attendance summaries if no punch records found in attendance_records
     if (!hasCheckedIn && !hasCheckedOut) {
       try {
         const dailyAtt = await AttendanceRepository.getEmployeeDailyAttendance(employee.id, todayStr)
@@ -475,6 +477,50 @@ export const getEmployeeTodayStatusAction = withTenantAction(
           if (dailyAtt.check_out_time) {
             hasCheckedOut = true
             checkOutTime = dailyAtt.check_out_time
+          }
+
+          // Synthesize todayRecords so UI buttons and status chips are accurate
+          if (records.length === 0) {
+            const synthRecords: AttendanceRecord[] = []
+            if (hasCheckedIn && checkInTime) {
+              synthRecords.push({
+                id: `syn-in-${employee.id}-${todayStr}`,
+                company_id: tenant.companyId,
+                employee_id: employee.id,
+                employee_name: employee.name || tenant.fullName,
+                attendance_date: todayStr,
+                attendance_type: 'CHECK_IN',
+                checked_at: `${todayStr}T${checkInTime.length === 5 ? checkInTime + ':00' : checkInTime}`,
+                latitude: 0,
+                longitude: 0,
+                gps_accuracy_meters: 0,
+                distance_from_location_meters: 0,
+                verification_status: 'verified',
+                location_name: 'Workplace Terminal',
+                notes: dailyAtt.notes || 'Self-Service Portal Check-In',
+                created_at: new Date().toISOString(),
+              })
+            }
+            if (hasCheckedOut && checkOutTime) {
+              synthRecords.push({
+                id: `syn-out-${employee.id}-${todayStr}`,
+                company_id: tenant.companyId,
+                employee_id: employee.id,
+                employee_name: employee.name || tenant.fullName,
+                attendance_date: todayStr,
+                attendance_type: 'CHECK_OUT',
+                checked_at: `${todayStr}T${checkOutTime.length === 5 ? checkOutTime + ':00' : checkOutTime}`,
+                latitude: 0,
+                longitude: 0,
+                gps_accuracy_meters: 0,
+                distance_from_location_meters: 0,
+                verification_status: 'verified',
+                location_name: 'Workplace Terminal',
+                notes: dailyAtt.notes || 'Self-Service Portal Check-Out',
+                created_at: new Date().toISOString(),
+              })
+            }
+            records = synthRecords
           }
         }
       } catch (attErr) {
@@ -511,7 +557,7 @@ export const getEmployeeHistoryAction = withTenantAction(
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+    const employee = await resolveOrAutoLinkEmployee(tenant)
 
     if (!employee) return { success: true, data: [] }
 

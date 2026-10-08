@@ -844,43 +844,40 @@ pre,
 /* QR Code & Barcode Laser Scanning Bar Animation */
 @keyframes qr-scan-laser {
   0% {
-    top: 5%;
-    opacity: 0.7;
+    top: 3%;
+    opacity: 0.75;
   }
   50% {
-    top: 92%;
+    top: 97%;
     opacity: 1;
   }
   100% {
-    top: 5%;
-    opacity: 0.7;
+    top: 3%;
+    opacity: 0.75;
   }
 }
 
 @keyframes scan {
   0% {
-    top: 5%;
-    transform: translateY(0);
-    opacity: 0.7;
+    top: 3%;
+    opacity: 0.75;
   }
   50% {
-    top: 92%;
-    transform: translateY(0);
+    top: 97%;
     opacity: 1;
   }
   100% {
-    top: 5%;
-    transform: translateY(0);
-    opacity: 0.7;
+    top: 3%;
+    opacity: 0.75;
   }
 }
 
 .animate-qr-scan {
-  animation: qr-scan-laser 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: qr-scan-laser 2.2s ease-in-out infinite;
 }
 
 .animate-scan {
-  animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: scan 2.2s ease-in-out infinite;
 }
 
 /* ==============================================================================

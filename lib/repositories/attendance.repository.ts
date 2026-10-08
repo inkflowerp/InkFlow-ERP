@@ -674,7 +674,82 @@ export class AttendanceRepository {
       PrintFlowDataStore.set(STORAGE_KEYS.ATTENDANCE, [data, ...existingAtts.filter((r) => r.id !== data.id)])
     }
 
-    // Also update or insert daily summary row into public.attendances for backward compatibility with payroll/HR
+    // 1. Update or insert daily summary row into public.attendance_daily_summaries (modern authoritative table)
+    try {
+      const punchTimeStr = formatAttendanceTime(record.checked_at, 'Asia/Dhaka')
+      const timeOnly = punchTimeStr.slice(0, 5) // 'HH:mm'
+
+      const { data: existingSummary } = await (admin as any)
+        .from('attendance_daily_summaries')
+        .select('*')
+        .eq('employee_id', record.employee_id)
+        .eq('attendance_date', record.attendance_date)
+        .maybeSingle()
+
+      if (existingSummary) {
+        const updates: any = { updated_at: new Date().toISOString() }
+        if (record.attendance_type === 'CHECK_OUT') {
+          updates.check_out_time = timeOnly
+          updates.check_out_at = record.checked_at
+          if (existingSummary.check_in_time) {
+            const [inH, inM] = existingSummary.check_in_time.split(':').map(Number)
+            const [outH, outM] = timeOnly.split(':').map(Number)
+            const workedMins = Math.max(0, (outH * 60 + outM) - (inH * 60 + inM))
+            updates.worked_minutes = workedMins
+          }
+        } else if (record.attendance_type === 'CHECK_IN') {
+          if (!existingSummary.check_in_time) {
+            updates.check_in_time = timeOnly
+            updates.check_in_at = record.checked_at
+            updates.status = existingSummary.status === 'absent' ? 'present' : existingSummary.status
+          }
+        }
+        if (record.location_id && !existingSummary.location_id) {
+          updates.location_id = record.location_id
+        }
+        if (record.branch_id && !existingSummary.branch_id) {
+          updates.branch_id = record.branch_id
+        }
+
+        await (admin as any)
+          .from('attendance_daily_summaries')
+          .update(updates)
+          .eq('id', existingSummary.id)
+
+        const mergedSummary = { ...existingSummary, ...updates }
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, mergedSummary, targetCompanyId)
+      } else {
+        const newSummary = {
+          id: `att-sum-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          company_id: targetCompanyId,
+          employee_id: record.employee_id,
+          branch_id: record.branch_id || null,
+          location_id: record.location_id || null,
+          attendance_date: record.attendance_date,
+          status: 'present',
+          check_in_time: record.attendance_type === 'CHECK_IN' ? timeOnly : null,
+          check_in_at: record.attendance_type === 'CHECK_IN' ? record.checked_at : null,
+          check_out_time: record.attendance_type === 'CHECK_OUT' ? timeOnly : null,
+          check_out_at: record.attendance_type === 'CHECK_OUT' ? record.checked_at : null,
+          late_minutes: 0,
+          early_leave_minutes: 0,
+          worked_minutes: 0,
+          potential_ot_minutes: 0,
+          approved_ot_minutes: 0,
+          attendance_source: 'qr_geo',
+          notes: record.notes || 'QR + GPS Verified Attendance',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+
+        await (admin as any).from('attendance_daily_summaries').insert(newSummary)
+        PrintFlowDataStore.addItem(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES, newSummary, targetCompanyId)
+      }
+    } catch (sumErr) {
+      console.warn('[AttendanceRepository.recordAttendance] attendance_daily_summaries sync warning:', sumErr)
+    }
+
+    // 2. Also update or insert daily summary row into public.attendances for backward compatibility
     try {
       const punchTimeStr = formatAttendanceTime(record.checked_at, 'Asia/Dhaka')
 
@@ -791,7 +866,60 @@ export class AttendanceRepository {
 
     const all = PrintFlowDataStore.get<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE) || []
     const targetDate = dateStr || getAttendanceLocalDate(new Date(), 'Asia/Dhaka')
-    return all.filter((r) => r.employee_id === employeeId && r.attendance_date === targetDate)
+    const localMatches = all.filter((r) => r.employee_id === employeeId && r.attendance_date === targetDate)
+    if (localMatches.length > 0) return localMatches
+
+    // Synthesis fallback from daily attendance summaries if no raw punch record found
+    try {
+      const dailyAtt = await AttendanceRepository.getEmployeeDailyAttendance(employeeId, targetDate)
+      if (dailyAtt && (dailyAtt.check_in_time || dailyAtt.check_out_time)) {
+        const targetCompanyId = (await resolveCompanyUuid(companyId)) || companyId
+        const synth: AttendanceRecord[] = []
+        if (dailyAtt.check_in_time) {
+          synth.push({
+            id: `att-syn-in-${employeeId}-${targetDate}`,
+            company_id: targetCompanyId,
+            employee_id: employeeId,
+            employee_name: null,
+            employee_role: null,
+            attendance_date: targetDate,
+            attendance_type: 'CHECK_IN',
+            checked_at: `${targetDate}T${dailyAtt.check_in_time.length === 5 ? dailyAtt.check_in_time + ':00' : dailyAtt.check_in_time}`,
+            latitude: 0,
+            longitude: 0,
+            gps_accuracy_meters: 0,
+            distance_from_location_meters: 0,
+            verification_status: 'verified',
+            location_name: 'Workplace Terminal',
+            notes: dailyAtt.notes || 'Self-Service Portal Check-In',
+            created_at: new Date().toISOString(),
+          })
+        }
+        if (dailyAtt.check_out_time) {
+          synth.push({
+            id: `att-syn-out-${employeeId}-${targetDate}`,
+            company_id: targetCompanyId,
+            employee_id: employeeId,
+            employee_name: null,
+            employee_role: null,
+            attendance_date: targetDate,
+            attendance_type: 'CHECK_OUT',
+            checked_at: `${targetDate}T${dailyAtt.check_out_time.length === 5 ? dailyAtt.check_out_time + ':00' : dailyAtt.check_out_time}`,
+            latitude: 0,
+            longitude: 0,
+            gps_accuracy_meters: 0,
+            distance_from_location_meters: 0,
+            verification_status: 'verified',
+            location_name: 'Workplace Terminal',
+            notes: dailyAtt.notes || 'Self-Service Portal Check-Out',
+            created_at: new Date().toISOString(),
+          })
+        }
+        return synth
+      }
+    } catch {}
+
+    return []
   }
 
   static async getEmployeeAttendanceHistory(
@@ -809,10 +937,87 @@ export class AttendanceRepository {
       .order('checked_at', { ascending: false })
       .limit(limit)
 
-    if (error) {
-      console.error('[AttendanceRepository.getEmployeeAttendanceHistory] Error:', error.message)
-      return []
+    if (!error && data && data.length > 0) {
+      return (data || []).map((r: any) => ({
+        id: r.id,
+        company_id: r.company_id,
+        employee_id: r.employee_id,
+        employee_name: r.employees?.name || null,
+        employee_role: r.employees?.role || null,
+        user_id: r.user_id,
+        branch_id: r.branch_id,
+        location_id: r.location_id,
+        location_name: r.attendance_locations?.name || null,
+        attendance_date: r.attendance_date,
+        attendance_type: r.attendance_type as AttendanceType,
+        checked_at: r.checked_at,
+        latitude: Number(r.latitude),
+        longitude: Number(r.longitude),
+        gps_accuracy_meters: Number(r.gps_accuracy_meters),
+        distance_from_location_meters: Number(r.distance_from_location_meters),
+        qr_token_id: r.qr_token_id,
+        verification_status: r.verification_status,
+        verification_reason: r.verification_reason,
+        device_info: r.device_info,
+        notes: r.notes,
+        created_at: r.created_at,
+      }))
     }
+
+    // Fallback: Synthesize history from attendance_daily_summaries
+    try {
+      const { data: summaries } = await (admin as any)
+        .from('attendance_daily_summaries')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .order('attendance_date', { ascending: false })
+        .limit(limit)
+
+      if (summaries && summaries.length > 0) {
+        const synthHistory: AttendanceRecord[] = []
+        for (const s of summaries) {
+          if (s.check_out_time) {
+            synthHistory.push({
+              id: `hist-out-${s.id}`,
+              company_id: targetCompanyId,
+              employee_id: employeeId,
+              employee_name: null,
+              attendance_date: s.attendance_date,
+              attendance_type: 'CHECK_OUT',
+              checked_at: `${s.attendance_date}T${s.check_out_time.length === 5 ? s.check_out_time + ':00' : s.check_out_time}`,
+              latitude: 0,
+              longitude: 0,
+              gps_accuracy_meters: 0,
+              distance_from_location_meters: 0,
+              verification_status: 'verified',
+              location_name: 'Workplace Terminal',
+              notes: s.notes || 'Self-Service Punch Out',
+              created_at: s.created_at,
+            })
+          }
+          if (s.check_in_time) {
+            synthHistory.push({
+              id: `hist-in-${s.id}`,
+              company_id: targetCompanyId,
+              employee_id: employeeId,
+              employee_name: null,
+              attendance_date: s.attendance_date,
+              attendance_type: 'CHECK_IN',
+              checked_at: `${s.attendance_date}T${s.check_in_time.length === 5 ? s.check_in_time + ':00' : s.check_in_time}`,
+              latitude: 0,
+              longitude: 0,
+              gps_accuracy_meters: 0,
+              distance_from_location_meters: 0,
+              verification_status: 'verified',
+              location_name: 'Workplace Terminal',
+              notes: s.notes || 'Self-Service Punch In',
+              created_at: s.created_at,
+            })
+          }
+        }
+        return synthHistory.slice(0, limit)
+      }
+    } catch {}
 
     return (data || []).map((r: any) => ({
       id: r.id,
@@ -1231,15 +1436,33 @@ export class AttendanceRepository {
   static async getEmployeeDailyAttendance(employeeId: string, dateStr: string): Promise<any | null> {
     try {
       const admin = createAdminClient()
+      const { data: summary } = await (admin as any)
+        .from('attendance_daily_summaries')
+        .select('check_in_time, check_out_time, status, notes')
+        .eq('employee_id', employeeId)
+        .eq('attendance_date', dateStr)
+        .maybeSingle()
+
+      if (summary) return summary
+    } catch {}
+
+    try {
+      const admin = createAdminClient()
       const { data } = await (admin as any)
         .from('attendances')
-        .select('check_in_time, check_out_time, status')
+        .select('check_in_time, check_out_time, status, notes')
         .eq('employee_id', employeeId)
         .eq('attendance_date', dateStr)
         .maybeSingle()
 
       if (data) return data
     } catch {}
+
+    const wfSummaries = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES) || []
+    const matchWf = wfSummaries.find(
+      (a) => a.employee_id === employeeId && (a.attendance_date === dateStr || a.date === dateStr)
+    )
+    if (matchWf) return matchWf
 
     const all = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE) || []
     return (

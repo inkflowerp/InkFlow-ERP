@@ -114,4 +114,31 @@ describe('Attendance Lifecycle & State Machine Verification Tests', () => {
     assert.equal(correction.status, 'approved')
     assert.ok(correction.review_notes.length > 0)
   })
+
+  it('5. Validates cross-portal punch synthesis between daily summary and QR punch flows', () => {
+    // Scenario: Employee checked in via Staff Portal 1-Tap Punch (recorded in daily summaries)
+    const dailySummary = {
+      employee_id: 'emp-shahidur-9877',
+      attendance_date: '2026-10-08',
+      check_in_time: '14:59',
+      status: 'present' as const,
+    }
+
+    // Synthesize attendance punch records for attendance page
+    const synthesizedPunches = [
+      {
+        attendance_type: 'CHECK_IN' as const,
+        checked_at: `${dailySummary.attendance_date}T${dailySummary.check_in_time}:00+06:00`,
+      },
+    ]
+
+    // Verify state machine allows QR Check-Out after portal Check-In
+    const transitionCheckOut = validateAttendanceTransition(synthesizedPunches, 'CHECK_OUT')
+    assert.equal(transitionCheckOut.allowed, true, 'Employee who clocked in via portal must be allowed to check out via QR')
+
+    // Verify duplicate Check-In is prevented
+    const transitionDuplicateIn = validateAttendanceTransition(synthesizedPunches, 'CHECK_IN')
+    assert.equal(transitionDuplicateIn.allowed, false)
+    assert.equal(transitionDuplicateIn.code, 'ALREADY_CHECKED_IN')
+  })
 })

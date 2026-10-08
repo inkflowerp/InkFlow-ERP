@@ -469,8 +469,20 @@ export class AttendanceService {
       }
     }
 
-    const hasCheckedIn = todayRecords.some((r) => r.attendance_type === 'CHECK_IN')
-    const hasCheckedOut = todayRecords.some((r) => r.attendance_type === 'CHECK_OUT')
+    let hasCheckedIn = todayRecords.some((r) => r.attendance_type === 'CHECK_IN')
+    let hasCheckedOut = todayRecords.some((r) => r.attendance_type === 'CHECK_OUT')
+
+    if (!hasCheckedIn || !hasCheckedOut) {
+      try {
+        const dailyAtt = await AttendanceRepository.getEmployeeDailyAttendance(employeeId, todayStr)
+        if (dailyAtt?.check_in_time) {
+          hasCheckedIn = true
+        }
+        if (dailyAtt?.check_out_time) {
+          hasCheckedOut = true
+        }
+      } catch {}
+    }
 
     if (attendanceType === 'CHECK_IN') {
       if (hasCheckedIn && !hasCheckedOut) {
