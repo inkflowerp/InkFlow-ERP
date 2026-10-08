@@ -40,7 +40,7 @@ export function LiveA4Preview({
   settings,
   activeDocType = 'quotation',
   onDocTypeChange,
-  companyName = 'PrintFlow',
+  companyName = 'Vision Sign',
   companyLogoUrl,
 }: LiveA4PreviewProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(100)
@@ -49,10 +49,11 @@ export function LiveA4Preview({
   const canvasRef = useRef<HTMLDivElement>(null)
 
   // Mathematically convert mm padding to percentage of A4 (210mm x 297mm)
-  const paddingTopPct = Math.min(Math.max((settings.padding_top / 297) * 100, 0), 40)
-  const paddingBottomPct = Math.min(Math.max((settings.padding_bottom / 297) * 100, 0), 40)
-  const paddingLeftPct = Math.min(Math.max((settings.padding_left / 210) * 100, 0), 25)
-  const paddingRightPct = Math.min(Math.max((settings.padding_right / 210) * 100, 0), 25)
+  // Ensure safe area starts safely below the compact header (~13.5%) and above compact footer (~8%)
+  const paddingTopPct = Math.min(Math.max((settings.padding_top / 297) * 100, 14), 35)
+  const paddingBottomPct = Math.min(Math.max((settings.padding_bottom / 297) * 100, 8.5), 30)
+  const paddingLeftPct = Math.min(Math.max((settings.padding_left / 210) * 100, 4), 20)
+  const paddingRightPct = Math.min(Math.max((settings.padding_right / 210) * 100, 4), 20)
 
   // Determine current active document key
   const effectiveDocType = settings.document_type || activeDocType || 'quotation'
@@ -213,7 +214,7 @@ export function LiveA4Preview({
               )
             )}
 
-            {/* DYNAMIC SAFE AREA & CONTENT CONTAINER */}
+            {/* DYNAMIC SAFE AREA & CONTENT CONTAINER (Guaranteed 0 overflow) */}
             <div
               style={{
                 position: 'absolute',
@@ -230,18 +231,15 @@ export function LiveA4Preview({
                 title="Safe Area / Content Padding Boundary"
               />
 
-              {/* DOCUMENT CONTENT */}
-              <div
-                style={{ fontSize: '9px', lineHeight: '12px' }}
-                className="flex-1 flex flex-col justify-between p-1.5 sm:p-2 text-foreground overflow-hidden"
-              >
-                {/* Top Section: Customer Box & Document Meta */}
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    {/* Customer / Bill To Box (Matching Image 2 rounded card) */}
-                    <div className="bg-[#F8FAFC] rounded-xl p-3 border border-[#E2E8F0]/70 w-[52%] space-y-0.5">
+              {/* DOCUMENT CONTENT (Compact proportional layout: all fonts 8px-12px) */}
+              <div className="flex-1 flex flex-col justify-between p-1 sm:p-1.5 text-foreground overflow-hidden">
+                {/* Block 1: Customer Card & Document Metadata */}
+                <div>
+                  <div className="flex items-start justify-between gap-2.5">
+                    {/* Customer / Bill To Card (Font sizes: 8px to 12px) */}
+                    <div className="bg-[#F8FAFC] rounded-lg p-2 border border-[#E2E8F0]/70 w-[52%] space-y-0.5">
                       <span
-                        style={{ fontSize: '11px' }}
+                        style={{ fontSize: '10px', lineHeight: '12px' }}
                         className="font-bold text-[#065F46] block uppercase tracking-wide leading-none"
                       >
                         {effectiveDocType === 'challan'
@@ -250,51 +248,46 @@ export function LiveA4Preview({
                           ? 'Received From'
                           : 'Bill To'}
                       </span>
+                      {/* Customer Name: Exactly 12px */}
                       <h4
-                        style={{ fontSize: '13px' }}
-                        className="font-black text-[#111827] leading-tight pt-0.5"
+                        style={{ fontSize: '12px', lineHeight: '14px' }}
+                        className="font-black text-[#111827] leading-tight"
                       >
                         ABC Enterprises Ltd.
                       </h4>
                       <p
-                        style={{ fontSize: '9px' }}
+                        style={{ fontSize: '9px', lineHeight: '11px' }}
                         className="font-semibold text-[#374151]"
                       >
                         Attn: Mr. Rahim Uddin
                       </p>
                       <p
-                        style={{ fontSize: '8.5px' }}
+                        style={{ fontSize: '8.5px', lineHeight: '10px' }}
                         className="text-[#6B7280]"
                       >
                         Customer ID: CUS-0001
                       </p>
                       <p
-                        style={{ fontSize: '8.5px' }}
+                        style={{ fontSize: '8px', lineHeight: '10px' }}
                         className="text-[#6B7280]"
                       >
                         123 Business Avenue, Gulshan, Dhaka-1212
                       </p>
                       <p
-                        style={{ fontSize: '8.5px' }}
+                        style={{ fontSize: '8px', lineHeight: '10px' }}
                         className="text-[#6B7280]"
                       >
-                        Phone: +880 1711 222333
-                      </p>
-                      <p
-                        style={{ fontSize: '8.5px' }}
-                        className="text-[#6B7280]"
-                      >
-                        Email: rahim@abc.com
+                        Phone: +880 1711 222333 • Email: rahim@abc.com
                       </p>
                     </div>
 
-                    {/* Document Meta Numbers (Matching Image 2: No Colons, 2-column key-value alignment) */}
-                    <div className="space-y-1.5 w-[45%] text-left pt-0.5">
+                    {/* Document Meta Numbers (No Colons, Clean 2-Column: 8px to 9.5px) */}
+                    <div className="space-y-0.5 w-[45%] text-left pt-0.5">
                       {/* 1. Document Code */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <FileText className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '9px' }} className="text-[#374151] font-medium">
+                        <div className="flex items-center gap-1">
+                          <FileText className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
                             {effectiveDocType === 'invoice'
                               ? 'Invoice No'
                               : effectiveDocType === 'challan'
@@ -313,22 +306,22 @@ export function LiveA4Preview({
 
                       {/* 2. Date */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '9px' }} className="text-[#374151] font-medium">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
                             Date
                           </span>
                         </div>
-                        <span style={{ fontSize: '9.5px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
                           08 Oct 2025
                         </span>
                       </div>
 
-                      {/* 3. Valid Until (With 7 Days Subtitle) */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Calendar className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '9px' }} className="text-[#374151] font-medium">
+                      {/* 3. Valid Until */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
                             {effectiveDocType === 'invoice'
                               ? 'Due Date'
                               : effectiveDocType === 'challan'
@@ -339,12 +332,12 @@ export function LiveA4Preview({
                           </span>
                         </div>
                         <div className="text-right leading-none">
-                          <span style={{ fontSize: '9.5px' }} className="font-bold text-[#111827]">
+                          <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">
                             15 Oct 2025
                           </span>
                           <span
                             style={{ fontSize: '8px' }}
-                            className="block text-[#6B7280] font-normal mt-0.5"
+                            className="inline-block text-[#6B7280] font-normal ml-1"
                           >
                             (7 Days)
                           </span>
@@ -353,52 +346,60 @@ export function LiveA4Preview({
 
                       {/* 4. Sales Person */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <User className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '9px' }} className="text-[#374151] font-medium">
+                        <div className="flex items-center gap-1">
+                          <User className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
                             {effectiveDocType === 'receipt' ? 'Cashier' : 'Sales Person'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '9.5px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
                           Shahid Hossain
                         </span>
                       </div>
 
                       {/* 5. Reference */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <Tag className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '9px' }} className="text-[#374151] font-medium">
+                        <div className="flex items-center gap-1">
+                          <Tag className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
                             Reference
                           </span>
                         </div>
-                        <span style={{ fontSize: '9.5px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
                           Signage for Office
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Items Table with Dark Green Header and Rounded Top */}
-                  <div className="rounded-t-lg overflow-hidden border border-[#E5E7EB]">
-                    <table style={{ fontSize: '8.5px' }} className="w-full border-collapse">
+                  {/* Items Table: Compact padding to eliminate overflow */}
+                  <div className="rounded-t-md overflow-hidden border border-[#E5E7EB] mt-1">
+                    <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-[#064E3B] text-white font-bold">
-                          <th className="py-2 px-2 w-[6%] text-center">SL</th>
-                          <th className="py-2 px-2 w-[36%] text-left">Item Description</th>
+                          <th className="py-1 px-1.5 w-[5%] text-center" style={{ fontSize: '9px' }}>
+                            SL
+                          </th>
+                          <th className="py-1 px-1.5 w-[37%] text-left" style={{ fontSize: '9px' }}>
+                            Item Description
+                          </th>
                           {settings.item_display_mode === 'detailed' && (
-                            <th className="py-2 px-2 w-[22%] text-center">Size / Specification</th>
+                            <th className="py-1 px-1.5 w-[22%] text-center" style={{ fontSize: '9px' }}>
+                              Size / Specification
+                            </th>
                           )}
-                          <th className="py-2 px-2 w-[8%] text-center">Qty</th>
-                          <th className="py-2 px-2 w-[14%] text-right leading-tight">
-                            <div>Unit Price</div>
-                            <div style={{ fontSize: '7.5px' }} className="font-normal text-white/90">
+                          <th className="py-1 px-1.5 w-[8%] text-center" style={{ fontSize: '9px' }}>
+                            Qty
+                          </th>
+                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight">
+                            <div style={{ fontSize: '8.5px' }}>Unit Price</div>
+                            <div style={{ fontSize: '8px' }} className="font-normal text-white/90">
                               (BDT)
                             </div>
                           </th>
-                          <th className="py-2 px-2 w-[14%] text-right leading-tight">
-                            <div>Total</div>
-                            <div style={{ fontSize: '7.5px' }} className="font-normal text-white/90">
+                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight">
+                            <div style={{ fontSize: '8.5px' }}>Total</div>
+                            <div style={{ fontSize: '8px' }} className="font-normal text-white/90">
                               (BDT)
                             </div>
                           </th>
@@ -407,31 +408,31 @@ export function LiveA4Preview({
                       <tbody className="divide-y divide-[#F1F5F9] bg-white">
                         {sampleItems.map((item) => (
                           <tr key={item.id} className="hover:bg-[#F8FAFC]/60">
-                            <td className="py-2 px-2 text-center text-[#6B7280]">
+                            <td className="py-1 px-1.5 text-center text-[#6B7280]" style={{ fontSize: '8.5px' }}>
                               {item.id}
                             </td>
-                            <td className="py-2 px-2 text-left">
-                              <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] block">
+                            <td className="py-1 px-1.5 text-left">
+                              <span style={{ fontSize: '9px', lineHeight: '11px' }} className="font-bold text-[#111827] block">
                                 {item.title}
                               </span>
                               {settings.item_display_mode === 'detailed' && (
-                                <span style={{ fontSize: '7.5px' }} className="text-[#6B7280] block leading-tight mt-0.5">
+                                <span style={{ fontSize: '8px', lineHeight: '10px' }} className="text-[#6B7280] block leading-tight">
                                   {item.subtext}
                                 </span>
                               )}
                             </td>
                             {settings.item_display_mode === 'detailed' && (
-                              <td style={{ fontSize: '8px' }} className="py-2 px-2 text-center text-[#374151]">
+                              <td style={{ fontSize: '8px' }} className="py-1 px-1.5 text-center text-[#374151]">
                                 {item.specs}
                               </td>
                             )}
-                            <td style={{ fontSize: '8.5px' }} className="py-2 px-2 text-center text-[#374151] tabular-nums">
+                            <td style={{ fontSize: '8.5px' }} className="py-1 px-1.5 text-center text-[#374151] tabular-nums">
                               {item.qty}
                             </td>
-                            <td style={{ fontSize: '8.5px' }} className="py-2 px-2 text-right text-[#374151] tabular-nums">
+                            <td style={{ fontSize: '8.5px' }} className="py-1 px-1.5 text-right text-[#374151] tabular-nums">
                               {item.unitPrice}
                             </td>
-                            <td style={{ fontSize: '8.5px' }} className="py-2 px-2 text-right font-bold text-[#111827] tabular-nums">
+                            <td style={{ fontSize: '9px' }} className="py-1 px-1.5 text-right font-bold text-[#111827] tabular-nums">
                               {item.total}
                             </td>
                           </tr>
@@ -441,145 +442,139 @@ export function LiveA4Preview({
                   </div>
                 </div>
 
-                {/* Middle Section: Specifications Box & Financial Summary */}
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  {/* Left: Production Specs Box (Matching Image 2 aligned colons) */}
-                  <div
-                    style={{ fontSize: '8px' }}
-                    className="space-y-1.5 bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0]/70"
-                  >
+                {/* Block 2: Specifications Box & Financial Summary */}
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {/* Left: Production Specs Box (Fonts 8.5px) */}
+                  <div className="space-y-0.5 bg-[#F8FAFC] p-2 rounded-lg border border-[#E2E8F0]/70">
                     {effectiveDocType === 'invoice' || effectiveDocType === 'receipt' ? (
                       <>
-                        <div className="flex items-center gap-2">
-                          <Landmark className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Bank Account</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">City Bank Ltd • Gulshan</span>
+                        <div className="flex items-center gap-1.5">
+                          <Landmark className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Bank Account</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">City Bank Ltd • Gulshan</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Hash className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">A/C Number</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium font-mono">1102938472001</span>
+                        <div className="flex items-center gap-1.5">
+                          <Hash className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">A/C Number</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium font-mono">1102938472001</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">bKash / Nagad</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium font-mono">+880 1712 345678 (Merchant)</span>
+                        <div className="flex items-center gap-1.5">
+                          <CreditCard className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">bKash / Nagad</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium font-mono">+880 1712 345678</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Mushak Status</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">NBR 15% VAT Compliant</span>
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Mushak Status</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">NBR 15% VAT Compliant</span>
                         </div>
                       </>
                     ) : effectiveDocType === 'challan' ? (
                       <>
-                        <div className="flex items-center gap-2">
-                          <Truck className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Vehicle No</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">Dhaka Metro Ka-1234</span>
+                        <div className="flex items-center gap-1.5">
+                          <Truck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Vehicle No</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Dhaka Metro Ka-1234</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <User className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Driver Contact</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">+880 1819 998877</span>
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Driver Contact</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">+880 1819 998877</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Dispatch Store</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">Central Factory Warehouse</span>
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Dispatch Store</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Central Factory Warehouse</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[85px]">Quality Check</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">100% Passed Final QA</span>
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[75px]">Quality Check</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">100% Passed Final QA</span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="flex items-center gap-2">
-                          <Cog className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[90px]">Production Time</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">3 - 5 Working Days</span>
+                        <div className="flex items-center gap-1.5">
+                          <Cog className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Production Time</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">3 - 5 Working Days</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Truck className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[90px]">Delivery</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">Within Dhaka & Nationwide</span>
+                        <div className="flex items-center gap-1.5">
+                          <Truck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Delivery</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Within Dhaka & Nationwide</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[90px]">Payment Terms</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">50% Advance, 50% Before Delivery</span>
+                        <div className="flex items-center gap-1.5">
+                          <CreditCard className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Payment Terms</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">50% Adv, 50% Before Delivery</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-3 w-3 text-[#111827] shrink-0" />
-                          <span className="font-bold text-[#111827] min-w-[90px]">Warranty</span>
-                          <span className="text-[#6B7280] font-bold">:</span>
-                          <span className="text-[#374151] font-medium">6 Months (Material & Installation)</span>
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Warranty</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">6 Months (Mat & Install)</span>
                         </div>
                       </>
                     )}
                   </div>
 
-                  {/* Right: Financial Totals + Grand Total Pill */}
-                  <div style={{ fontSize: '8.5px' }} className="space-y-1 text-right flex flex-col justify-between">
-                    <div className="space-y-1">
+                  {/* Right: Financial Totals & Grand Total Pill */}
+                  <div className="space-y-0.5 text-right flex flex-col justify-between">
+                    <div className="space-y-0.5">
                       <div className="flex justify-between py-0.5">
-                        <span className="text-[#374151] font-medium">Sub Total</span>
-                        <span className="font-bold text-[#111827] tabular-nums">30,250</span>
+                        <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
+                        <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">30,250</span>
                       </div>
                       <div className="flex justify-between py-0.5">
-                        <span className="text-[#374151] font-medium">Discount</span>
-                        <span className="font-bold text-[#111827] tabular-nums">- 1,250</span>
+                        <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
+                        <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">- 1,250</span>
                       </div>
                       <div className="flex justify-between py-0.5">
-                        <span className="text-[#374151] font-medium">VAT (15%)</span>
-                        <span className="font-bold text-[#111827] tabular-nums">4,350</span>
+                        <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT (15%)</span>
+                        <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">4,350</span>
                       </div>
                     </div>
 
-                    {/* Grand Total Pill in dark forest green #064E3B */}
-                    <div
-                      className="flex items-center justify-between py-2 px-3.5 bg-[#064E3B] text-white rounded-lg font-bold shadow-xs mt-1"
-                    >
-                      <span style={{ fontSize: '9px' }}>
-                        {effectiveDocType === 'receipt'
-                          ? 'Total Received (BDT)'
-                          : 'Grand Total (BDT)'}
+                    {/* Grand Total Pill: Amount exactly 12px */}
+                    <div className="flex items-center justify-between py-1.5 px-3 bg-[#064E3B] text-white rounded-md font-bold shadow-xs mt-0.5">
+                      <span style={{ fontSize: '10px' }}>
+                        {effectiveDocType === 'receipt' ? 'Total Received (BDT)' : 'Grand Total (BDT)'}
                       </span>
-                      <span style={{ fontSize: '13px' }} className="font-black tabular-nums tracking-tight">
+                      <span style={{ fontSize: '12px' }} className="font-black tabular-nums tracking-tight">
                         33,350
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Section: Terms & Signatures */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="grid grid-cols-12 gap-3 items-end">
-                    {/* Terms & Conditions (Left) */}
-                    <div className="col-span-7 space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <FileText className="h-3 w-3 text-[#111827] shrink-0" />
-                        <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">
+                {/* Block 3: Terms & Signatures (Guaranteed fit without overflow) */}
+                <div className="mt-1 pt-1 border-t border-[#E5E7EB]">
+                  <div className="grid grid-cols-12 gap-2.5 items-end">
+                    {/* Terms & Conditions (Left - 7 cols) */}
+                    <div className="col-span-7 space-y-0.5">
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-2.5 w-2.5 text-[#111827] shrink-0" />
+                        <span style={{ fontSize: '9.5px' }} className="font-bold text-[#111827]">
                           Terms & Conditions
                         </span>
                         <div className="h-[1px] bg-[#E2E8F0] flex-1 ml-1" />
                       </div>
+                      {/* Terms text: Exactly 8px */}
                       <div
-                        style={{ fontSize: '7px', lineHeight: '11px' }}
-                        className="space-y-0.5 text-[#4B5563]"
+                        style={{ fontSize: '8px', lineHeight: '10.5px' }}
+                        className="space-y-0.25 text-[#4B5563]"
                       >
                         {activeTerms.map((term, index) => (
                           <p key={index}>{term}</p>
@@ -587,20 +582,19 @@ export function LiveA4Preview({
                       </div>
                     </div>
 
-                    {/* Signatures (Right) */}
-                    <div className="col-span-5 grid grid-cols-2 gap-3 text-center">
+                    {/* Signatures (Right - 5 cols) */}
+                    <div className="col-span-5 grid grid-cols-2 gap-2 text-center">
                       {/* Prepared By with Cursive Signature */}
                       <div className="space-y-0.5 text-left">
-                        <p style={{ fontSize: '8px' }} className="text-[#374151] font-medium">
+                        <p style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium leading-none">
                           {effectiveDocType === 'challan'
                             ? 'Dispatched By'
                             : effectiveDocType === 'receipt'
                             ? 'Received By'
                             : 'Prepared By'}
                         </p>
-                        <div className="h-6 flex items-end justify-start">
-                          {/* Authentic cursive signature matching Image 2 */}
-                          <svg viewBox="0 0 100 28" fill="none" className="h-6 w-20">
+                        <div className="h-5 flex items-end justify-start">
+                          <svg viewBox="0 0 100 28" fill="none" className="h-4 w-16">
                             <path
                               d="M8 22 C 10 14, 13 4, 17 5 C 20 6, 15 20, 20 21 C 24 22, 27 12, 31 19 C 34 21, 38 16, 41 19 C 45 21, 48 14, 52 20 C 55 21, 60 10, 64 19 C 67 21, 73 20, 81 18"
                               stroke="#111827"
@@ -616,14 +610,14 @@ export function LiveA4Preview({
                             />
                           </svg>
                         </div>
-                        <div className="border-t border-[#9CA3AF] pt-1">
-                          <p style={{ fontSize: '8px' }} className="font-bold text-[#111827] leading-none">
+                        <div className="border-t border-[#9CA3AF] pt-0.5">
+                          <p style={{ fontSize: '9px' }} className="font-bold text-[#111827] leading-tight">
                             Shahid Hossain
                           </p>
-                          <p style={{ fontSize: '6.5px' }} className="text-[#6B7280] leading-none mt-0.5">
-                            {effectiveDocType === 'receipt' ? 'Cashier / Accounts' : 'Sales Executive'}
+                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-none mt-0.25">
+                            {effectiveDocType === 'receipt' ? 'Cashier' : 'Sales Executive'}
                           </p>
-                          <p style={{ fontSize: '6.5px' }} className="text-[#6B7280] leading-none mt-0.5">
+                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-none mt-0.25">
                             PrintFlow
                           </p>
                         </div>
@@ -631,20 +625,20 @@ export function LiveA4Preview({
 
                       {/* Approved By with blank lines */}
                       <div className="space-y-0.5 text-left">
-                        <p style={{ fontSize: '8px' }} className="text-[#374151] font-medium">
+                        <p style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium leading-none">
                           {effectiveDocType === 'challan'
-                            ? 'Received By (Client)'
+                            ? 'Received By'
                             : 'Approved By'}
                         </p>
-                        <div className="h-6" />
-                        <div className="border-t border-[#9CA3AF] pt-1 space-y-0.5">
-                          <p style={{ fontSize: '6.5px' }} className="text-[#6B7280] leading-none">
+                        <div className="h-5" />
+                        <div className="border-t border-[#9CA3AF] pt-0.5 space-y-0.25">
+                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
                             Name:
                           </p>
-                          <p style={{ fontSize: '6.5px' }} className="text-[#6B7280] leading-none">
+                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
                             Designation:
                           </p>
-                          <p style={{ fontSize: '6.5px' }} className="text-[#6B7280] leading-none">
+                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
                             Date:
                           </p>
                         </div>
