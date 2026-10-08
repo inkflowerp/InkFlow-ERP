@@ -88,11 +88,14 @@ function QuotationDetailContent() {
  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
  const { template: docTemplate } = useDocumentTemplate(slug, 'quotation')
 
- const effectiveCompanyName = company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Vision Sign')
- const effectiveAddress = company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
- const effectivePhone = company?.phone || '+880 1712 345678'
- const effectiveEmail = company?.email || (company?.slug ? `sales@${company.slug}.com` : 'info@printflow.bd')
- const effectiveWebsite = company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+ const [companyProfile] = useDataStore<any>(STORAGE_KEYS.COMPANY_PROFILE, null, slug)
+
+ const effectiveCompanyName = companyProfile?.name || company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'PrintFlow')
+ const effectiveAddress = companyProfile?.address || company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+ const effectivePhone = companyProfile?.phone || company?.phone || '+880 1712 345678'
+ const effectiveEmail = companyProfile?.email || company?.email || (company?.slug ? `sales@${company.slug}.com` : 'info@printflow.bd')
+ const effectiveWebsite = companyProfile?.website || company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+ const effectiveLogoUrl = companyProfile?.logo_url || company?.logo_url || undefined
 
   // Local datastore fallback
  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
@@ -764,7 +767,7 @@ function QuotationDetailContent() {
             companyPhone={effectivePhone}
             companyEmail={effectiveEmail}
             companyWebsite={effectiveWebsite}
-            companyLogoUrl={company?.logo_url || undefined}
+            companyLogoUrl={effectiveLogoUrl}
             onPrintPdf={() => window.print()}
           />
         </div>

@@ -112,6 +112,7 @@ export default function CompanyProfileSettingsPage() {
  phone: company?.phone || settings?.phone || '',
  whatsapp: company?.whatsapp || settings?.whatsapp || '',
  email: company?.email || settings?.email || '',
+ website: company?.website || (settings as any)?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd'),
  area: initialArea,
  address: initialAddress,
  address_bn: initialAddressBn,
@@ -130,6 +131,7 @@ export default function CompanyProfileSettingsPage() {
  phone: company?.phone || settings?.phone || profile?.phone || '',
  whatsapp: company?.whatsapp || settings?.whatsapp || profile?.whatsapp || '',
  email: company?.email || settings?.email || profile?.email || '',
+ website: company?.website || (settings as any)?.website || profile?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd'),
  area: initialArea || cleanField(profile?.area),
  address: initialAddress || cleanAddress(profile?.address),
  address_bn: initialAddressBn || cleanField(profile?.address_bn),
@@ -156,6 +158,7 @@ export default function CompanyProfileSettingsPage() {
  phone: company.phone || settings?.phone || '',
  whatsapp: company.whatsapp || settings?.whatsapp || '',
  email: company.email || settings?.email || '',
+        website: company.website || (settings as any)?.website || (company.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd'),
  area: coArea,
  address: coAddress,
  address_bn: coAddressBn,
@@ -204,6 +207,7 @@ export default function CompanyProfileSettingsPage() {
  phone: formData.phone,
  whatsapp: formData.whatsapp || null,
  email: formData.email,
+        website: formData.website || null,
  address: formData.address,
  address_bn: formData.address_bn || null,
  area: formData.area || null,
@@ -379,7 +383,7 @@ export default function CompanyProfileSettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="phone"required>
  {tBilingual('Office Phone Number', 'অফিস ফোন নম্বর')}
@@ -410,6 +414,19 @@ export default function CompanyProfileSettingsPage() {
  onChange={handleChange}
  required
  placeholder={tBilingual("billing@company.com", "billing@company.com")}/>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="website">
+                  {tBilingual('Official Website', 'অফিসিয়াল ওয়েবসাইট')}
+                </Label>
+                <Input
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  placeholder="www.company.com"
+                />
               </div>
             </div>
           </CardContent>

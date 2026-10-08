@@ -30,6 +30,9 @@ import { MoneyReceiptPdfDocument } from '@/components/pdf/documents/money-receip
 import { QRCodeSVG } from '@/components/attendance/qr-code-svg'
 import { useDocumentTemplate } from '@/hooks/use-document-template'
 import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
+import { LiveA4Preview } from '@/components/settings/document-template/print-a4-preview'
+import { useDataStore } from '@/hooks/use-data-store'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface MoneyReceiptModalProps {
  open: boolean
@@ -49,6 +52,15 @@ export function MoneyReceiptModal({
  const { company } = useTenant()
  const { locale } = useI18n()
  const { template: docTemplate } = useDocumentTemplate(company?.slug, 'receipt')
+ const [companyProfile] = useDataStore<any>(STORAGE_KEYS.COMPANY_PROFILE, null, company?.slug)
+
+ const effectiveCompanyName = companyProfile?.name || company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'PrintFlow')
+ const effectiveAddress = companyProfile?.address || company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+ const effectivePhone = companyProfile?.phone || company?.phone || '+880 1712 345678'
+ const effectiveEmail = companyProfile?.email || company?.email || (company?.slug ? `billing@${company.slug}.com` : 'info@printflow.bd')
+ const effectiveWebsite = companyProfile?.website || company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+ const effectiveLogoUrl = companyProfile?.logo_url || company?.logo_url || undefined
+
  const [copied, setCopied] = React.useState(false)
  const printRef = useRef<HTMLDivElement>(null)
 
@@ -241,234 +253,22 @@ export function MoneyReceiptModal({
           </div>
         </div>
 
-        {/* PRINTABLE OFFICIAL MONEY RECEIPT CANVAS */}
-        <div
-          ref={printRef}
-          data-money-receipt-canvas="true"
-          data-print-isolate="true"
-          style={
-            docTemplate?.use_letterhead
-              ? {
-                  paddingTop: `${docTemplate.padding_top || 42}mm`,
-                  paddingRight: `${docTemplate.padding_right || 10}mm`,
-                  paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
-                  paddingLeft: `${docTemplate.padding_left || 10}mm`,
-                }
-              : undefined
-          }
-          className="relative p-6 bg-card border-2 border-input rounded-xl space-y-5 text-foreground shadow-xs font-sans print:border-none print:shadow-none print:p-0 print:m-0 overflow-hidden"
-        >
-          {docTemplate?.use_letterhead && (
-            docTemplate.letterhead_file?.url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={docTemplate.letterhead_file.url}
-                alt="Letterhead"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
-              />
-            ) : (
-              <PrintLetterheadArt
-                documentTypeTitleEn="MONEY RECEIPT"
-                documentTypeTitleBn="মানি রিসিট"
-                companyName={company?.name || 'PrintFlow'}
-                companyLogoUrl={company?.logo_url || undefined}
-                phone={company?.phone || '+880 1712 345678'}
-                email={company?.email || 'info@printflow.bd'}
-                website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
-                address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
-                mode={docTemplate.letterhead_mode}
-              />
-            )
-          )}
-          <div className="relative z-10 space-y-5">
-          {/* HEADER */}
-          <div className="text-center space-y-1 pb-4 border-b-2 border-success-border border-success-border">
-            <h1 className="text-xl font-black tracking-tight uppercase text-foreground">
-              {company?.name || 'Printing & Signage Solutions'}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {company?.address || '42/1 Motijheel C/A, Dhaka-1000'} • Phone: {company?.phone || '+880 1700-000000'}
-              {(company as any)?.bin || (company as any)?.bin_no ? ` • BIN: ${(company as any)?.bin || (company as any)?.bin_no}` : ''}
-            </p>
-            <div className="inline-block mt-2 px-4 py-1 rounded-full bg-success-surface text-success bg-success-surface/80 text-success font-black text-xs tracking-wider uppercase border border-success-border border-success-border">
- OFFICIAL MONEY RECEIPT / অফিসিয়াল মানি রিসিট (MR)
-            </div>
-          </div>
-
-          {/* RECEIPT META */}
-          <div className="flex flex-wrap justify-between items-center text-xs tabular-nums py-1 px-1 border-b border-border">
-            <div>
-              <span className="text-muted-foreground">Receipt No: </span>
-              <strong className="text-success text-success text-sm font-black">
-                {payment.receipt_number}
-              </strong>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Date: </span>
-              <strong>{payment.payment_date || new Date().toISOString().split('T')[0]}</strong>
-            </div>
-          </div>
-
-          {/* MAIN PARTICULARS */}
-          <div className="p-4 rounded-xl border border-border bg-muted space-y-3 text-xs">
-            <div className="flex flex-col sm:flex-row sm:items-baseline">
-              <span className="text-muted-foreground w-44 shrink-0 font-medium">Received with thanks from:</span>
-              <div className="font-bold text-sm text-foreground">
-                {payment.customer_name || customer?.name || 'Customer'}
-                {customer?.company_name && (
-                  <span className="font-normal text-muted-foreground text-xs ml-1.5">
-                    ({customer.company_name})
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-baseline">
-              <span className="text-muted-foreground w-44 shrink-0 font-medium">The sum of Taka (in words):</span>
-              <span className="font-bold text-success text-success italic">
-                {numberToWordsBDT(payment.amount)}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-baseline">
-              <span className="text-muted-foreground w-44 shrink-0 font-medium">Payment Channel / Mode:</span>
-              <div className="font-bold uppercase flex items-center gap-2 flex-wrap">
-                <span>{methodInfo.en}</span>
-                {payment.mfs_transaction_id && (
-                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
- TrxID: {payment.mfs_transaction_id}
-                  </Badge>
-                )}
-                {payment.cheque_number && (
-                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
- Cheque #{payment.cheque_number} {payment.bank_name ? `(${payment.bank_name})` : ''}
-                  </Badge>
-                )}
-                {payment.bank_name && !payment.cheque_number && (
-                  <Badge variant="outline"className="tabular-nums text-xs normal-case bg-card">
- Bank: {payment.bank_name}
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-baseline">
-              <span className="text-muted-foreground w-44 shrink-0 font-medium">On Account of / Purpose:</span>
-              <span className="text-foreground">
-                {payment.notes || 'Settlement of printing & fabrication invoices'}
-              </span>
-            </div>
-          </div>
-
-          {/* INVOICE ALLOCATION BREAKDOWN */}
-          {payment.allocations && payment.allocations.length > 0 ? (
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
- Invoice Settlement Allocation
-              </div>
-              <div className="border border-border rounded-lg overflow-hidden text-xs">
-                <table className="w-full text-left">
-                  <thead className="bg-muted text-muted-foreground font-semibold text-xs">
-                    <tr>
-                      <th className="p-2">Invoice</th>
-                      <th className="p-2 text-right">Invoice Total</th>
-                      <th className="p-2 text-right">Paid Now</th>
-                      <th className="p-2 text-right">Remaining Due</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border font-numeric tabular-nums">
-                    {payment.allocations.map((alloc, i) => {
- const matchedInv = invoices.find((inv) => inv.id === alloc.invoice_id || inv.invoice_number === alloc.invoice_number)
- const grandTotal = matchedInv ? matchedInv.grand_total : alloc.allocated_amount
- const remainingDue = matchedInv ? Math.max(0, matchedInv.due_amount - alloc.allocated_amount) : 0
- return (
-                        <tr key={i} className="hover:bg-muted dark:hover:bg-muted/30">
-                          <td className="p-2 font-bold text-primary text-primary">
-                            #{alloc.invoice_number || alloc.invoice_id}
-                          </td>
-                          <td className="p-2 text-right text-foreground">
-                            {formatBDT(grandTotal)}
-                          </td>
-                          <td className="p-2 text-right font-bold text-success text-success">
-                            {formatBDT(alloc.allocated_amount)}
-                          </td>
-                          <td className="p-2 text-right text-muted-foreground">
-                            {formatBDT(remainingDue)}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (invoices.length > 0 && invoices[0]) ? (
-            <div className="space-y-1.5">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
- Invoice Settlement
-              </div>
-              <div className="border border-border rounded-lg overflow-hidden text-xs">
-                <table className="w-full text-left">
-                  <thead className="bg-muted text-muted-foreground font-semibold text-xs">
-                    <tr>
-                      <th className="p-2">Invoice</th>
-                      <th className="p-2 text-right">Invoice Total</th>
-                      <th className="p-2 text-right">Paid Now</th>
-                      <th className="p-2 text-right">Remaining Due</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border font-numeric tabular-nums">
-                    <tr className="hover:bg-muted dark:hover:bg-muted/30">
-                      <td className="p-2 font-bold text-primary text-primary">
-                        #{invoices[0].invoice_number}
-                      </td>
-                      <td className="p-2 text-right text-foreground">
-                        {formatBDT(invoices[0].grand_total)}
-                      </td>
-                      <td className="p-2 text-right font-bold text-success text-success">
-                        {formatBDT(payment.amount)}
-                      </td>
-                      <td className="p-2 text-right text-muted-foreground">
-                        {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : null}
-
-          {/* TOTAL, QR CODE & SIGNATURES */}
-          <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-4 border-t border-border">
-            <div className="p-3.5 rounded-xl text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
-              <span className="text-xs uppercase font-bold text-success block">Total Amount Received</span>
-              <div className="text-2xl font-bold tracking-normal">
-                {formatBDT(payment.amount)}
-              </div>
-            </div>
-
-            {/* QR Code Verification for Direct Print */}
-            <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-muted border border-border">
-              <QRCodeSVG
-                value={`${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || `https://${BRAND.rootDomain}`)}/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
-                size={64}
-                className="bg-card p-1 rounded"
-              />
-              <span className="text-xs text-muted-foreground font-semibold mt-1">
- Scan to Verify Voucher
-              </span>
-            </div>
-
-            <div className="text-center pt-6 space-y-1">
-              <div className="border-t border-input w-48 pt-1.5 font-bold text-xs">
-                {payment.received_by_name || 'Cashier / Accountant'}
-              </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">
- Authorized Signatory & Seal
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* PRINTABLE OFFICIAL MONEY RECEIPT CANVAS (Synchronized Document Template) */}
+        <div id="receipt-print-area" className="w-full flex justify-center">
+          <LiveA4Preview
+            settings={docTemplate}
+            activeDocType="receipt"
+            paymentData={payment}
+            invoiceData={invoices[0] || null}
+            showControls={false}
+            companyName={effectiveCompanyName}
+            companyAddress={effectiveAddress}
+            companyPhone={effectivePhone}
+            companyEmail={effectiveEmail}
+            companyWebsite={effectiveWebsite}
+            companyLogoUrl={effectiveLogoUrl}
+            onPrintPdf={handlePrint}
+          />
         </div>
 
         {/* STANDARDIZED MODAL FOOTER */}

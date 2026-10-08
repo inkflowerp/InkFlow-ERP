@@ -283,8 +283,8 @@ export function PrintLetterheadArt({
             <div className="px-0.5 flex flex-col items-center justify-center">
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.5">
                 <rect x="3" y="4" width="18" height="12" rx="2" />
-                <path d="M7 10h2M12 8v4M15 8h2" />
                 <path d="M8 16v4M16 16v4M5 20h14" />
+                <text x="12" y="12.5" fontSize="5.5" fontWeight="900" textAnchor="middle" fill="#111827" stroke="none">LED</text>
               </svg>
               <span
                 style={{ fontSize: '8px', lineHeight: '10px' }}
@@ -422,17 +422,23 @@ export function PrintLetterheadArt({
           >
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 text-white/90">
-                <span>🌐</span>
+                <svg className="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1a2 2 0 0 0 2 2v1.93zm6.9-2.54A8 8 0 0 0 19 12c0-.68-.1-1.34-.28-1.96l-4.72 4.72a2 2 0 0 0-.58 1.41v1.17c1.37-.43 2.59-1.25 3.48-2.34z" />
+                </svg>
                 <span>{website}</span>
               </span>
               <span className="text-white/40">|</span>
               <span className="flex items-center gap-1 text-white/90">
-                <span>✉</span>
+                <svg className="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
                 <span>{email}</span>
               </span>
               <span className="text-white/40">|</span>
               <span className="flex items-center gap-1 text-white/90">
-                <span>☎</span>
+                <svg className="w-2.5 h-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z" />
+                </svg>
                 <span>{phone}</span>
               </span>
             </div>

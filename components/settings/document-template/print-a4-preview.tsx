@@ -8,6 +8,7 @@ import {
   Maximize2,
   FileText,
   Calendar,
+  CalendarDays,
   User,
   Tag,
   ShieldCheck,
@@ -32,6 +33,7 @@ import {
 import { PrintLetterheadArt } from './print-letterhead-art'
 import { QuotationRecord } from '@/types/quotation.types'
 import { InvoiceRecord } from '@/types/billing.types'
+import type { DeliveryChallanRecord } from '@/types/logistics.types'
 import { formatBDT } from '@/lib/formatters'
 
 interface LiveA4PreviewProps {
@@ -49,12 +51,14 @@ interface LiveA4PreviewProps {
   onDownloadPdf?: () => void
   quotationData?: QuotationRecord | null
   invoiceData?: InvoiceRecord | null
+  challanData?: DeliveryChallanRecord | null
+  paymentData?: any | null
   showControls?: boolean
 }
 
 export function LiveA4Preview({
   settings,
-  activeDocType = 'quotation',
+  activeDocType,
   onDocTypeChange,
   companyName = 'Vision Sign',
   companyAddress = 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230',
@@ -67,6 +71,8 @@ export function LiveA4Preview({
   onDownloadPdf,
   quotationData,
   invoiceData,
+  challanData,
+  paymentData,
   showControls = true,
 }: LiveA4PreviewProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(100)
@@ -82,44 +88,62 @@ export function LiveA4Preview({
   const paddingRightPct = Math.min(Math.max((settings.padding_right / 210) * 100, 4), 20)
 
   // Determine current active document key
-  const effectiveDocType: DocumentTypeKey = quotationData
+  const effectiveDocType: DocumentTypeKey = activeDocType
+    ? activeDocType
+    : quotationData
     ? 'quotation'
     : invoiceData
     ? 'invoice'
-    : settings.document_type || activeDocType || 'quotation'
+    : challanData
+    ? 'challan'
+    : paymentData
+    ? 'receipt'
+    : settings.document_type || 'quotation'
 
   // Dynamic document headers based on effectiveDocType
   const getDocTypeHeader = () => {
-    if (quotationData) {
+    if (effectiveDocType === 'receipt') {
+      return {
+        en: 'MONEY RECEIPT',
+        bn: 'মানি রিসিট',
+        code: paymentData?.receipt_number || (invoiceData ? `MR-${invoiceData.invoice_number.replace(/^INV-/, '')}` : 'REC-2025-1001'),
+        title: 'Money Receipt',
+        recipientLabel: 'Received From',
+      }
+    }
+    if (effectiveDocType === 'challan') {
+      return {
+        en: 'DELIVERY CHALLAN',
+        bn: 'ডেলিভারি চালান',
+        code: challanData?.challan_number || (invoiceData ? `DC-${invoiceData.invoice_number.replace(/^INV-/, '')}` : 'DC-2025-1001'),
+        title: 'Delivery Challan',
+        recipientLabel: 'Deliver To',
+      }
+    }
+    if (effectiveDocType === 'purchase_order') {
+      return {
+        en: 'PURCHASE ORDER',
+        bn: 'ক্রয়াদেশ',
+        code: 'PO-2025-1001',
+        title: 'Purchase Order',
+        recipientLabel: 'Vendor / Supplier',
+      }
+    }
+    if (quotationData || effectiveDocType === 'quotation') {
       return {
         en: 'QUOTATION',
         bn: 'কোটেশন',
-        code: quotationData.quotation_number,
+        code: quotationData?.quotation_number || 'QT-2025-1001',
         title: 'Quotation',
         recipientLabel: 'Bill To',
       }
     }
-    if (invoiceData) {
-      return {
-        en: 'TAX INVOICE',
-        bn: 'চালান বিল',
-        code: invoiceData.invoice_number,
-        title: 'Invoice',
-        recipientLabel: 'Bill To',
-      }
-    }
-    switch (effectiveDocType) {
-      case 'invoice':
-        return { en: 'TAX INVOICE', bn: 'চালান বিল', code: 'INV-2025-1001', title: 'Invoice', recipientLabel: 'Bill To' }
-      case 'challan':
-        return { en: 'DELIVERY CHALLAN', bn: 'ডেলিভারি চালান', code: 'DC-2025-1001', title: 'Challan', recipientLabel: 'Deliver To' }
-      case 'receipt':
-        return { en: 'MONEY RECEIPT', bn: 'মানি রিসিট', code: 'REC-2025-1001', title: 'Receipt', recipientLabel: 'Received From' }
-      case 'purchase_order':
-        return { en: 'PURCHASE ORDER', bn: 'ক্রয়াদেশ', code: 'PO-2025-1001', title: 'Purchase Order', recipientLabel: 'Vendor / Supplier' }
-      case 'quotation':
-      default:
-        return { en: 'QUOTATION', bn: 'কোটেশন', code: 'QT-2025-1001', title: 'Quotation', recipientLabel: 'Bill To' }
+    return {
+      en: 'TAX INVOICE',
+      bn: 'চালান বিল',
+      code: invoiceData?.invoice_number || 'INV-2025-1001',
+      title: 'Invoice',
+      recipientLabel: 'Bill To',
     }
   }
 
@@ -185,6 +209,40 @@ export function LiveA4Preview({
         unitPrice: formatBDT(item.unit_rate || item.unit_price || 0).replace('৳', '').trim(),
         total: formatBDT(item.item_total || item.quantity * (item.unit_rate || item.unit_price || 0)).replace('৳', '').trim(),
       }))
+    : effectiveDocType === 'receipt' && paymentData
+    ? (paymentData.allocations?.length
+        ? paymentData.allocations.map((a: any, idx: number) => ({
+            id: idx + 1,
+            title: `Settlement for Invoice ${a.invoice_number || a.invoice_id || 'Ref'}`,
+            subtext: `Settlement via ${(paymentData.payment_method || 'Online / Cash').toUpperCase()}`,
+            specs: 'Settlement Allocation',
+            qty: '1 txn',
+            unitPrice: formatBDT(a.allocated_amount || 0).replace('৳', '').trim(),
+            total: formatBDT(a.allocated_amount || 0).replace('৳', '').trim(),
+          }))
+        : [
+            {
+              id: 1,
+              title: paymentData.reference_notes || `Payment Settlement (${(paymentData.payment_method || 'Cash / Online').toUpperCase()})`,
+              subtext: `Receipt Reference: ${paymentData.receipt_number || 'Official Receipt'}`,
+              specs: 'Cash / Bank MFS',
+              qty: '1 txn',
+              unitPrice: formatBDT(paymentData.amount || 0).replace('৳', '').trim(),
+              total: formatBDT(paymentData.amount || 0).replace('৳', '').trim(),
+            },
+          ])
+    : effectiveDocType === 'receipt' && invoiceData
+    ? [
+        {
+          id: 1,
+          title: `Settlement of Invoice ${invoiceData.invoice_number}`,
+          subtext: invoiceData.notes || 'Full / Partial Payment against invoiced services & fabrication',
+          specs: `${invoiceData.items?.length || 1} Work Items`,
+          qty: '1 txn',
+          unitPrice: formatBDT(invoiceData.paid_amount || invoiceData.grand_total).replace('৳', '').trim(),
+          total: formatBDT(invoiceData.paid_amount || invoiceData.grand_total).replace('৳', '').trim(),
+        },
+      ]
     : invoiceData?.items?.length
     ? invoiceData.items.map((item: any, idx) => ({
         id: idx + 1,
@@ -201,66 +259,122 @@ export function LiveA4Preview({
       }))
     : sampleItems
 
-  // Resolve customer card details
+  // Resolve customer card details (matching Reference Image 2)
   const recipientName = quotationData
-    ? quotationData.customer_name
+    ? (quotationData.customer_company || quotationData.customer_name)
     : invoiceData
-    ? invoiceData.customer_name
+    ? (invoiceData.customer_company || invoiceData.customer_name)
+    : challanData
+    ? ((challanData as any).customer_company || challanData.customer_name)
+    : paymentData
+    ? (paymentData.customer_company || paymentData.customer_name)
     : effectiveDocType === 'purchase_order'
     ? 'Alstrong Composites BD'
     : 'ABC Enterprises Ltd.'
 
-  const recipientSubtext = quotationData
-    ? (quotationData.customer_company ? `Attn: ${quotationData.customer_name} (${quotationData.customer_company})` : `Attn: ${quotationData.customer_name}`)
+  const recipientAttn = quotationData
+    ? (quotationData.customer_company ? `Attn: ${quotationData.customer_name}` : 'Attn: Mr. Rahim Uddin')
     : invoiceData
-    ? (invoiceData.customer_company ? `Attn: ${invoiceData.customer_name} (${invoiceData.customer_company})` : `Attn: ${invoiceData.customer_name}`)
+    ? (invoiceData.customer_company ? `Attn: ${invoiceData.customer_name}` : 'Attn: Mr. Rahim Uddin')
+    : challanData
+    ? ((challanData as any).customer_company ? `Attn: ${challanData.customer_name}` : 'Attn: Receiving Dept')
+    : paymentData
+    ? (paymentData.customer_company ? `Attn: ${paymentData.customer_name}` : 'Attn: Accounts Dept')
     : effectiveDocType === 'purchase_order'
     ? 'Attn: Mr. Mominul Islam (Sales Dept)'
     : 'Attn: Mr. Rahim Uddin'
 
   const recipientId = quotationData
-    ? (quotationData.customer_id ? `Customer ID: ${quotationData.customer_id}` : '')
+    ? (quotationData.customer_id ? `Customer ID: ${quotationData.customer_id}` : 'Customer ID: CUS-0001')
     : invoiceData
-    ? (invoiceData.customer_id ? `Customer ID: ${invoiceData.customer_id}` : '')
+    ? (invoiceData.customer_id ? `Customer ID: ${invoiceData.customer_id}` : 'Customer ID: CUS-0001')
+    : challanData
+    ? (challanData.customer_id ? `Customer ID: ${challanData.customer_id}` : 'Customer ID: CUS-0001')
+    : paymentData
+    ? (paymentData.customer_id ? `Customer ID: ${paymentData.customer_id}` : 'Customer ID: CUS-0001')
     : effectiveDocType === 'purchase_order'
     ? 'Supplier ID: SUP-0042'
     : 'Customer ID: CUS-0001'
 
   const recipientAddress = quotationData
-    ? (quotationData.customer_address || '')
+    ? (quotationData.customer_address || '123 Business Avenue, Gulshan, Dhaka-1212')
     : invoiceData
-    ? (invoiceData.customer_address || '')
+    ? (invoiceData.customer_address || '123 Business Avenue, Gulshan, Dhaka-1212')
+    : challanData
+    ? (challanData.delivery_address || '123 Business Avenue, Gulshan, Dhaka-1212')
+    : paymentData
+    ? (paymentData.customer_address || '123 Business Avenue, Gulshan, Dhaka-1212')
     : '123 Business Avenue, Gulshan, Dhaka-1212'
 
-  const recipientContact = quotationData
-    ? `Phone: ${quotationData.customer_phone || ''}${quotationData.customer_email ? ` • Email: ${quotationData.customer_email}` : ''}`
+  const recipientPhone = quotationData
+    ? (quotationData.customer_phone ? `Phone: ${quotationData.customer_phone}` : 'Phone: +880 1711 222333')
     : invoiceData
-    ? `Phone: ${invoiceData.customer_phone || ''}${invoiceData.customer_bin ? ` • BIN: ${invoiceData.customer_bin}` : ''}`
-    : 'Phone: +880 1711 222333 • Email: rahim@abc.com'
+    ? (invoiceData.customer_phone ? `Phone: ${invoiceData.customer_phone}` : 'Phone: +880 1711 222333')
+    : challanData
+    ? (challanData.customer_phone ? `Phone: ${challanData.customer_phone}` : 'Phone: +880 1711 222333')
+    : paymentData
+    ? (paymentData.customer_phone ? `Phone: ${paymentData.customer_phone}` : 'Phone: +880 1711 222333')
+    : 'Phone: +880 1711 222333'
+
+  const recipientEmail = quotationData
+    ? (quotationData.customer_email ? `Email: ${quotationData.customer_email}` : 'Email: rahim@abc.com')
+    : invoiceData
+    ? (invoiceData.customer_email ? `Email: ${invoiceData.customer_email}` : 'Email: rahim@abc.com')
+    : challanData
+    ? ((challanData as any).customer_email ? `Email: ${(challanData as any).customer_email}` : 'Email: rahim@abc.com')
+    : paymentData
+    ? (paymentData.customer_email ? `Email: ${paymentData.customer_email}` : 'Email: rahim@abc.com')
+    : 'Email: rahim@abc.com'
 
   // Resolve document metadata
   const metaDate = quotationData
     ? quotationData.quotation_date
     : invoiceData
     ? invoiceData.invoice_date
+    : challanData
+    ? (challanData as any).challan_date
+    : paymentData
+    ? paymentData.payment_date
     : '08 Oct 2025'
 
   const metaDueDate = quotationData
     ? quotationData.valid_until
     : invoiceData
     ? invoiceData.due_date
+    : paymentData
+    ? 'Settled'
     : '15 Oct 2025'
 
+  const calculateValidityDays = () => {
+    if (effectiveDocType === 'receipt') return 'Settled'
+    if (effectiveDocType === 'challan') return 'Immediate'
+    if (!metaDate || !metaDueDate) return '7 Days'
+    try {
+      const d1 = new Date(metaDate).getTime()
+      const d2 = new Date(metaDueDate).getTime()
+      if (!isNaN(d1) && !isNaN(d2)) {
+        const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24))
+        if (diff > 0) return `${diff} Days`
+      }
+    } catch {}
+    return '7 Days'
+  }
+  const validityDays = calculateValidityDays()
+
   const metaStaff = quotationData
-    ? (quotationData.salesperson_name || 'Sales Person')
+    ? (quotationData.salesperson_name || 'Shahid Hossain')
     : invoiceData
     ? (invoiceData.created_by_name || 'Accounts Dept')
+    : paymentData
+    ? (paymentData.created_by_name || 'Cashier')
     : 'Shahid Hossain'
 
   const metaRef = quotationData
-    ? (quotationData.reference_no || 'Quotation Estimate')
+    ? (quotationData.reference_no || 'Signage for Office')
     : invoiceData
     ? (invoiceData.reference_no || (invoiceData.order_number ? `Order #${invoiceData.order_number}` : 'Commercial Invoice'))
+    : paymentData
+    ? (paymentData.receipt_number || paymentData.trx_id || 'Official Receipt')
     : effectiveDocType === 'purchase_order'
     ? 'Factory Media Restock'
     : 'Signage for Office'
@@ -424,89 +538,97 @@ export function LiveA4Preview({
               <div className="flex-1 flex flex-col justify-between p-1 sm:p-1.5 text-foreground overflow-hidden">
                 {/* Block 1: Customer Card & Document Metadata */}
                 <div>
-                  <div className="flex items-start justify-between gap-2.5">
-                    {/* Customer Card (Font sizes: 8px to 12px) */}
-                    <div className="bg-[#F8FAFC] rounded-lg p-2 border border-[#E2E8F0]/70 w-[52%] space-y-0.5">
+                  <div className="flex items-start justify-between gap-3">
+                    {/* Customer Card (matching Reference Image 2) */}
+                    <div className="bg-[#F8FAFC] rounded-lg p-2.5 border border-[#E2E8F0]/70 w-[52%] space-y-0.5">
                       <span
-                        style={{ fontSize: '10px', lineHeight: '12px' }}
-                        className="font-bold text-[#065F46] block uppercase tracking-wide leading-none"
+                        style={{ fontSize: '11px', lineHeight: '13px' }}
+                        className="font-bold text-[#065F46] block uppercase tracking-wide"
                       >
                         {docHeader.recipientLabel}
                       </span>
                       {/* Customer Name: Exactly 12px */}
                       <h4
-                        style={{ fontSize: '12px', lineHeight: '14px' }}
+                        style={{ fontSize: '12px', lineHeight: '15px' }}
                         className="font-black text-[#111827] leading-tight"
                       >
                         {recipientName}
                       </h4>
-                      {recipientSubtext && (
+                      {recipientAttn && (
                         <p
-                          style={{ fontSize: '9px', lineHeight: '11px' }}
-                          className="font-semibold text-[#374151]"
+                          style={{ fontSize: '10px', lineHeight: '13px' }}
+                          className="font-medium text-[#374151]"
                         >
-                          {recipientSubtext}
+                          {recipientAttn}
                         </p>
                       )}
                       {recipientId && (
                         <p
-                          style={{ fontSize: '8.5px', lineHeight: '10px' }}
-                          className="text-[#6B7280]"
+                          style={{ fontSize: '10px', lineHeight: '13px' }}
+                          className="text-[#4B5563]"
                         >
                           {recipientId}
                         </p>
                       )}
                       {recipientAddress && (
                         <p
-                          style={{ fontSize: '8px', lineHeight: '10px' }}
-                          className="text-[#6B7280]"
+                          style={{ fontSize: '10px', lineHeight: '13px' }}
+                          className="text-[#4B5563]"
                         >
                           {recipientAddress}
                         </p>
                       )}
-                      {recipientContact && (
+                      {recipientPhone && (
                         <p
-                          style={{ fontSize: '8px', lineHeight: '10px' }}
-                          className="text-[#6B7280]"
+                          style={{ fontSize: '10px', lineHeight: '13px' }}
+                          className="text-[#4B5563]"
                         >
-                          {recipientContact}
+                          {recipientPhone}
+                        </p>
+                      )}
+                      {recipientEmail && (
+                        <p
+                          style={{ fontSize: '10px', lineHeight: '13px' }}
+                          className="text-[#4B5563]"
+                        >
+                          {recipientEmail}
                         </p>
                       )}
                     </div>
 
-                    {/* Document Meta Numbers (No Colons, Clean 2-Column: 8px to 9.5px) */}
-                    <div className="space-y-0.5 w-[45%] text-left pt-0.5">
+                    {/* Document Meta Numbers (matching Reference Image 2) */}
+                    <div className="space-y-1 w-[46%] text-left pt-0.5 border-l border-[#E5E7EB] pl-3">
                       {/* 1. Document Code */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
-                          <FileText className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                      <div className="flex items-center justify-between gap-2 border-b border-[#F1F5F9] pb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <FileText className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '11px' }} className="text-[#374151] font-medium">
                             {docHeader.title} No
                           </span>
                         </div>
-                        <span style={{ fontSize: '9.5px' }} className="font-bold text-[#111827] tabular-nums text-right">
+                        <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums text-right">
                           {docHeader.code}
                         </span>
                       </div>
 
                       {/* 2. Date */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                      <div className="flex items-center justify-between gap-2 border-b border-[#F1F5F9] pb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '11px' }} className="text-[#374151] font-medium">
                             Date
                           </span>
                         </div>
-                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '11px' }} className="font-bold text-[#111827] text-right">
                           {metaDate}
                         </span>
                       </div>
 
                       {/* 3. Valid Until / Dispatch Date */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                      <div className="flex items-center justify-between gap-2 border-b border-[#F1F5F9] pb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarDays className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '11px' }} className="text-[#374151] font-medium">
                             {effectiveDocType === 'invoice'
                               ? 'Due Date'
                               : effectiveDocType === 'challan'
@@ -518,18 +640,21 @@ export function LiveA4Preview({
                               : 'Valid Until'}
                           </span>
                         </div>
-                        <div className="text-right leading-none">
-                          <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">
+                        <div className="text-right leading-tight">
+                          <span style={{ fontSize: '11px' }} className="font-bold text-[#111827] block">
                             {metaDueDate}
+                          </span>
+                          <span style={{ fontSize: '9.5px' }} className="text-[#6B7280] block">
+                            ({validityDays})
                           </span>
                         </div>
                       </div>
 
                       {/* 4. Sales Person / Authority */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
-                          <User className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                      <div className="flex items-center justify-between gap-2 border-b border-[#F1F5F9] pb-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '11px' }} className="text-[#374151] font-medium">
                             {effectiveDocType === 'receipt'
                               ? 'Cashier'
                               : effectiveDocType === 'challan'
@@ -539,91 +664,81 @@ export function LiveA4Preview({
                               : 'Sales Person'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '11px' }} className="font-bold text-[#111827] text-right">
                           {metaStaff}
                         </span>
                       </div>
 
                       {/* 5. Reference */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1">
-                          <Tag className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                        <div className="flex items-center gap-1.5">
+                          <Tag className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '11px' }} className="text-[#374151] font-medium">
                             Reference
                           </span>
                         </div>
-                        <span style={{ fontSize: '9px' }} className="font-medium text-[#111827] text-right">
+                        <span style={{ fontSize: '11px' }} className="font-bold text-[#111827] text-right">
                           {metaRef}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Items Table: Dynamic columns based on document type */}
-                  <div className="rounded-t-md overflow-hidden border border-[#E5E7EB] mt-1">
+                  {/* Items Table: matching Reference Image 3 */}
+                  <div className="rounded-t-md overflow-hidden border border-[#E5E7EB] mt-1.5">
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-[#064E3B] text-white font-bold">
-                          <th className="py-1 px-1.5 w-[5%] text-center" style={{ fontSize: '9px' }}>
+                          <th className="py-1 px-1.5 w-[5%] text-center" style={{ fontSize: '12px' }}>
                             SL
                           </th>
-                          <th className={`py-1 px-1.5 ${settings.item_display_mode === 'detailed' ? 'w-[37%]' : 'w-[59%]'} text-left`} style={{ fontSize: '9px' }}>
+                          <th className={`py-1 px-1.5 ${settings.item_display_mode === 'detailed' ? 'w-[37%]' : 'w-[59%]'} text-left`} style={{ fontSize: '12px' }}>
                             Item Description
                           </th>
                           {settings.item_display_mode === 'detailed' && (
-                            <th className="py-1 px-1.5 w-[22%] text-center" style={{ fontSize: '9px' }}>
+                            <th className="py-1 px-1.5 w-[22%] text-center" style={{ fontSize: '12px' }}>
                               Size / Specification
                             </th>
                           )}
-                          <th className="py-1 px-1.5 w-[8%] text-center" style={{ fontSize: '9px' }}>
+                          <th className="py-1 px-1.5 w-[8%] text-center" style={{ fontSize: '12px' }}>
                             Qty
                           </th>
-                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight">
-                            <div style={{ fontSize: '8.5px' }}>
-                              {effectiveDocType === 'challan' ? 'Packing' : 'Unit Price'}
-                            </div>
-                            <div style={{ fontSize: '8px' }} className="font-normal text-white/90">
-                              {effectiveDocType === 'challan' ? '(Units)' : '(BDT)'}
-                            </div>
+                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight" style={{ fontSize: '12px' }}>
+                            {effectiveDocType === 'challan' ? 'Packing (Units)' : 'Unit Price (BDT)'}
                           </th>
-                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight">
-                            <div style={{ fontSize: '8.5px' }}>
-                              {effectiveDocType === 'challan' ? 'Status' : 'Total'}
-                            </div>
-                            <div style={{ fontSize: '8px' }} className="font-normal text-white/90">
-                              {effectiveDocType === 'challan' ? '(Condition)' : '(BDT)'}
-                            </div>
+                          <th className="py-1 px-1.5 w-[14%] text-right leading-tight" style={{ fontSize: '12px' }}>
+                            {effectiveDocType === 'challan' ? 'Status' : 'Total (BDT)'}
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#F1F5F9] bg-white">
-                        {itemsToRender.map((item) => (
+                        {itemsToRender.map((item: any) => (
                           <tr key={item.id} className="hover:bg-[#F8FAFC]/60">
-                            <td className="py-1 px-1.5 text-center text-[#6B7280]" style={{ fontSize: '8.5px' }}>
+                            <td className="py-1 px-1.5 text-center text-[#6B7280]" style={{ fontSize: '12px' }}>
                               {item.id}
                             </td>
                             <td className="py-1 px-1.5 text-left">
-                              <span style={{ fontSize: '9px', lineHeight: '11px' }} className="font-bold text-[#111827] block">
+                              <span style={{ fontSize: '12px', lineHeight: '14px' }} className="font-bold text-[#111827] block">
                                 {item.title}
                               </span>
-                              {settings.item_display_mode === 'detailed' && (
-                                <span style={{ fontSize: '8px', lineHeight: '10px' }} className="text-[#6B7280] block leading-tight">
+                              {settings.item_display_mode === 'detailed' && item.subtext && (
+                                <span style={{ fontSize: '10px', lineHeight: '12px' }} className="text-[#6B7280] block mt-0.5 leading-tight">
                                   {item.subtext}
                                 </span>
                               )}
                             </td>
                             {settings.item_display_mode === 'detailed' && (
-                              <td style={{ fontSize: '8px' }} className="py-1 px-1.5 text-center text-[#374151]">
+                              <td style={{ fontSize: '12px' }} className="py-1 px-1.5 text-center text-[#374151]">
                                 {item.specs}
                               </td>
                             )}
-                            <td style={{ fontSize: '8.5px' }} className="py-1 px-1.5 text-center text-[#374151] tabular-nums">
+                            <td style={{ fontSize: '12px' }} className="py-1 px-1.5 text-center text-[#374151] tabular-nums">
                               {item.qty}
                             </td>
-                            <td style={{ fontSize: '8.5px' }} className="py-1 px-1.5 text-right text-[#374151] tabular-nums">
+                            <td style={{ fontSize: '12px' }} className="py-1 px-1.5 text-right text-[#374151] tabular-nums">
                               {item.unitPrice}
                             </td>
-                            <td style={{ fontSize: '9px' }} className="py-1 px-1.5 text-right font-bold text-[#111827] tabular-nums">
+                            <td style={{ fontSize: '12px' }} className="py-1 px-1.5 text-right font-bold text-[#111827] tabular-nums">
                               {item.total}
                             </td>
                           </tr>
@@ -748,121 +863,127 @@ export function LiveA4Preview({
                     ) : (
                       <>
                         <div className="flex items-center gap-1.5">
-                          <Cog className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Production Time</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">3 - 5 Working Days</span>
+                          <Cog className="h-3 w-3 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '10px' }} className="font-bold text-[#111827] min-w-[95px]">Production Time</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#374151] font-medium">3 - 5 Working Days</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Truck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Delivery</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Within Dhaka & Nationwide</span>
+                          <Truck className="h-3 w-3 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '10px' }} className="font-bold text-[#111827] min-w-[95px]">Delivery</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#374151] font-medium">Within Dhaka & Nationwide</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <CreditCard className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Payment Terms</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">
+                          <CreditCard className="h-3 w-3 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '10px' }} className="font-bold text-[#111827] min-w-[95px]">Payment Terms</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#374151] font-medium">
                             {quotationData?.advance_percentage
-                              ? `${quotationData.advance_percentage}% Adv, ${100 - quotationData.advance_percentage}% Before Delivery`
-                              : '50% Adv, 50% Before Delivery'}
+                              ? `${quotationData.advance_percentage}% Advance, ${100 - quotationData.advance_percentage}% Before Delivery`
+                              : '50% Advance, 50% Before Delivery'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <ShieldCheck className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                          <span style={{ fontSize: '8.5px' }} className="font-bold text-[#111827] min-w-[80px]">Warranty</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#6B7280] font-bold">:</span>
-                          <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">6 Months (Mat & Install)</span>
+                          <ShieldCheck className="h-3 w-3 text-[#064E3B] shrink-0" />
+                          <span style={{ fontSize: '10px' }} className="font-bold text-[#111827] min-w-[95px]">Warranty</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#6B7280] font-bold">:</span>
+                          <span style={{ fontSize: '10px' }} className="text-[#374151] font-medium">6 Months (Material & Installation)</span>
                         </div>
                       </>
                     )}
                   </div>
 
-                  {/* Right: Dynamic Financial Totals & Grand Total Pill */}
+                  {/* Right: Dynamic Financial Totals & Grand Total Pill (matching Reference Image 3) */}
                   <div className="space-y-0.5 text-right flex flex-col justify-between">
                     <div className="space-y-0.5">
                       {effectiveDocType === 'challan' ? (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Line Items</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">5 Items</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Line Items</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">5 Items</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Total Quantity</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">19 Units / Sets</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Total Quantity</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">19 Units / Sets</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Package Count</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">4 Secure Bundles</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Package Count</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">4 Secure Bundles</span>
                           </div>
                         </>
                       ) : effectiveDocType === 'receipt' ? (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Total Bill</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">33,350</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Total Bill</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
+                              {invoiceData ? formatBDT(invoiceData.grand_total).replace('৳', '').trim() : paymentData ? formatBDT(paymentData.amount).replace('৳', '').trim() : '33,350'}
+                            </span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Prior Payments</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">0</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Collected / Paid</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-success tabular-nums">
+                              {invoiceData ? formatBDT(invoiceData.paid_amount || invoiceData.grand_total).replace('৳', '').trim() : paymentData ? formatBDT(paymentData.amount).replace('৳', '').trim() : '18,000'}
+                            </span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Balance Due</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">15,350</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Balance Due</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
+                              {invoiceData ? formatBDT(invoiceData.due_amount || 0).replace('৳', '').trim() : '0'}
+                            </span>
                           </div>
                         </>
                       ) : effectiveDocType === 'purchase_order' ? (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">42,500</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">42,500</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">- 2,000</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Discount</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">- 2,000</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT (15%)</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827]">6,075</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">VAT (15%)</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827]">6,075</span>
                           </div>
                         </>
                       ) : quotationData ? (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
                               {formatBDT(quotationData.subtotal).replace('৳', '').trim()}
                             </span>
                           </div>
                           {quotationData.discount_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-destructive tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Discount</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-destructive tabular-nums">
                                 - {formatBDT(quotationData.discount_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {quotationData.vat_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT ({quotationData.vat_rate || 7.5}%)</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">VAT ({quotationData.vat_rate || 7.5}%)</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
                                 + {formatBDT(quotationData.vat_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {typeof quotationData.advance_amount === 'number' && quotationData.advance_amount > 0 && (
                             <div className="flex justify-between py-0.5 border-t border-[#E5E7EB] mt-0.5 pt-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Advance ({quotationData.advance_percentage || 50}%)</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-[#064E3B] tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Advance ({quotationData.advance_percentage || 50}%)</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-[#064E3B] tabular-nums">
                                 {formatBDT(quotationData.advance_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {typeof quotationData.due_on_delivery === 'number' && quotationData.due_on_delivery > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Due on Delivery</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Due on Delivery</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
                                 {formatBDT(quotationData.due_on_delivery).replace('৳', '').trim()}
                               </span>
                             </div>
@@ -871,39 +992,39 @@ export function LiveA4Preview({
                       ) : invoiceData ? (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
                               {formatBDT(invoiceData.subtotal).replace('৳', '').trim()}
                             </span>
                           </div>
                           {invoiceData.discount_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-destructive tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Discount</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-destructive tabular-nums">
                                 - {formatBDT(invoiceData.discount_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {invoiceData.vat_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">VAT</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">
                                 + {formatBDT(invoiceData.vat_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {invoiceData.paid_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Paid Amount</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-success tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Paid Amount</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-success tabular-nums">
                                 {formatBDT(invoiceData.paid_amount).replace('৳', '').trim()}
                               </span>
                             </div>
                           )}
                           {invoiceData.due_amount > 0 && (
                             <div className="flex justify-between py-0.5">
-                              <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium text-warning">Balance Due</span>
-                              <span style={{ fontSize: '9px' }} className="font-bold text-warning tabular-nums">
+                              <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium text-warning">Balance Due</span>
+                              <span style={{ fontSize: '12px' }} className="font-bold text-warning tabular-nums">
                                 {formatBDT(invoiceData.due_amount).replace('৳', '').trim()}
                               </span>
                             </div>
@@ -912,24 +1033,24 @@ export function LiveA4Preview({
                       ) : (
                         <>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Sub Total</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">30,250</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Sub Total</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">30,250</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">Discount</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">- 1,250</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">Discount</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">- 1,250</span>
                           </div>
                           <div className="flex justify-between py-0.5">
-                            <span style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium">VAT (15%)</span>
-                            <span style={{ fontSize: '9px' }} className="font-bold text-[#111827] tabular-nums">4,350</span>
+                            <span style={{ fontSize: '12px' }} className="text-[#374151] font-medium">VAT (15%)</span>
+                            <span style={{ fontSize: '12px' }} className="font-bold text-[#111827] tabular-nums">4,350</span>
                           </div>
                         </>
                       )}
                     </div>
 
-                    {/* Grand Total Pill: Amount exactly 12px */}
+                    {/* Grand Total Pill: Amount exactly 16px (matching Reference Image 3) */}
                     <div className="flex items-center justify-between py-1.5 px-3 bg-[#064E3B] text-white rounded-md font-bold shadow-xs mt-0.5">
-                      <span style={{ fontSize: '10px' }}>
+                      <span style={{ fontSize: '12px' }}>
                         {effectiveDocType === 'challan'
                           ? 'Delivery Status'
                           : effectiveDocType === 'receipt'
@@ -938,15 +1059,15 @@ export function LiveA4Preview({
                           ? 'PO Total (BDT)'
                           : 'Grand Total (BDT)'}
                       </span>
-                      <span style={{ fontSize: '12px' }} className="font-black tabular-nums tracking-tight">
+                      <span style={{ fontSize: '16px' }} className="font-black tabular-nums tracking-tight">
                         {quotationData
                           ? formatBDT(quotationData.grand_total).replace('৳', '').trim()
+                          : effectiveDocType === 'receipt'
+                          ? formatBDT(paymentData?.amount || invoiceData?.paid_amount || (invoiceData ? invoiceData.grand_total : 18000)).replace('৳', '').trim()
                           : invoiceData
                           ? formatBDT(invoiceData.grand_total).replace('৳', '').trim()
                           : effectiveDocType === 'challan'
                           ? 'Good Condition'
-                          : effectiveDocType === 'receipt'
-                          ? '18,000'
                           : effectiveDocType === 'purchase_order'
                           ? '46,575'
                           : '33,350'}
@@ -955,22 +1076,22 @@ export function LiveA4Preview({
                   </div>
                 </div>
 
-                {/* Block 3: Dynamic Terms & Signatures (Guaranteed fit without overflow) */}
-                <div className="mt-1 pt-1 border-t border-[#E5E7EB]">
-                  <div className="grid grid-cols-12 gap-2.5 items-end">
+                {/* Block 3: Dynamic Terms & Signatures (matching Reference Image 4) */}
+                <div className="mt-1.5 pt-1.5 border-t border-[#E5E7EB]">
+                  <div className="grid grid-cols-12 gap-3 items-end">
                     {/* Terms & Conditions (Left - 7 cols) */}
-                    <div className="col-span-7 space-y-0.5">
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-2.5 w-2.5 text-[#111827] shrink-0" />
-                        <span style={{ fontSize: '9.5px' }} className="font-bold text-[#111827]">
+                    <div className="col-span-7 space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-[#064E3B] shrink-0" />
+                        <span style={{ fontSize: '12px' }} className="font-bold text-[#064E3B]">
                           Terms & Conditions
                         </span>
                         <div className="h-[1px] bg-[#E2E8F0] flex-1 ml-1" />
                       </div>
-                      {/* Terms text: Exactly 8px */}
+                      {/* Terms text: Exactly 10px */}
                       <div
-                        style={{ fontSize: '8px', lineHeight: '10.5px' }}
-                        className="space-y-0.25 text-[#4B5563]"
+                        style={{ fontSize: '10px', lineHeight: '14px' }}
+                        className="space-y-0.5 text-[#374151]"
                       >
                         {activeTerms.map((term, index) => (
                           <p key={index}>{term}</p>
@@ -979,10 +1100,10 @@ export function LiveA4Preview({
                     </div>
 
                     {/* Signatures (Right - 5 cols) */}
-                    <div className="col-span-5 grid grid-cols-2 gap-2 text-center">
-                      {/* Prepared By / Dispatched By */}
+                    <div className="col-span-5 grid grid-cols-2 gap-3 text-center border-l border-[#E5E7EB] pl-3">
+                      {/* Prepared By */}
                       <div className="space-y-0.5 text-left">
-                        <p style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium leading-none">
+                        <p style={{ fontSize: '10px' }} className="text-[#111827] font-bold leading-none">
                           {effectiveDocType === 'challan'
                             ? 'Dispatched By'
                             : effectiveDocType === 'receipt'
@@ -991,8 +1112,8 @@ export function LiveA4Preview({
                             ? 'Issued By'
                             : 'Prepared By'}
                         </p>
-                        <div className="h-5 flex items-end justify-start">
-                          <svg viewBox="0 0 100 28" fill="none" className="h-4 w-16">
+                        <div className="h-6 flex items-end justify-start">
+                          <svg viewBox="0 0 100 28" fill="none" className="h-5 w-16">
                             <path
                               d="M8 22 C 10 14, 13 4, 17 5 C 20 6, 15 20, 20 21 C 24 22, 27 12, 31 19 C 34 21, 38 16, 41 19 C 45 21, 48 14, 52 20 C 55 21, 60 10, 64 19 C 67 21, 73 20, 81 18"
                               stroke="#111827"
@@ -1008,8 +1129,8 @@ export function LiveA4Preview({
                             />
                           </svg>
                         </div>
-                        <div className="border-t border-[#9CA3AF] pt-0.5">
-                          <p style={{ fontSize: '9px' }} className="font-bold text-[#111827] leading-tight">
+                        <div className="border-t border-[#9CA3AF] pt-1">
+                          <p style={{ fontSize: '10px' }} className="font-bold text-[#111827] leading-tight">
                             {quotationData
                               ? (quotationData.salesperson_name || 'Shahid Hossain')
                               : invoiceData
@@ -1022,7 +1143,7 @@ export function LiveA4Preview({
                               ? 'Kamrul Hasan'
                               : 'Shahid Hossain'}
                           </p>
-                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-none mt-0.25">
+                          <p style={{ fontSize: '10px' }} className="text-[#4B5563] leading-tight mt-0.5">
                             {effectiveDocType === 'receipt'
                               ? 'Cashier'
                               : effectiveDocType === 'challan'
@@ -1031,15 +1152,15 @@ export function LiveA4Preview({
                               ? 'Procurement'
                               : 'Sales Executive'}
                           </p>
-                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-none mt-0.25 truncate max-w-[70px]">
+                          <p style={{ fontSize: '10px' }} className="text-[#4B5563] leading-tight mt-0.5 truncate max-w-[85px]">
                             {companyName}
                           </p>
                         </div>
                       </div>
 
-                      {/* Approved By / Received By */}
+                      {/* Approved By */}
                       <div className="space-y-0.5 text-left">
-                        <p style={{ fontSize: '8.5px' }} className="text-[#374151] font-medium leading-none">
+                        <p style={{ fontSize: '10px' }} className="text-[#111827] font-bold leading-none">
                           {effectiveDocType === 'challan'
                             ? 'Received By (Client)'
                             : effectiveDocType === 'receipt'
@@ -1048,15 +1169,15 @@ export function LiveA4Preview({
                             ? 'Authorized By'
                             : 'Approved By'}
                         </p>
-                        <div className="h-5" />
-                        <div className="border-t border-[#9CA3AF] pt-0.5 space-y-0.25">
-                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
+                        <div className="h-6" />
+                        <div className="border-t border-[#9CA3AF] pt-1 space-y-0.5">
+                          <p style={{ fontSize: '10px' }} className="text-[#4B5563] leading-tight">
                             Name:
                           </p>
-                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
+                          <p style={{ fontSize: '10px' }} className="text-[#4B5563] leading-tight">
                             Designation:
                           </p>
-                          <p style={{ fontSize: '8px' }} className="text-[#6B7280] leading-tight">
+                          <p style={{ fontSize: '10px' }} className="text-[#4B5563] leading-tight">
                             Date:
                           </p>
                         </div>

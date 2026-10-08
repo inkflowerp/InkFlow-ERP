@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useSearchParams } from 'next/navigation'
 import {
  Receipt,
  ArrowLeft,
@@ -50,22 +50,28 @@ import { InvoicePdfDocument } from '@/components/pdf/documents/invoice-pdf-docum
 import { useDocumentTemplate } from '@/hooks/use-document-template'
 import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 import { LiveA4Preview } from '@/components/settings/document-template/print-a4-preview'
+import { useDataStore } from '@/hooks/use-data-store'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function InvoiceCockpitPage() {
  const params = useParams()
  const pathname = usePathname()
+ const searchParams = useSearchParams()
  const invId = (params?.id as string) || ''
  const { company } = useTenant()
  const { locale, tBilingual } = useI18n()
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
  const companyId = company?.id || 'comp-default'
  const { template: docTemplate } = useDocumentTemplate(slug, 'invoice')
+ const { template: receiptTemplate } = useDocumentTemplate(slug, 'receipt')
+ const [companyProfile] = useDataStore<any>(STORAGE_KEYS.COMPANY_PROFILE, null, slug)
 
- const effectiveCompanyName = company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Vision Sign')
- const effectiveAddress = company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
- const effectivePhone = company?.phone || '+880 1712 345678'
- const effectiveEmail = company?.email || (company?.slug ? `billing@${company.slug}.com` : 'info@printflow.bd')
- const effectiveWebsite = company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+ const effectiveCompanyName = companyProfile?.name || company?.name || (company?.slug ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'PrintFlow')
+ const effectiveAddress = companyProfile?.address || company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+ const effectivePhone = companyProfile?.phone || company?.phone || '+880 1712 345678'
+ const effectiveEmail = companyProfile?.email || company?.email || (company?.slug ? `billing@${company.slug}.com` : 'info@printflow.bd')
+ const effectiveWebsite = companyProfile?.website || company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+ const effectiveLogoUrl = companyProfile?.logo_url || company?.logo_url || undefined
 
  const [isMounted, setIsMounted] = useState(false)
  const [invoice, setInvoice] = useState<InvoiceRecord | null>(null)
@@ -78,14 +84,24 @@ export default function InvoiceCockpitPage() {
  setIsMounted(true)
   }, [])
 
+ const shouldAutoPrint = searchParams?.get('print') === 'true'
+
  const loadInvoice = useCallback(async () => {
  if (!invId) return
  setIsLoading(true)
  try {
+ const paramMode = searchParams?.get('mode')
+ const targetMode: InvoiceType =
+ paramMode === 'receipt'
+ ? 'payment_receipt'
+ : paramMode === 'vat'
+ ? 'vat_invoice'
+ : 'sales_invoice'
+
  const directRes = await getInvoiceByIdAction(invId, companyId)
  if (directRes.success && directRes.data) {
  setInvoice(directRes.data)
- setDocMode(directRes.data.invoice_type || 'sales_invoice')
+ setDocMode(paramMode ? targetMode : directRes.data.invoice_type || 'sales_invoice')
  return
       }
 
@@ -94,7 +110,7 @@ export default function InvoiceCockpitPage() {
  const found = res.data.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
  if (found) {
  setInvoice(found)
- setDocMode(found.invoice_type || 'sales_invoice')
+ setDocMode(paramMode ? targetMode : found.invoice_type || 'sales_invoice')
  return
         }
       }
@@ -104,11 +120,21 @@ export default function InvoiceCockpitPage() {
     } finally {
  setIsLoading(false)
     }
-  }, [invId, companyId])
+  }, [invId, companyId, searchParams])
 
  useEffect(() => {
  loadInvoice()
   }, [loadInvoice])
+
+  // Auto-print on load if query param present
+ useEffect(() => {
+ if (shouldAutoPrint && invoice && !isLoading) {
+ const timer = setTimeout(() => {
+ window.print()
+      }, 500)
+ return () => clearTimeout(timer)
+    }
+  }, [shouldAutoPrint, invoice, isLoading])
 
  const showNotification = (msg: string) => {
  setNotification(msg)
@@ -381,6 +407,7 @@ export default function InvoiceCockpitPage() {
         <div id="invoice-print-area" className="w-full flex justify-center">
           <LiveA4Preview
             settings={docTemplate}
+            activeDocType="invoice"
             invoiceData={invoice}
             showControls={false}
             companyName={effectiveCompanyName}
@@ -388,7 +415,23 @@ export default function InvoiceCockpitPage() {
             companyPhone={effectivePhone}
             companyEmail={effectiveEmail}
             companyWebsite={effectiveWebsite}
-            companyLogoUrl={company?.logo_url || undefined}
+            companyLogoUrl={effectiveLogoUrl}
+            onPrintPdf={() => window.print()}
+          />
+        </div>
+      ) : docMode === 'payment_receipt' ? (
+        <div id="invoice-print-area" className="w-full flex justify-center">
+          <LiveA4Preview
+            settings={receiptTemplate || docTemplate}
+            activeDocType="receipt"
+            invoiceData={invoice}
+            showControls={false}
+            companyName={effectiveCompanyName}
+            companyAddress={effectiveAddress}
+            companyPhone={effectivePhone}
+            companyEmail={effectiveEmail}
+            companyWebsite={effectiveWebsite}
+            companyLogoUrl={effectiveLogoUrl}
             onPrintPdf={() => window.print()}
           />
         </div>
@@ -422,7 +465,7 @@ export default function InvoiceCockpitPage() {
                 documentTypeTitleEn="TAX INVOICE"
                 documentTypeTitleBn="চালান বিল"
                 companyName={effectiveCompanyName}
-                companyLogoUrl={company?.logo_url || undefined}
+                companyLogoUrl={effectiveLogoUrl}
                 phone={effectivePhone}
                 email={effectiveEmail}
                 website={effectiveWebsite}
@@ -536,71 +579,6 @@ export default function InvoiceCockpitPage() {
               </div>
               <div className="text-center">
                 <div className="border-t border-input w-44 pt-1 font-bold">দায়িত্বপ্রাপ্ত কর্মকর্তার স্বাক্ষর ও সিল</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* MODE 3: OFFICIAL PAYMENT MONEY RECEIPT (মানি রিসিট - MR) */}
-        {docMode === 'payment_receipt' && (
-          <div className="space-y-6 text-xs text-foreground">
-            {/* Header */}
-            <div className="text-center space-y-1 pb-4 border-b-2 border-success-border">
-              <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
-              {(company?.address || company?.phone) && (
-                <div className="text-muted-foreground">
-                  {company?.address || ''}
-                  {company?.address && company?.phone ? ' • ' : ''}
-                  {company?.phone ? `Phone: ${company.phone}` : ''}
-                </div>
-              )}
-              <div className="inline-block mt-2 px-4 py-1 rounded-full bg-success-surface text-success font-black text-sm tracking-wider uppercase">
-                {tBilingual('Official Money Receipt', 'অফিসিয়াল মানি রিসিট')}
-              </div>
-            </div>
-
-            {/* Receipt Meta */}
-            <div className="flex justify-between items-center tabular-nums">
-              <div>Receipt Ref: <strong className="text-success text-success text-sm">MR-{invoice.invoice_number.replace('INV-', '')}</strong></div>
-              <div>Date: <strong>{invoice.invoice_date}</strong></div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-border space-y-3">
-              <div className="flex">
-                <span className="text-muted-foreground w-44 shrink-0">Received with thanks from:</span>
-                <strong className="text-sm font-bold">{invoice.customer_name}</strong>
-              </div>
-
-              <div className="flex">
-                <span className="text-muted-foreground w-44 shrink-0">The sum of Taka (in words):</span>
-                <span className="font-bold text-success text-success italic">
-                  {numberToWordsBDT(invoice.paid_amount || invoice.grand_total)}
-                </span>
-              </div>
-
-              <div className="flex">
-                <span className="text-muted-foreground w-44 shrink-0">On account of:</span>
-                <span>Settlement of Invoice <strong>{invoice.invoice_number}</strong> ({invoice.notes || 'Printing & Fabrication'})</span>
-              </div>
-
-              <div className="flex">
-                <span className="text-muted-foreground w-44 shrink-0">Payment Mode:</span>
-                <strong className="uppercase">Cash / Bank / MFS / Cheque</strong>
-              </div>
-            </div>
-
-            {/* Cash Box */}
-            <div className="flex justify-between items-center pt-4">
-              <div className="p-3 rounded-lg bg-success-surface bg-success-surface border border-success-border tabular-nums">
-                <span className="text-xs text-muted-foreground block">Total Amount Collected</span>
-                <div className="text-xl font-black text-success text-success">
-                  {formatBDT(invoice.paid_amount || invoice.grand_total)}
-                </div>
-              </div>
-
-              <div className="text-center pt-8">
-                <div className="border-t border-input w-48 pt-1 font-bold">Authorized Signatory & Seal</div>
               </div>
             </div>
           </div>

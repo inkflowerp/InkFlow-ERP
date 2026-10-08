@@ -1565,7 +1565,8 @@ export function NewInvoiceModal({
  const invoice = await persistInvoice()
  setSubmittingAction(null)
  if (invoice) {
- window.open(`/billing/${invoice.id}`, '_blank')
+ const targetSlug = company?.slug || 'classic-printer'
+ window.open(`/${targetSlug}/billing/${invoice.id}?print=true`, '_blank')
  onOpenChange(false)
     }
   }

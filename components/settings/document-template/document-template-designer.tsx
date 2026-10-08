@@ -30,12 +30,15 @@ import { MoneyReceiptPdfDocument } from '@/components/pdf/documents/money-receip
 import type { QuotationRecord } from '@/types/quotation.types'
 import type { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import type { DeliveryChallanRecord } from '@/types/logistics.types'
+import { useDataStore } from '@/hooks/use-data-store'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { TemplateSettingsForm } from './template-settings-form'
 import { LiveA4Preview } from './print-a4-preview'
 
 export function DocumentTemplateDesigner() {
   const { company } = useTenant()
   const { tBilingual } = useI18n()
+  const [profile] = useDataStore<any>(STORAGE_KEYS.COMPANY_PROFILE, null, company?.slug)
 
   const [activeDocType, setActiveDocType] = useState<DocumentTypeKey>('quotation')
   const [allTemplates, setAllTemplates] = useState<
@@ -89,21 +92,27 @@ export function DocumentTemplateDesigner() {
   }
 
   const effectiveCompanyName =
+    profile?.name ||
     company?.name ||
     (company?.slug
       ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-      : 'Vision Sign')
+      : 'PrintFlow')
 
   const effectiveAddress =
-    company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+    profile?.address ||
+    company?.address ||
+    'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
 
-  const effectivePhone = company?.phone || '+880 1712 345678'
+  const effectivePhone = profile?.phone || company?.phone || '+880 1712 345678'
 
-  const effectiveEmail = company?.email || 'info@printflow.bd'
+  const effectiveEmail = profile?.email || company?.email || 'info@printflow.bd'
 
   const effectiveWebsite =
+    profile?.website ||
     company?.website ||
     (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+
+  const effectiveLogoUrl = profile?.logo_url || company?.logo_url || undefined
 
   const effectiveCompanyMeta = {
     name: effectiveCompanyName,
@@ -112,7 +121,7 @@ export function DocumentTemplateDesigner() {
     phone: effectivePhone,
     email: effectiveEmail,
     website: effectiveWebsite,
-    binNumber: (company as any)?.bin_no || undefined,
+    binNumber: profile?.bin_no || (company as any)?.bin_no || undefined,
   }
 
   // Sample Quotation Record
@@ -609,7 +618,7 @@ export function DocumentTemplateDesigner() {
             companyPhone={effectivePhone}
             companyEmail={effectiveEmail}
             companyWebsite={effectiveWebsite}
-            companyLogoUrl={company?.logo_url || undefined}
+            companyLogoUrl={effectiveLogoUrl}
             onPreviewPdf={handlePreviewPdf}
             onPrintPdf={handlePrintPdf}
             onDownloadPdf={handleDownloadPdf}
