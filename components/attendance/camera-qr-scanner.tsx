@@ -103,7 +103,18 @@ export function CameraQrScanner({
           audio: false,
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        let stream: MediaStream
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints)
+        } catch (firstErr: any) {
+          // If advanced resolution or facingMode constraint failed, try basic video
+          if (firstErr.name !== 'NotAllowedError' && firstErr.name !== 'PermissionDeniedError' && firstErr.name !== 'SecurityError') {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          } else {
+            throw firstErr
+          }
+        }
+
         if (!isMounted) {
           stream.getTracks().forEach((t) => t.stop())
           return
@@ -138,7 +149,13 @@ export function CameraQrScanner({
         console.warn('[CameraQrScanner] Camera start error:', err)
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setCameraStatus('denied')
-          setErrorMessage('Camera permission was denied. Please allow camera access in browser settings to scan attendance QR.')
+          setErrorMessage('Camera access was denied or blocked by browser settings.')
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setCameraStatus('unsupported')
+          setErrorMessage('No camera detected. You can upload a QR image or enter code manually.')
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          setCameraStatus('unsupported')
+          setErrorMessage('Camera is in use by another app. Please close other camera apps and retry.')
         } else {
           setCameraStatus('unsupported')
           setErrorMessage(err.message || 'Unable to access video camera.')
@@ -411,11 +428,21 @@ export function CameraQrScanner({
               <div className="p-3 rounded-xl bg-warning-surface text-warning border border-warning-border">
                 <ShieldAlert className="h-8 w-8" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5 max-w-xs">
                 <h4 className="text-base font-bold text-foreground">
                   {cameraStatus === 'denied' ? 'Camera Permission Required' : 'Camera Unavailable'}
                 </h4>
-                <p className="text-xs text-muted-foreground max-w-xs">{errorMessage}</p>
+                <p className="text-xs text-muted-foreground">{errorMessage}</p>
+                {cameraStatus === 'denied' && (
+                  <div className="p-2.5 rounded-lg bg-card border border-border text-xs text-muted-foreground text-left space-y-1">
+                    <p className="font-semibold text-foreground">To allow camera in browser:</p>
+                    <ol className="list-decimal list-inside space-y-0.5">
+                      <li>Click the <strong>Lock (🔒)</strong> or <strong>Tune (⚙️/📷)</strong> icon in the address bar.</li>
+                      <li>Set <strong>Camera</strong> to <strong>Allow</strong>.</li>
+                      <li>Click <strong>Retry Camera</strong> below.</li>
+                    </ol>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
                 <Button
