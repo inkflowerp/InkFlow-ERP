@@ -147,15 +147,15 @@ export function AttendancePunchModal({
 
  return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg">
+      <DialogContent onClose={onClose} className="max-w-md p-5 bg-card border-border text-foreground rounded-3xl shadow-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader className="mb-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 bg-primary/20 text-primary text-primary border border-primary/20 border-primary/20/30">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <QrCode className="h-5 w-5"/>
             </div>
             <div>
               <DialogTitle className="text-foreground text-base font-bold">
-                {tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
+                {tBilingual('Attendance & Shift Punch', 'উপস্থিতি ও শিফট পাঞ্চ')}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground text-xs">
                 {tBilingual('Authoritative QR & GPS Geofence Verification', 'কিউআর কোড ও জিপিএস জিওফেন্স যাচাইকরণ')}
@@ -170,11 +170,12 @@ export function AttendancePunchModal({
             {/* Punch Type Selector */}
             <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted rounded-xl border border-border">
               <button
- type="button"onClick={() => setPunchType('CHECK_IN')}
- className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
- punchType === 'CHECK_IN'
-                    ? 'bg-success text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                type="button"
+                onClick={() => setPunchType('CHECK_IN')}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  punchType === 'CHECK_IN'
+                    ? 'bg-success text-success-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Clock className="h-4 w-4"/>
@@ -182,11 +183,12 @@ export function AttendancePunchModal({
               </button>
 
               <button
- type="button"onClick={() => setPunchType('CHECK_OUT')}
- className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
- punchType === 'CHECK_OUT'
-                    ? 'bg-warning text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                type="button"
+                onClick={() => setPunchType('CHECK_OUT')}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  punchType === 'CHECK_OUT'
+                    ? 'bg-warning text-warning-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <LogOut className="h-4 w-4"/>
@@ -294,9 +296,11 @@ export function AttendancePunchModal({
             </div>
 
             <Button
- type="button"onClick={onClose}
- className="w-full bg-primary hover:bg-primary text-white font-bold h-11 rounded-xl shadow-sm cursor-pointer">
- Done (সম্পন্ন)
+              type="button"
+              onClick={onClose}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 rounded-xl shadow-xs cursor-pointer"
+            >
+              Done (সম্পন্ন)
             </Button>
           </div>
         )}
@@ -304,15 +308,15 @@ export function AttendancePunchModal({
         {/* 4. FAILURE STAGE */}
         {stage === 'failure' && (
           <div className="py-6 space-y-5 text-center animate-in zoom-in-95">
-            <div className="h-16 w-16 mx-auto rounded-full bg-danger-surface bg-destructive/20 border-2 border-danger-border border-danger-border/40 text-destructive text-destructive flex items-center justify-center">
-              <AlertCircle className="h-8 w-8"/>
+            <div className="h-16 w-16 mx-auto rounded-full bg-destructive/10 border-2 border-destructive/30 text-destructive flex items-center justify-center">
+              <AlertCircle className="h-8 w-8" />
             </div>
 
             <div className="space-y-1">
               <h3 className="text-lg font-bold text-foreground">
                 {tBilingual('Attendance Could Not Be Recorded', 'হাজিরা রেকর্ড করা সম্ভব হয়নি')}
               </h3>
-              <p className="text-xs text-destructive text-destructive font-medium max-w-xs mx-auto">
+              <p className="text-xs text-destructive font-medium max-w-xs mx-auto">
                 {failureReason || 'Verification check failed.'}
               </p>
             </div>
@@ -322,7 +326,7 @@ export function AttendancePunchModal({
                 {verificationDetails.distanceMeters !== undefined && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>Calculated Distance:</span>
-                    <span className="tabular-nums text-destructive text-destructive font-bold">
+                    <span className="tabular-nums text-destructive font-bold">
                       {verificationDetails.distanceMeters}m (Allowed: {verificationDetails.allowedRadiusMeters}m)
                     </span>
                   </div>
@@ -338,13 +342,18 @@ export function AttendancePunchModal({
 
             <div className="flex gap-2">
               <Button
- type="button"variant="outline"onClick={onClose}
- className="flex-1 border-border text-foreground text-xs h-11 rounded-xl">
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 border-border text-foreground text-xs h-11 rounded-xl cursor-pointer"
+              >
                 {tBilingual('Cancel', 'বাতিল')}
               </Button>
               <Button
- type="button"onClick={() => setStage('scan')}
- className="flex-1 bg-primary hover:bg-primary text-white font-bold text-xs h-11 rounded-xl shadow-sm cursor-pointer">
+                type="button"
+                onClick={() => setStage('scan')}
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-11 rounded-xl shadow-xs cursor-pointer"
+              >
                 {tBilingual('Try Again', 'আবার চেষ্টা করুন')}
               </Button>
             </div>

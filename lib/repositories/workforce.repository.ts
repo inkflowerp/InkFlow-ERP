@@ -911,13 +911,19 @@ export class WorkforceRepository {
 
     const cleanSlug = companyId.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
+    const predicate = (e: any) => e?.id === id || e?.employee_id_number === id || e?.mobile === id
+
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, predicate, companyId)
     PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, companyId)
     if (cleanSlug !== companyId) {
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, predicate, cleanSlug)
       PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, cleanSlug)
     }
     if (compSlug !== companyId) {
+      PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, predicate, compSlug)
       PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id, compSlug)
     }
+    PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, predicate)
     PrintFlowDataStore.removeItem(STORAGE_KEYS.EMPLOYEES, id)
     return true
   }

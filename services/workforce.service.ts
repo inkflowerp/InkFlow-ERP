@@ -354,6 +354,23 @@ export class WorkforceService {
       }
     }
 
+    // Synchronize company_users login account status if employee status changes
+    if (updates.status && targetUserId) {
+      try {
+        const admin = createAdminClient()
+        const targetCuStatus = updates.status === 'terminated' ? 'disabled' : updates.status === 'active' ? 'active' : undefined
+        if (targetCuStatus) {
+          await (admin as any)
+            .from('company_users')
+            .update({ status: targetCuStatus, updated_at: new Date().toISOString() })
+            .eq('company_id', companyId)
+            .eq('user_id', targetUserId)
+        }
+      } catch (cuErr) {
+        console.warn('[WorkforceService.updateEmployee] company_users status sync error:', cuErr)
+      }
+    }
+
     if (updated) {
       await WorkforceRepository.logWorkforceAudit({
         id: `wfa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -930,8 +947,42 @@ export class WorkforceService {
     return result.employee
   }
 
-  static async deleteEmployee(id: string, companyId: string) {
-    return WorkforceRepository.deleteEmployee(id, companyId)
+  static async deleteEmployee(id: string, companyId: string, actorId?: string, actorName = 'Admin') {
+    const existing = await WorkforceRepository.getEmployeeById(id, companyId)
+
+    // Clean up associated company_users login if present
+    const targetUserId = existing?.user_id
+    if (targetUserId) {
+      try {
+        const admin = createAdminClient()
+        await (admin as any)
+          .from('company_users')
+          .delete()
+          .eq('company_id', companyId)
+          .eq('user_id', targetUserId)
+      } catch (cuErr) {
+        console.warn('[WorkforceService.deleteEmployee] company_users cleanup warning:', cuErr)
+      }
+    }
+
+    const deleted = await WorkforceRepository.deleteEmployee(id, companyId)
+
+    if (existing) {
+      await WorkforceRepository.logWorkforceAudit({
+        id: `wfa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        company_id: companyId,
+        actor_id: actorId || null,
+        actor_name: actorName,
+        action_type: 'employee_deleted',
+        entity_type: 'employee',
+        entity_id: id,
+        before_state: existing as any,
+        reason: `Permanently deleted employee ${existing.name} (${existing.employee_id_number})`,
+        created_at: new Date().toISOString(),
+      })
+    }
+
+    return deleted
   }
 
   // ============================================================================

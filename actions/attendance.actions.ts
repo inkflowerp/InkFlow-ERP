@@ -21,6 +21,7 @@ import { AttendanceRepository, resolveCompanyUuid } from '@/lib/repositories/att
 import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
 import { BranchRepository } from '@/lib/repositories/branch.repository'
 import { getAttendanceLocalDate, formatAttendanceTime } from '@/lib/attendance/geofence-utils'
+import type { EmployeeRecord } from '@/types/workforce.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -28,6 +29,92 @@ export interface ServerActionResult<T> {
   error?: string
   code?: string
   details?: any
+}
+
+/**
+ * Resolves an authenticated user's employee record.
+ * Supports direct user_id link, email/phone matching with auto-linking,
+ * and seamless fallback/creation for Business Owners.
+ */
+async function resolveOrAutoLinkEmployee(tenant: any): Promise<EmployeeRecord | null> {
+  // 1. Direct match by user_id linked in employees table
+  let employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+  if (employee) return employee
+
+  // 2. Try matching by email or phone across employees in company
+  try {
+    const allEmployees = await WorkforceRepository.getEmployees(tenant.companyId)
+    const normEmail = tenant.email?.toLowerCase().trim()
+    const normPhone = tenant.phone?.replace(/\D/g, '')
+
+    const matched = allEmployees.find((e) => {
+      if (e.status === 'terminated') return false
+      if (normEmail && e.email && e.email.toLowerCase().trim() === normEmail) return true
+      if (normPhone && e.mobile) {
+        const empPhone = e.mobile.replace(/\D/g, '')
+        if (empPhone && (empPhone === normPhone || empPhone.endsWith(normPhone) || normPhone.endsWith(empPhone))) {
+          return true
+        }
+      }
+      return false
+    })
+
+    if (matched) {
+      await WorkforceRepository.updateEmployee(matched.id, tenant.companyId, { user_id: tenant.userId })
+      matched.user_id = tenant.userId
+      return matched
+    }
+
+    // 3. If user is business owner, resolve or auto-create an owner employee record
+    const isOwner =
+      tenant.companyRole === 'business_owner' ||
+      tenant.primaryRole === 'business_owner' ||
+      tenant.roles?.some((r: any) => r.slug === 'business_owner' || r.slug === 'owner')
+
+    if (isOwner) {
+      const ownerExisting = allEmployees.find(
+        (e) =>
+          e.status !== 'terminated' &&
+          (e.role === 'Business Owner' || e.role === 'Owner' || e.name === tenant.fullName)
+      )
+      if (ownerExisting) {
+        await WorkforceRepository.updateEmployee(ownerExisting.id, tenant.companyId, { user_id: tenant.userId })
+        ownerExisting.user_id = tenant.userId
+        return ownerExisting
+      }
+
+      const now = new Date().toISOString()
+      const today = now.split('T')[0]
+      const ownerEmp: EmployeeRecord = {
+        id: `emp-owner-${tenant.userId.slice(0, 8)}`,
+        company_id: tenant.companyId,
+        user_id: tenant.userId,
+        employee_id_number: 'EMP-OWNER',
+        name: tenant.fullName || 'Business Owner',
+        email: tenant.email || undefined,
+        mobile: tenant.phone || undefined,
+        role: 'Business Owner',
+        designation: 'Owner / Executive',
+        department: 'management',
+        employee_type: 'permanent',
+        salary_basis: 'monthly',
+        joining_date: today,
+        base_salary: 0,
+        daily_rate: 0,
+        hourly_rate: 0,
+        overtime_hourly_rate: 0,
+        current_advance_balance: 0,
+        status: 'active',
+        created_at: now,
+        updated_at: now,
+      }
+      return await WorkforceRepository.createEmployee(ownerEmp)
+    }
+  } catch (err) {
+    console.warn('[resolveOrAutoLinkEmployee] Warning resolving employee:', err)
+  }
+
+  return null
 }
 
 /**
@@ -48,9 +135,8 @@ export const recordAttendanceAction = withTenantAction(
       }
     }
 
-    // 1. Resolve employee record for this authenticated user
-    // Strictly match by user_id linked to the authenticated user within the company
-    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+    // 1. Resolve employee record for this authenticated user (with auto-link and owner profile support)
+    const employee = await resolveOrAutoLinkEmployee(tenant)
 
     if (!employee) {
       return {
@@ -321,7 +407,7 @@ export const getEmployeeTodayStatusAction = withTenantAction(
     const tenant = await getCurrentTenant(companyId)
     if (!tenant) return { success: false, error: 'Unauthenticated' }
 
-    const employee = await WorkforceRepository.getEmployeeByUserId(tenant.userId, tenant.companyId)
+    const employee = await resolveOrAutoLinkEmployee(tenant)
 
     if (!employee) {
       return {

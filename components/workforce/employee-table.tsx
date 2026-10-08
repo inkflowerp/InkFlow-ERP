@@ -15,6 +15,7 @@ import {
  Key,
  UserCheck,
  UserX,
+ Trash2,
  Phone,
  Mail,
  Building,
@@ -46,6 +47,7 @@ export interface EmployeeTableProps {
  onEditEmployee: (employee: EmployeeRecord) => void
  onManageAccess?: (employee: EmployeeRecord) => void
  onToggleStatus?: (employee: EmployeeRecord) => void
+ onDeleteEmployee?: (employee: EmployeeRecord) => void
 }
 
 const DEPARTMENTS = [
@@ -71,6 +73,7 @@ export function EmployeeTable({
   onEditEmployee,
   onManageAccess,
   onToggleStatus,
+  onDeleteEmployee,
 }: EmployeeTableProps) {
   const { locale, tBilingual } = useI18n()
   const [searchTerm, setSearchTerm] = useState('')
@@ -444,9 +447,9 @@ export function EmployeeTable({
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
- onClick={() => onToggleStatus(emp)}
- className={`cursor-pointer ${
- emp.status === 'active' ? 'text-destructive hover:text-destructive' : 'text-success hover:text-success'
+                                  onClick={() => onToggleStatus(emp)}
+                                  className={`cursor-pointer ${
+                                    emp.status === 'active' ? 'text-destructive hover:text-destructive' : 'text-success hover:text-success'
                                   }`}
                                 >
                                   {emp.status === 'active' ? (
@@ -462,6 +465,16 @@ export function EmployeeTable({
                                   )}
                                 </DropdownMenuItem>
                               </>
+                            )}
+
+                            {onDeleteEmployee && (
+                              <DropdownMenuItem
+                                onClick={() => onDeleteEmployee(emp)}
+                                className="cursor-pointer text-destructive hover:text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-2"/>
+                                <span>{tBilingual('Delete', 'মুছে ফেলুন')}</span>
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -540,6 +553,36 @@ export function EmployeeTable({
                             <span>{tBilingual('Payroll', 'বেতন')}</span>
                           </Link>
                         </DropdownMenuItem>
+                        {onToggleStatus && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => onToggleStatus(emp)}
+                              className={emp.status === 'active' ? 'text-destructive hover:text-destructive' : 'text-success hover:text-success'}
+                            >
+                              {emp.status === 'active' ? (
+                                <>
+                                  <UserX className="w-3.5 h-3.5 mr-2"/>
+                                  <span>{tBilingual('Deactivate', 'নিষ্ক্রিয় করুন')}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserCheck className="w-3.5 h-3.5 mr-2"/>
+                                  <span>{tBilingual('Activate', 'সক্রিয় করুন')}</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        {onDeleteEmployee && (
+                          <DropdownMenuItem
+                            onClick={() => onDeleteEmployee(emp)}
+                            className="text-destructive hover:text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-2"/>
+                            <span>{tBilingual('Delete', 'মুছে ফেলুন')}</span>
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

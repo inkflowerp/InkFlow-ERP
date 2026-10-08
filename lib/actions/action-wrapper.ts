@@ -54,6 +54,7 @@ export interface TenantActionOptions {
   auditAction?: string
   entityType?: string
   entityIdExtractor?: (...args: any[]) => string | undefined
+  targetCompanyIdExtractor?: (...args: any[]) => string | undefined
   confirmationNameExtractor?: (...args: any[]) => string | undefined
   passwordExtractor?: (...args: any[]) => string | undefined
 }
@@ -103,30 +104,47 @@ export function withTenantAction<TArgs extends any[], TReturn>(
     try {
       // 1. Authoritative Tenant Context Resolution (Database-backed)
       let targetSlugOrId: string | undefined = undefined
-      for (const arg of args) {
-        if (typeof arg === 'string' && (arg.startsWith('comp-') || arg.startsWith('co-') || arg.includes('-'))) {
-          if (!targetSlugOrId) targetSlugOrId = arg
-        } else if (arg && typeof arg === 'object') {
-          if (typeof arg.companyId === 'string') {
-            targetSlugOrId = arg.companyId
-            break
-          }
-          if (typeof arg.company_id === 'string') {
-            targetSlugOrId = arg.company_id
-            break
-          }
-          if (typeof arg.tenantSlug === 'string') {
-            targetSlugOrId = arg.tenantSlug
-            break
-          }
-          if (typeof arg.companySlug === 'string') {
-            targetSlugOrId = arg.companySlug
-            break
+      if (options.targetCompanyIdExtractor) {
+        try {
+          targetSlugOrId = options.targetCompanyIdExtractor(...args)
+        } catch {}
+      }
+
+      if (!targetSlugOrId) {
+        for (const arg of args) {
+          if (arg && typeof arg === 'object') {
+            if (typeof arg.companyId === 'string' && arg.companyId.trim()) {
+              targetSlugOrId = arg.companyId.trim()
+              break
+            }
+            if (typeof arg.company_id === 'string' && arg.company_id.trim()) {
+              targetSlugOrId = arg.company_id.trim()
+              break
+            }
+            if (typeof arg.tenantSlug === 'string' && arg.tenantSlug.trim()) {
+              targetSlugOrId = arg.tenantSlug.trim()
+              break
+            }
+            if (typeof arg.companySlug === 'string' && arg.companySlug.trim()) {
+              targetSlugOrId = arg.companySlug.trim()
+              break
+            }
+          } else if (typeof arg === 'string') {
+            const clean = arg.trim()
+            if (clean.startsWith('comp-') || clean.startsWith('co-')) {
+              targetSlugOrId = clean
+              break
+            }
           }
         }
       }
 
-      const tenant = await getCurrentTenant(targetSlugOrId)
+      let tenant = targetSlugOrId ? await getCurrentTenant(targetSlugOrId) : null
+      if (!tenant) {
+        // Fallback to active authenticated tenant session from cookies/request headers
+        tenant = await getCurrentTenant()
+      }
+
       if (!tenant || !tenant.userId || !tenant.companyId) {
         return {
           ok: false,

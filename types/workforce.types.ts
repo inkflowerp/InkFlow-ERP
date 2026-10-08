@@ -422,6 +422,7 @@ export interface WorkforceAuditLogRecord {
     | 'employee_created'
     | 'employee_updated'
     | 'employee_status_changed'
+    | 'employee_deleted'
     | 'attendance_created'
     | 'attendance_corrected'
     | 'attendance_approved'

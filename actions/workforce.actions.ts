@@ -368,6 +368,7 @@ export const deleteEmployeeAction = withTenantAction(
   {
     permission: "hr.delete",
     destructive: true,
+    requireConfirmation: false,
     auditAction: "workforce.deleteemployee",
     entityType: "workforce"
   },
@@ -379,7 +380,12 @@ export const deleteEmployeeAction = withTenantAction(
       return { success: false, error: 'Unauthorized: You do not have permission to delete employees.' }
     }
 
-    const result = await WorkforceService.deleteEmployee(id, tenant.companyId)
+    const result = await WorkforceService.deleteEmployee(
+      id,
+      tenant.companyId,
+      tenant.userId,
+      tenant.fullName || 'Admin'
+    )
     revalidatePath(`/${tenant.companySlug}/hr`)
     revalidatePath(`/${tenant.companySlug}/hr/employees`)
     revalidatePath(`/${tenant.companySlug}/hr/attendance`)

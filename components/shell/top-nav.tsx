@@ -118,11 +118,13 @@ export function TopNav() {
           <Search className="h-4 w-4 shrink-0 text-muted-foreground"/>
         </button>
 
-        {/* Dedicated Employee Attendance & Shift Punch Action */}
+        {/* Dedicated Attendance & Shift Punch Action */}
         <button
- type="button"onClick={() => setIsAttendanceOpen(true)}
- className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-primary cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0"title={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
- aria-label={tBilingual('Employee Attendance & Shift Punch', 'কর্মচারী উপস্থিতি ও শিফট পাঞ্চ')}
+          type="button"
+          onClick={() => setIsAttendanceOpen(true)}
+          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground hover:bg-muted hover:text-primary cursor-pointer shadow-2xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 shrink-0"
+          title={tBilingual('Attendance & Shift Punch', 'উপস্থিতি ও শিফট পাঞ্চ')}
+          aria-label={tBilingual('Attendance & Shift Punch', 'উপস্থিতি ও শিফট পাঞ্চ')}
         >
           <QrCode className="h-4 w-4"/>
         </button>

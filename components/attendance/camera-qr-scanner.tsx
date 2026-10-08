@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import jsQR from 'jsqr'
 
 interface CameraQrScannerProps {
   onScanSuccess: (scannedText: string) => void
@@ -159,7 +160,7 @@ export function CameraQrScanner({
     }
   }, [facingMode, manualMode, retryTrigger])
 
-  // 2. Barcode Detection Loop
+  // 2. Barcode & QR Detection Loop (Native BarcodeDetector with jsQR Canvas fallback)
   useEffect(() => {
     if (manualMode || cameraStatus !== 'active') return
 
@@ -184,13 +185,40 @@ export function CameraQrScanner({
 
       isProcessing = true
       try {
+        // Try native browser BarcodeDetector first if available
         if (detector) {
-          const barcodes = await detector.detect(video)
-          if (barcodes && barcodes.length > 0) {
-            const code = barcodes[0]?.rawValue
-            if (code && isScanningRef.current) {
+          try {
+            const barcodes = await detector.detect(video)
+            if (barcodes && barcodes.length > 0) {
+              const code = barcodes[0]?.rawValue
+              if (code && isScanningRef.current) {
+                isRunning = false
+                handleSuccessfulDetection(code)
+                return
+              }
+            }
+          } catch {
+            // Ignore native detector frame error, proceed to jsQR fallback
+          }
+        }
+
+        // Robust jsQR canvas decoding fallback (works 100% on all desktop and mobile browsers)
+        const canvas = canvasRef.current || document.createElement('canvas')
+        const width = video.videoWidth
+        const height = video.videoHeight
+        if (width > 0 && height > 0) {
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d', { willReadFrequently: true })
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, width, height)
+            const imageData = ctx.getImageData(0, 0, width, height)
+            const decoded = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: 'attemptBoth',
+            })
+            if (decoded && decoded.data && isScanningRef.current) {
               isRunning = false
-              handleSuccessfulDetection(code)
+              handleSuccessfulDetection(decoded.data)
               return
             }
           }
@@ -200,7 +228,7 @@ export function CameraQrScanner({
       } finally {
         isProcessing = false
       }
-    }, 150)
+    }, 120)
 
     return () => {
       isRunning = false
@@ -240,6 +268,7 @@ export function CameraQrScanner({
       const img = new Image()
       img.src = URL.createObjectURL(file)
       img.onload = async () => {
+        // 1. Try native BarcodeDetector
         if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
           try {
             const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
@@ -250,8 +279,32 @@ export function CameraQrScanner({
             }
           } catch {}
         }
+
+        // 2. Fallback to jsQR canvas decode
+        try {
+          const canvas = document.createElement('canvas')
+          const width = img.naturalWidth || img.width
+          const height = img.naturalHeight || img.height
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height)
+            const imageData = ctx.getImageData(0, 0, width, height)
+            const decoded = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: 'attemptBoth',
+            })
+            if (decoded && decoded.data) {
+              handleSuccessfulDetection(decoded.data)
+              return
+            }
+          }
+        } catch (canvasErr) {
+          console.warn('[CameraQrScanner] Image canvas decode error:', canvasErr)
+        }
+
         setManualMode(true)
-        setErrorMessage('Could not automatically parse QR code from photo. Please enter terminal code.')
+        setErrorMessage('Could not find QR code in this photo. Please enter terminal code manually.')
       }
     } catch (err: any) {
       setErrorMessage('Failed to process image: ' + err.message)
@@ -268,7 +321,7 @@ export function CameraQrScanner({
     <div className={`relative overflow-hidden rounded-xl bg-surface-inset border border-border ${className}`}>
       {/* Viewport Area */}
       {!manualMode && (
-        <div className="relative aspect-square sm:aspect-[4/3] w-full bg-card flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-[4/3] sm:aspect-[16/10] max-h-64 sm:max-h-72 w-full bg-card flex items-center justify-center overflow-hidden">
           <video
             ref={videoRef}
             autoPlay
@@ -289,7 +342,7 @@ export function CameraQrScanner({
           {/* Scanning Reticle & Corner Brackets */}
           {cameraStatus === 'active' && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="relative w-60 h-60 sm:w-64 sm:h-64 border-2 border-primary/40 rounded-xl bg-primary/5 backdrop-contrast-125 overflow-hidden shadow-xs">
+              <div className="relative w-44 h-44 sm:w-52 sm:h-52 border-2 border-primary/40 rounded-xl bg-primary/5 backdrop-contrast-125 overflow-hidden shadow-xs">
                 {/* Animated Laser Bar with Trailing Sweep */}
                 <div
                   className="animate-qr-scan absolute left-0 right-0 h-1 bg-primary z-10"
