@@ -28,6 +28,8 @@ import { useI18n } from '@/i18n/context'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { MoneyReceiptPdfDocument } from '@/components/pdf/documents/money-receipt-pdf-document'
 import { QRCodeSVG } from '@/components/attendance/qr-code-svg'
+import { useDocumentTemplate } from '@/hooks/use-document-template'
+import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 
 export interface MoneyReceiptModalProps {
  open: boolean
@@ -46,6 +48,7 @@ export function MoneyReceiptModal({
 }: MoneyReceiptModalProps) {
  const { company } = useTenant()
  const { locale } = useI18n()
+ const { template: docTemplate } = useDocumentTemplate(company?.slug, 'receipt')
  const [copied, setCopied] = React.useState(false)
  const printRef = useRef<HTMLDivElement>(null)
 
@@ -240,8 +243,42 @@ export function MoneyReceiptModal({
 
         {/* PRINTABLE OFFICIAL MONEY RECEIPT CANVAS */}
         <div
- ref={printRef}
- data-money-receipt-canvas="true"data-print-isolate="true"className="p-6 bg-card border-2 border-input rounded-xl space-y-5 text-foreground shadow-xs font-sans print:border-none print:shadow-none print:p-0 print:m-0">
+          ref={printRef}
+          data-money-receipt-canvas="true"
+          data-print-isolate="true"
+          style={
+            docTemplate?.use_letterhead
+              ? {
+                  paddingTop: `${docTemplate.padding_top || 42}mm`,
+                  paddingRight: `${docTemplate.padding_right || 10}mm`,
+                  paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+                  paddingLeft: `${docTemplate.padding_left || 10}mm`,
+                }
+              : undefined
+          }
+          className="relative p-6 bg-card border-2 border-input rounded-xl space-y-5 text-foreground shadow-xs font-sans print:border-none print:shadow-none print:p-0 print:m-0 overflow-hidden"
+        >
+          {docTemplate?.use_letterhead && (
+            docTemplate.letterhead_file?.url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={docTemplate.letterhead_file.url}
+                alt="Letterhead"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
+              />
+            ) : (
+              <PrintLetterheadArt
+                documentTypeTitleEn="MONEY RECEIPT"
+                documentTypeTitleBn="মানি রিসিট"
+                companyName={company?.name || 'PrintFlow'}
+                phone={company?.phone || undefined}
+                email={company?.email || undefined}
+                address={company?.address || undefined}
+                mode={docTemplate.letterhead_mode}
+              />
+            )
+          )}
+          <div className="relative z-10 space-y-5">
           {/* HEADER */}
           <div className="text-center space-y-1 pb-4 border-b-2 border-success-border border-success-border">
             <h1 className="text-xl font-black tracking-tight uppercase text-foreground">
@@ -430,6 +467,7 @@ export function MoneyReceiptModal({
             </div>
           </div>
         </div>
+        </div>
 
         {/* STANDARDIZED MODAL FOOTER */}
         <div className="print:hidden flex items-center justify-between gap-3 pt-3 border-t border-border">
@@ -449,7 +487,8 @@ export function MoneyReceiptModal({
               <PdfActionButtons
  document={
                   <MoneyReceiptPdfDocument
- payment={payment}
+                    payment={payment}
+                    template={docTemplate}
  company={{
  name: company?.name,
  tagline: company?.legal_name || 'Printing & Signage Specialists',

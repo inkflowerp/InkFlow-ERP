@@ -34,37 +34,37 @@ export function PrintLetterheadArt({
       {/* 1. TOP HEADER ARTWORK */}
       <div className="absolute top-0 left-0 right-0 h-[17%] w-full flex items-start justify-between">
         {/* Top Left: Logo & Corporate Identity */}
-        <div className="pt-5 pl-6 sm:pt-6 sm:pl-7 z-10 max-w-[55%]">
+        <div className="pt-4 pl-5 sm:pt-5 sm:pl-6 z-10 max-w-[55%]">
           <div className="flex items-center gap-2">
             {/* PrintFlow Stylized Logo Mark */}
             <div className="flex items-center gap-1.5">
               <svg
                 viewBox="0 0 32 32"
                 fill="none"
-                className="h-8 w-8 shrink-0"
+                className="h-7 w-7 shrink-0"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   d="M6 16C6 10.477 10.477 6 16 6C21.523 6 26 10.477 26 16C26 21.523 21.523 26 16 26"
                   stroke="#10B981"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   strokeLinecap="round"
                 />
-                <circle cx="16" cy="16" r="4" fill="#047857" />
+                <circle cx="16" cy="16" r="3.5" fill="#047857" />
                 <path
                   d="M8 22L16 14L24 22"
                   stroke="#059669"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
               <div>
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-[#064E3B] leading-none block">
+                <span className="text-lg sm:text-xl font-black tracking-tight text-[#064E3B] leading-none block">
                   {companyName}
                 </span>
                 <span
-                  style={{ fontSize: '10px', lineHeight: '12px' }}
+                  style={{ fontSize: '8px', lineHeight: '10px' }}
                   className="font-bold tracking-widest text-[#059669] uppercase block mt-0.5"
                 >
                   SIGNAGE • PRINT • GROW TOGETHER
@@ -75,25 +75,25 @@ export function PrintLetterheadArt({
 
           {/* Contact Details */}
           <div
-            style={{ fontSize: '9px', lineHeight: '12px' }}
-            className="mt-2 space-y-0.5 text-[#374151] font-medium leading-tight"
+            style={{ fontSize: '8px', lineHeight: '11px' }}
+            className="mt-1.5 space-y-0.5 text-[#374151] font-medium leading-tight"
           >
             <div className="flex items-center gap-1">
-              <span className="text-[#059669]">⌂</span>
+              <span className="text-[#059669] font-bold">⌂</span>
               <span>{address}</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
-                <span className="text-[#059669]">☎</span>
+                <span className="text-[#059669] font-bold">☎</span>
                 <span>{phone}</span>
               </span>
               <span className="flex items-center gap-1">
-                <span className="text-[#059669]">✉</span>
+                <span className="text-[#059669] font-bold">✉</span>
                 <span>{email}</span>
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-[#059669]">🌐</span>
+              <span className="text-[#059669] font-bold">🌐</span>
               <span className="text-[#065F46] font-semibold">{website}</span>
             </div>
           </div>
@@ -126,16 +126,16 @@ export function PrintLetterheadArt({
           </svg>
 
           {/* Title overlay on dark green curve */}
-          <div className="absolute top-3 sm:top-4 right-4 sm:right-6 text-right z-10 text-white">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight uppercase drop-shadow-xs">
+          <div className="absolute top-2.5 sm:top-3.5 right-3.5 sm:right-5 text-right z-10 text-white">
+            <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight uppercase">
               {documentTypeTitleEn}
             </h1>
-            <p className="text-sm sm:text-base font-bold text-white/85 leading-none bangla-text mt-0.5">
+            <p className="text-xs sm:text-sm font-bold text-white/90 leading-none mt-0.5">
               {documentTypeTitleBn}
             </p>
             <p
-              style={{ fontSize: '8.5px', lineHeight: '11px' }}
-              className="font-semibold text-white/90 uppercase tracking-widest mt-1"
+              style={{ fontSize: '7.5px', lineHeight: '9px' }}
+              className="font-semibold text-white/80 uppercase tracking-widest mt-1"
             >
               YOUR PRINTING & SIGNAGE PARTNER
             </p>
@@ -145,7 +145,7 @@ export function PrintLetterheadArt({
 
       {/* 2. OPTIONAL WATERMARK FOR FULL PAGE MODE */}
       {mode === 'full_page' && (
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
           <svg viewBox="0 0 100 100" className="w-[45%] h-[45%]" fill="currentColor">
             <circle cx="50" cy="50" r="40" stroke="#064E3B" strokeWidth="6" fill="none" />
             <text
@@ -192,23 +192,79 @@ export function PrintLetterheadArt({
 
           {/* Quick service feature icons row */}
           <div
-            style={{ fontSize: '8px', lineHeight: '10px' }}
-            className="absolute -top-3.5 left-0 right-0 px-4 flex items-center justify-center gap-1.5 sm:gap-2.5 font-bold text-[#065F46]"
+            style={{ fontSize: '7px', lineHeight: '9px' }}
+            className="absolute -top-3 left-0 right-0 px-4 flex items-center justify-center gap-1 sm:gap-2 font-bold text-[#065F46]"
           >
             {[
-              { label: 'LED SIGNAGE', icon: '💡' },
-              { label: 'DIGITAL PRINT', icon: '🖨️' },
-              { label: 'ACP SIGNAGE', icon: '🏢' },
-              { label: 'ACRYLIC SIGNAGE', icon: '✨' },
-              { label: 'VEHICLE BRANDING', icon: '🚐' },
-              { label: 'PVC PRINT', icon: '📜' },
-              { label: 'CUSTOM PRINT', icon: '🏷️' },
+              {
+                label: 'LED SIGNAGE',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    <circle cx="12" cy="12" r="5" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'DIGITAL PRINT',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <path d="M6 14h12v8H6z" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'ACP SIGNAGE',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="4" y="2" width="16" height="20" rx="2" />
+                    <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'ACRYLIC SIGNAGE',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'VEHICLE BRANDING',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'PVC PRINT',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                ),
+              },
+              {
+                label: 'CUSTOM PRINT',
+                svg: (
+                  <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                ),
+              },
             ].map((s) => (
               <div
                 key={s.label}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white border border-success-border shadow-2xs whitespace-nowrap"
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-white border border-[#10B981]/30 shadow-2xs whitespace-nowrap"
               >
-                <span>{s.icon}</span>
+                {s.svg}
                 <span>{s.label}</span>
               </div>
             ))}
@@ -217,27 +273,31 @@ export function PrintLetterheadArt({
 
         {/* Bottom Contact Strip */}
         <div
-          style={{ fontSize: '9px', lineHeight: '12px' }}
-          className="bg-[#064E3B] text-white px-5 py-1.5 flex items-center justify-between font-medium"
+          style={{ fontSize: '8px', lineHeight: '11px' }}
+          className="bg-[#064E3B] text-white px-4 py-1.5 flex items-center justify-between font-medium"
         >
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-white/85">
+            <span className="flex items-center gap-1 text-white/90">
               <span>🌐</span>
               <span>{website}</span>
             </span>
-            <span className="flex items-center gap-1 text-white/85">
+            <span className="flex items-center gap-1 text-white/90">
               <span>✉</span>
               <span>{email}</span>
             </span>
-            <span className="flex items-center gap-1 text-white/85">
+            <span className="flex items-center gap-1 text-white/90">
               <span>☎</span>
               <span>{phone}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-white/90">
+          <div className="flex items-center gap-2 text-white/90">
+            <div className="flex items-center gap-1">
+              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">f</span>
+              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">x</span>
+              <span style={{ fontSize: '6px' }} className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-white/20">in</span>
+            </div>
             <span>/printflowbd</span>
-            <span style={{ fontSize: '7px' }}>ⓕ ⓘ ⓨ ⓛ</span>
           </div>
         </div>
       </div>

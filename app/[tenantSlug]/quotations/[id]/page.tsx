@@ -60,6 +60,8 @@ import {
 } from '@/actions/quotation.actions'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { QuotationPdfDocument } from '@/components/pdf/documents/quotation-pdf-document'
+import { useDocumentTemplate } from '@/hooks/use-document-template'
+import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 import {
  formatBDT,
  toBengaliNumerals,
@@ -84,6 +86,7 @@ function QuotationDetailContent() {
  const { company, currentUser, isLoading: isTenantLoading } = useTenant()
  const { tBilingual } = useI18n()
  const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
+ const { template: docTemplate } = useDocumentTemplate(slug, 'quotation')
 
   // Local datastore fallback
  const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
@@ -647,6 +650,7 @@ function QuotationDetailContent() {
  document={
                     <QuotationPdfDocument
  quotation={quote}
+ template={docTemplate}
  company={{
  name: company?.name,
  tagline: company?.legal_name || 'Printing & Signage Specialists',
@@ -731,7 +735,41 @@ function QuotationDetailContent() {
  PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
  Standard A4 layout with print-optimized styling
            ========================================================================= */}
-        <div className="bg-card text-foreground print:bg-white print:text-foreground print: print: p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+        <div
+          id="quotation-print-area"
+          style={
+            docTemplate?.use_letterhead
+              ? {
+                  paddingTop: `${docTemplate.padding_top || 42}mm`,
+                  paddingRight: `${docTemplate.padding_right || 10}mm`,
+                  paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+                  paddingLeft: `${docTemplate.padding_left || 10}mm`,
+                }
+              : undefined
+          }
+          className="relative bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none overflow-hidden"
+        >
+          {docTemplate?.use_letterhead && (
+            docTemplate.letterhead_file?.url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={docTemplate.letterhead_file.url}
+                alt="Letterhead"
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
+              />
+            ) : (
+              <PrintLetterheadArt
+                documentTypeTitleEn="QUOTATION"
+                documentTypeTitleBn="কোটেশন"
+                companyName={company?.name || 'PrintFlow'}
+                phone={company?.phone || undefined}
+                email={company?.email || undefined}
+                address={company?.address || undefined}
+                mode={docTemplate.letterhead_mode}
+              />
+            )
+          )}
+          <div className="relative z-10 space-y-6">
           {/* Document Header */}
           <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
             <div className="space-y-1">
@@ -894,7 +932,7 @@ function QuotationDetailContent() {
                         )}
 
                         {/* Specialized Offset Specs */}
-                        {offsetSpecs && (
+                        {docTemplate?.item_display_mode !== 'compact' && offsetSpecs && (
                           <div className="text-xs text-primary text-primary print:text-primary bg-primary/10/80 bg-primary/10 p-1.5 rounded mt-1">
                             <span>Offset Specs: </span>
                             {offsetSpecs.paper_gsm && <strong>{offsetSpecs.paper_gsm} GSM Paper • </strong>}
@@ -905,7 +943,7 @@ function QuotationDetailContent() {
                         )}
 
                         {/* Specialized Signage Specs */}
-                        {signageSpecs && (
+                        {docTemplate?.item_display_mode !== 'compact' && signageSpecs && (
                           <div className="text-xs text-warning text-warning print:text-warning bg-warning-surface/80 bg-warning-surface p-1.5 rounded mt-1">
                             <span>Signage Specs: </span>
                             {signageSpecs.lighting && <strong>Lighting: {signageSpecs.lighting} • </strong>}
@@ -948,7 +986,7 @@ function QuotationDetailContent() {
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
                 <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-xs leading-relaxed mt-1">
-                  {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
+                  {quote.terms_and_conditions || docTemplate?.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
 
@@ -1032,6 +1070,7 @@ function QuotationDetailContent() {
             </div>
           </div>
         </div>
+      </div>
 
         {/* =========================================================================
  NON-PRINT ACTIVITY TIMELINE

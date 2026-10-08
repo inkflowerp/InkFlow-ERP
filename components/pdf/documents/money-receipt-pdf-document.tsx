@@ -16,10 +16,12 @@ import { PdfQRCode } from"../primitives/qrcode";
 import type { PdfcnTheme } from"../themes/types";
 import type { PaymentRecord } from"@/types/billing.types";
 import { formatLakhCrore, numberToWordsBDT } from"@/lib/formatters";
+import type { DocumentTemplateSettings } from '@/types/document-template.types';
 
 export interface MoneyReceiptPdfProps {
  theme?: PdfcnTheme;
  payment: PaymentRecord;
+ template?: DocumentTemplateSettings;
  company?: {
  name?: string | null;
  tagline?: string | null;
@@ -29,7 +31,7 @@ export interface MoneyReceiptPdfProps {
   };
 }
 
-const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; company?: MoneyReceiptPdfProps["company"] }) => {
+const MoneyReceiptPdfContent = ({ payment, company, template }: { payment: PaymentRecord; company?: MoneyReceiptPdfProps["company"]; template?: DocumentTemplateSettings }) => {
  const theme = usePdfcnTheme();
 
  const companyName = company?.name || BRAND.name;
@@ -91,7 +93,15 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
 
  return (
     <Document title={`Money Receipt ${payment.receipt_number}`}>
-      <Page size="A4"margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
+      <Page
+        size="A4"
+        margin={{
+          bottom: template ? Math.round((template.padding_bottom ?? 25) * 2.83465) : 36,
+          left: template ? Math.round((template.padding_left ?? 10) * 2.83465) : 36,
+          right: template ? Math.round((template.padding_right ?? 10) * 2.83465) : 36,
+          top: template ? Math.round((template.padding_top ?? 42) * 2.83465) : 36,
+        }}
+      >
         <PageFooter
  leftText={`Official Payment Voucher · ${companyName}`}
  rightText={`Receipt ${payment.receipt_number}`}
@@ -230,8 +240,9 @@ export const MoneyReceiptPdfDocument = ({
  theme,
  payment,
  company,
+ template,
 }: MoneyReceiptPdfProps) => (
   <PdfcnThemeProvider theme={theme}>
-    <MoneyReceiptPdfContent payment={payment} company={company} />
+    <MoneyReceiptPdfContent payment={payment} company={company} template={template} />
   </PdfcnThemeProvider>
 );

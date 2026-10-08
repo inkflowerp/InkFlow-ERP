@@ -17,9 +17,12 @@ import type { PdfcnTheme } from"../themes/types";
 import type { QuotationRecord } from"@/types/quotation.types";
 import { formatLakhCrore, numberToWordsBDT } from"@/lib/formatters";
 
+import type { DocumentTemplateSettings } from '@/types/document-template.types';
+
 export interface QuotationPdfProps {
  theme?: PdfcnTheme;
  quotation: QuotationRecord;
+ template?: DocumentTemplateSettings;
  company?: {
  name?: string | null;
  tagline?: string | null;
@@ -31,7 +34,7 @@ export interface QuotationPdfProps {
   };
 }
 
-const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"] }) => {
+const QuotationPdfContent = ({ quotation, company, template }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"]; template?: DocumentTemplateSettings }) => {
  const theme = usePdfcnTheme();
 
  const companyName = company?.name || BRAND.name;
@@ -103,9 +106,14 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
 
  const formattedInWords = numberToWordsBDT(quotation.grand_total || 0);
 
+ const topMargin = template?.padding_top ? Math.round(template.padding_top * 2.83) : 36;
+ const bottomMargin = template?.padding_bottom ? Math.round(template.padding_bottom * 2.83) : 36;
+ const leftMargin = template?.padding_left ? Math.round(template.padding_left * 2.83) : 36;
+ const rightMargin = template?.padding_right ? Math.round(template.padding_right * 2.83) : 36;
+
  return (
     <Document title={`Quotation ${quotation.quotation_number}`}>
-      <Page size="A4"margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
+      <Page size="A4"margin={{ bottom: bottomMargin, left: leftMargin, right: rightMargin, top: topMargin }}>
         <PageFooter
  leftText={`Quotation valid until: ${quotation.valid_until} · Subject to terms`}
  rightText={`Quotation ${quotation.quotation_number}`}
@@ -300,8 +308,9 @@ export const QuotationPdfDocument = ({
  theme,
  quotation,
  company,
+ template,
 }: QuotationPdfProps) => (
   <PdfcnThemeProvider theme={theme}>
-    <QuotationPdfContent quotation={quotation} company={company} />
+    <QuotationPdfContent quotation={quotation} company={company} template={template} />
   </PdfcnThemeProvider>
 );

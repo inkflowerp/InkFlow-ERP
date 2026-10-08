@@ -15,10 +15,12 @@ import { PdfSignatureBlock } from"../primitives/signature";
 import { PdfQRCode } from"../primitives/qrcode";
 import type { PdfcnTheme } from"../themes/types";
 import type { DeliveryChallanRecord } from"@/types/logistics.types";
+import type { DocumentTemplateSettings } from '@/types/document-template.types';
 
 export interface ChallanPdfProps {
  theme?: PdfcnTheme;
  challan: DeliveryChallanRecord;
+ template?: DocumentTemplateSettings;
  company?: {
  name?: string | null;
  tagline?: string | null;
@@ -28,7 +30,7 @@ export interface ChallanPdfProps {
   };
 }
 
-const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecord; company?: ChallanPdfProps["company"] }) => {
+const ChallanPdfContent = ({ challan, company, template }: { challan: DeliveryChallanRecord; company?: ChallanPdfProps["company"]; template?: DocumentTemplateSettings }) => {
  const theme = usePdfcnTheme();
 
  const companyName = company?.name || BRAND.name;
@@ -76,7 +78,15 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
 
  return (
     <Document title={`Delivery Challan ${challan.challan_number}`}>
-      <Page size="A4"margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
+      <Page
+        size="A4"
+        margin={{
+          bottom: template ? Math.round((template.padding_bottom ?? 25) * 2.83465) : 36,
+          left: template ? Math.round((template.padding_left ?? 10) * 2.83465) : 36,
+          right: template ? Math.round((template.padding_right ?? 10) * 2.83465) : 36,
+          top: template ? Math.round((template.padding_top ?? 42) * 2.83465) : 36,
+        }}
+      >
         <PageFooter
  leftText={`Delivery Challan & Gate Pass · ${companyName}`}
  rightText={`Challan ${challan.challan_number}`}
@@ -212,8 +222,9 @@ export const ChallanPdfDocument = ({
  theme,
  challan,
  company,
+ template,
 }: ChallanPdfProps) => (
   <PdfcnThemeProvider theme={theme}>
-    <ChallanPdfContent challan={challan} company={company} />
+    <ChallanPdfContent challan={challan} company={company} template={template} />
   </PdfcnThemeProvider>
 );

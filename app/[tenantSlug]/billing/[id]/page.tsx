@@ -47,6 +47,8 @@ import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { InvoicePdfDocument } from '@/components/pdf/documents/invoice-pdf-document'
+import { useDocumentTemplate } from '@/hooks/use-document-template'
+import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 
 export default function InvoiceCockpitPage() {
  const params = useParams()
@@ -56,6 +58,7 @@ export default function InvoiceCockpitPage() {
  const { locale, tBilingual } = useI18n()
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
  const companyId = company?.id || 'comp-default'
+ const { template: docTemplate } = useDocumentTemplate(slug, 'invoice')
 
  const [isMounted, setIsMounted] = useState(false)
  const [invoice, setInvoice] = useState<InvoiceRecord | null>(null)
@@ -272,10 +275,21 @@ export default function InvoiceCockpitPage() {
  WhatsApp
             </Button>
 
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.print()}
+              className="h-9 text-xs font-semibold text-foreground border-input hover:bg-muted"
+            >
+              <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+              Print
+            </Button>
+
             <PdfActionButtons
- document={
+              document={
                 <InvoicePdfDocument
- invoice={invoice}
+                  invoice={invoice}
+                  template={docTemplate}
  company={{
  name: company?.name,
  tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Packaging Solutions',
@@ -356,7 +370,41 @@ export default function InvoiceCockpitPage() {
       {/* =========================================================================
  DOCUMENT PRESENTATION CONTAINER (Printable)
          ========================================================================= */}
-      <div className="bg-card text-foreground print:bg-white print:text-foreground print: print: p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full">
+      <div
+        id="invoice-print-area"
+        style={
+          docTemplate?.use_letterhead
+            ? {
+                paddingTop: `${docTemplate.padding_top || 42}mm`,
+                paddingRight: `${docTemplate.padding_right || 10}mm`,
+                paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+                paddingLeft: `${docTemplate.padding_left || 10}mm`,
+              }
+            : undefined
+        }
+        className="relative bg-card text-foreground print:bg-white print:text-foreground p-6 sm:p-10 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 print:w-full overflow-hidden"
+      >
+        {docTemplate?.use_letterhead && (
+          docTemplate.letterhead_file?.url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={docTemplate.letterhead_file.url}
+              alt="Letterhead"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
+            />
+          ) : (
+            <PrintLetterheadArt
+              documentTypeTitleEn="INVOICE"
+              documentTypeTitleBn="চালান ও বিল"
+              companyName={company?.name || 'PrintFlow'}
+              phone={company?.phone || undefined}
+              email={company?.email || undefined}
+              address={company?.address || undefined}
+              mode={docTemplate.letterhead_mode}
+            />
+          )
+        )}
+        <div className="relative z-10 space-y-6">
         {/* MODE 1: NBR MUSHAK 6.3 VAT TAX INVOICE (মূসক-৬.৩ কর চালানপত্র) */}
         {docMode === 'vat_invoice' && (
           <div className="space-y-6 text-xs text-foreground print:text-foreground">
@@ -579,17 +627,17 @@ export default function InvoiceCockpitPage() {
                       <div className="font-bold text-foreground">
                         {item.item_name || item.item_description}
                       </div>
-                      {item.description_bn && (
+                      {docTemplate?.item_display_mode !== 'compact' && item.description_bn && (
                         <div className="text-xs text-muted-foreground">{item.description_bn}</div>
                       )}
-                      {item.material_spec && (
+                      {docTemplate?.item_display_mode !== 'compact' && item.material_spec && (
                         <div className="text-xs text-muted-foreground font-medium">
                           • Substrate: {item.material_spec}
                         </div>
                       )}
 
                       {/* Offset Specs */}
-                      {item.offset_specs && (
+                      {docTemplate?.item_display_mode !== 'compact' && item.offset_specs && (
                         <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
                           {item.offset_specs.paper_gsm && <span className="bg-muted px-1.5 py-0.5 rounded">GSM: {item.offset_specs.paper_gsm}</span>}
                           {item.offset_specs.color_mode && <span className="bg-muted px-1.5 py-0.5 rounded">Color: {item.offset_specs.color_mode}</span>}
@@ -599,7 +647,7 @@ export default function InvoiceCockpitPage() {
                       )}
 
                       {/* 3D Signage Specs */}
-                      {item.signage_specs && (
+                      {docTemplate?.item_display_mode !== 'compact' && item.signage_specs && (
                         <div className="flex flex-wrap items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
                           {item.signage_specs.letter_height_inch && <span className="bg-muted px-1.5 py-0.5 rounded">Height: {item.signage_specs.letter_height_inch}&quot;</span>}
                           {item.signage_specs.led_module_type && <span className="bg-muted px-1.5 py-0.5 rounded">LED: {item.signage_specs.led_module_type}</span>}
@@ -705,9 +753,9 @@ export default function InvoiceCockpitPage() {
             </div>
 
             {/* Terms & Signatures */}
-            {invoice.terms_and_conditions && (
+            {(invoice.terms_and_conditions || docTemplate?.terms_and_conditions) && (
               <div className="p-3 bg-muted rounded-lg text-xs text-muted-foreground">
-                <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions}
+                <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions || docTemplate?.terms_and_conditions}
               </div>
             )}
 
@@ -789,6 +837,7 @@ export default function InvoiceCockpitPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Non-Print: Payment Allocations & Non-Destructive Write-Off Logs */}

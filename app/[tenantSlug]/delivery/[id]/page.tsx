@@ -40,6 +40,8 @@ import { formatBDT } from '@/lib/formatters'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { ChallanPdfDocument } from '@/components/pdf/documents/challan-pdf-document'
 import { generateBangladeshiChallanWhatsAppMessage } from '@/lib/communication/challan-whatsapp'
+import { useDocumentTemplate } from '@/hooks/use-document-template'
+import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 
 type CopyType = 'all' | 'customer' | 'gate_pass' | 'office'
 
@@ -51,6 +53,7 @@ export default function DeliveryChallanDetailPage() {
  const { locale, tBilingual } = useI18n()
  const routeSlug = (params?.tenantSlug as string) || ''
  const slug = routeSlug || company?.slug || company?.id || 'my-company'
+ const { template: docTemplate } = useDocumentTemplate(slug, 'challan')
 
  const [mounted, setMounted] = useState(false)
  const [selectedCopy, setSelectedCopy] = useState<CopyType>('all')
@@ -291,7 +294,8 @@ export default function DeliveryChallanDetailPage() {
             <PdfActionButtons
  document={
                 <ChallanPdfDocument
- challan={challan}
+                  challan={challan}
+                  template={docTemplate}
  company={{
  name: company?.name,
  tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Signage Manufacturing',
@@ -342,11 +346,42 @@ export default function DeliveryChallanDetailPage() {
         <div className="space-y-8 print:space-y-0">
           {copiesToRender.map((copyMeta, copyIdx) => (
             <div
- key={copyMeta.key}
- className={`bg-card text-foreground print:bg-white print:text-foreground print: print: p-8 sm:p-12 rounded-xl border border-border shadow-sm print:border-none print:shadow-none print:p-0 text-xs space-y-5 print:w-full ${
- copyIdx > 0 ? 'print:break-before-page' : ''
+              key={copyMeta.key}
+              style={
+                docTemplate?.use_letterhead
+                  ? {
+                      paddingTop: `${docTemplate.padding_top || 42}mm`,
+                      paddingRight: `${docTemplate.padding_right || 10}mm`,
+                      paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+                      paddingLeft: `${docTemplate.padding_left || 10}mm`,
+                    }
+                  : undefined
+              }
+              className={`relative bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl border border-border shadow-xs print:border-none print:shadow-none print:p-0 text-xs space-y-5 print:w-full overflow-hidden ${
+                copyIdx > 0 ? 'print:break-before-page' : ''
               }`}
             >
+              {docTemplate?.use_letterhead && (
+                docTemplate.letterhead_file?.url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={docTemplate.letterhead_file.url}
+                    alt="Letterhead"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none z-0"
+                  />
+                ) : (
+                  <PrintLetterheadArt
+                    documentTypeTitleEn="DELIVERY CHALLAN"
+                    documentTypeTitleBn="ডেলিভারি চালানপত্র"
+                    companyName={company?.name || 'PrintFlow'}
+                    phone={company?.phone || undefined}
+                    email={company?.email || undefined}
+                    address={company?.address || undefined}
+                    mode={docTemplate.letterhead_mode}
+                  />
+                )
+              )}
+              <div className="relative z-10 space-y-5">
               {/* Header */}
               <div className="text-center space-y-1 pb-3 border-b-2 border-border print:border-border relative">
                 <div className="absolute right-0 top-0 text-xs tabular-nums px-2 py-0.5 rounded bg-muted print:bg-muted font-bold border border-input text-foreground print:text-foreground">
@@ -462,7 +497,7 @@ export default function DeliveryChallanDetailPage() {
                     ডেলিভারির নিয়মাবলী ও শর্তসমূহ (Terms of Delivery):
                   </strong>
                   <p>
-                    উপরে বর্ণিত পণ্য অক্ষত ও সঠিক সংখ্যায় বুঝিয়া প্রদান করা হইল। পণ্য গ্রহণের সময় গণনা ও সাইজ পরীক্ষা করে রিসিট স্বাক্ষর করুন। পরবর্তী কোনো আপত্তি বা অভিযোগ গ্রহণযোগ্য নয়।
+                    {docTemplate?.terms_and_conditions || 'উপরে বর্ণিত পণ্য অক্ষত ও সঠিক সংখ্যায় বুঝিয়া প্রদান করা হইল। পণ্য গ্রহণের সময় গণনা ও সাইজ পরীক্ষা করে রিসিট স্বাক্ষর করুন। পরবর্তী কোনো আপত্তি বা অভিযোগ গ্রহণযোগ্য নয়।'}
                   </p>
                 </div>
 
@@ -534,6 +569,7 @@ export default function DeliveryChallanDetailPage() {
                     <div className="text-xs font-normal text-muted-foreground print:text-muted-foreground">(Received in Good Condition)</div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           ))}
