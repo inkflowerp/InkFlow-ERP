@@ -35,7 +35,6 @@ export interface ServerActionResult<T> {
  */
 export const recordAttendanceAction = withTenantAction(
   {
-    permission: "hr.view",
     entityType: "attendance"
   },
   async (ctx, input: AttendancePunchInput) : Promise<ServerActionResult<AttendanceRecord>> => {
@@ -308,7 +307,6 @@ export const getAttendanceLocationsAction = withTenantAction(
  */
 export const getEmployeeTodayStatusAction = withTenantAction(
   {
-    permission: "hr.view",
     entityType: "attendance"
   },
   async (ctx, companyId?: string) : Promise<ServerActionResult<{
@@ -420,7 +418,6 @@ export const getEmployeeTodayStatusAction = withTenantAction(
  */
 export const getEmployeeHistoryAction = withTenantAction(
   {
-    permission: "hr.view",
     entityType: "attendance"
   },
   async (ctx, companyId?: string) : Promise<ServerActionResult<AttendanceRecord[]>> => {
@@ -450,7 +447,6 @@ export const getEmployeeHistoryAction = withTenantAction(
  */
 export const requestAttendanceCorrectionAction = withTenantAction(
   {
-    permission: "hr.view",
     entityType: "attendance"
   },
   async (ctx, params: {

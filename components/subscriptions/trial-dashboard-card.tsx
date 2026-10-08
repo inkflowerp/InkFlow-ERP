@@ -25,6 +25,7 @@ import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
 
 export function TrialDashboardCard() {
  const [mounted, setMounted] = React.useState(false)
@@ -44,11 +45,12 @@ export function TrialDashboardCard() {
  openUpgradeModal,
   } = useSubscription()
  const { company } = useTenant()
+ const { isOwner } = usePermissions()
  const { locale, tBilingual } = useI18n()
  const pathname = usePathname()
  const slug = company?.slug || 'app'
 
- if (!mounted || isLoading || !isTrial) return null
+ if (!mounted || isLoading || !isTrial || !isOwner) return null
 
  const trialDaysTotal = currentPlan?.trial_days || 14
  const trialDaysBn = toBengaliDigits(trialDaysTotal)

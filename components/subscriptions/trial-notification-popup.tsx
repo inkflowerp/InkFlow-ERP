@@ -18,6 +18,7 @@ import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const SNOOZE_STORAGE_KEY = 'printflow_trial_popup_snooze'
 
@@ -33,6 +34,7 @@ export function TrialNotificationPopup() {
  openUpgradeModal,
   } = useSubscription()
  const { company } = useTenant()
+ const { isOwner } = usePermissions()
  const { locale, tBilingual } = useI18n()
 
  const [isDismissed, setIsDismissed] = useState(true)
@@ -40,7 +42,7 @@ export function TrialNotificationPopup() {
 
   // Determine if snooze has passed
  useEffect(() => {
- if (isLoading || !isTrial) {
+ if (isLoading || !isTrial || !isOwner) {
  setIsDismissed(true)
  return
     }
@@ -74,7 +76,7 @@ export function TrialNotificationPopup() {
     } catch {}
   }
 
- if (isLoading || !isTrial || isDismissed) {
+ if (isLoading || !isTrial || !isOwner || isDismissed) {
  return null
   }
 

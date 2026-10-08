@@ -701,7 +701,7 @@ export function Sidebar({ initialNavSections }: { initialNavSections?: NavSectio
       {!collapsed && (
         <div className="shrink-0 border-t border-border p-3 space-y-2">
           {/* Plan / Upgrade Box */}
-          {isTrial ? (
+          {isOwner && (isTrial ? (
             <div className="rounded-lg bg-muted/40 p-2.5 border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -742,7 +742,7 @@ export function Sidebar({ initialNavSections }: { initialNavSections?: NavSectio
                 )}
               </div>
             )
-          )}
+          ))}
 
           {/* Support Desk Link */}
           <Link

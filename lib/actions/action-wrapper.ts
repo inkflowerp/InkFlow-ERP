@@ -46,6 +46,7 @@ export interface TenantActionContext {
 
 export interface TenantActionOptions {
   permission?: string | string[]
+  anyPermission?: string[]
   branchScoped?: boolean
   destructive?: boolean
   requireConfirmation?: boolean
@@ -158,6 +159,28 @@ export function withTenantAction<TArgs extends any[], TReturn>(
               ok: false,
               success: false,
               error: `Forbidden: Lacking required permission (${requiredPerms.join(', ')}).`,
+              code: 'FORBIDDEN',
+            } as any
+          }
+        }
+      }
+
+      if (options.anyPermission && options.anyPermission.length > 0) {
+        if (!isOwner) {
+          const hasAnyPerm = options.anyPermission.some((perm) => {
+            const moduleName = perm.split('.')[0]
+            return (
+              tenant.permissions.includes(perm) ||
+              tenant.permissions.includes(`${moduleName}.full_control`) ||
+              tenant.permissions.includes('all.manage')
+            )
+          })
+
+          if (!hasAnyPerm) {
+            return {
+              ok: false,
+              success: false,
+              error: `Forbidden: Lacking any of required permissions (${options.anyPermission.join(', ')}).`,
               code: 'FORBIDDEN',
             } as any
           }

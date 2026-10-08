@@ -1,6 +1,5 @@
 import React from 'react'
-import { requireTenantPermission } from '@/lib/auth/tenant-auth'
-import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { requireTenantUser } from '@/lib/auth/tenant-auth'
 
 interface LayoutProps {
   params: Promise<{ tenantSlug: string }>
@@ -9,16 +8,7 @@ interface LayoutProps {
 
 export default async function CommunicationsModuleLayout({ params, children }: LayoutProps) {
   const { tenantSlug } = await params
-  await requireTenantPermission(tenantSlug, 'whatsapp.view')
+  await requireTenantUser(tenantSlug)
 
-  return (
-    <PanelAccessGuard
-      module="whatsapp"
-      action="view"
-      panelTitle="Communications"
-      panelTitleBn="যোগাযোগ"
-    >
-      {children}
-    </PanelAccessGuard>
-  )
+  return <>{children}</>
 }

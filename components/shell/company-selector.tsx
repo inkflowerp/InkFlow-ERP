@@ -27,25 +27,52 @@ export function CompanySelector() {
     ? tBilingual(company.name, company.name_bn || company.name)
     : tBilingual('Select Company', 'প্রতিষ্ঠান নির্বাচন')
 
- return (
-    <div ref={menuRef} className="relative shrink-0">
-      <button
- type="button"disabled={!canSwitch}
- onClick={() => canSwitch && setIsOpen(!isOpen)}
- className={cn(
-          'flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-border bg-muted px-2 sm:px-3 py-1.5 text-left text-sm font-medium transition-all shrink-0 whitespace-nowrap min-h-[40px]',
- canSwitch
-            ? 'hover:bg-muted cursor-pointer'
-            : 'cursor-default select-none'
-        )}
- suppressHydrationWarning
-      >
+  if (!isOwner) {
+    return (
+      <div className="flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-border bg-card px-2 sm:px-3 py-1.5 text-left text-sm font-medium shrink-0 whitespace-nowrap min-h-10 select-none">
         <div
- className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-white font-bold text-xs shadow-xs shrink-0"suppressHydrationWarning
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold text-xs shadow-xs shrink-0"
+          suppressHydrationWarning
         >
           {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
         </div>
-        <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0"suppressHydrationWarning>
+        <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0" suppressHydrationWarning>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate font-semibold text-foreground text-xs sm:text-sm whitespace-nowrap bangla-text" suppressHydrationWarning>
+              {displayName}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-xs text-muted-foreground capitalize whitespace-nowrap hidden xs:inline" suppressHydrationWarning>
+              {company?.business_type?.replace('_', ' ') || 'Printing & Signage'}
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        disabled={!canSwitch}
+        onClick={() => canSwitch && setIsOpen(!isOpen)}
+        className={cn(
+          'flex items-center gap-1.5 sm:gap-2.5 rounded-lg border border-border bg-muted px-2 sm:px-3 py-1.5 text-left text-sm font-medium transition-all shrink-0 whitespace-nowrap min-h-10',
+          canSwitch
+            ? 'hover:bg-muted cursor-pointer'
+            : 'cursor-default select-none'
+        )}
+        suppressHydrationWarning
+      >
+        <div
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold text-xs shadow-xs shrink-0"
+          suppressHydrationWarning
+        >
+          {company?.name ? company.name.charAt(0).toUpperCase() : 'P'}
+        </div>
+        <div className="flex flex-col text-left max-w-[110px] xs:max-w-[150px] sm:max-w-[180px] lg:max-w-[220px] min-w-0" suppressHydrationWarning>
           <div className="flex items-center gap-1.5">
             <span className="truncate font-semibold text-foreground text-xs sm:text-sm whitespace-nowrap bangla-text"suppressHydrationWarning>
               {displayName}

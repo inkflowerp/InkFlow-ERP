@@ -406,7 +406,7 @@ export function MobileNav() {
                     {currentBranch ? currentBranch.name.split('(')[0].trim() : currentPlan?.name || 'Main Branch'}
                   </span>
                 </div>
-                {isTrial ? (
+                {isTrial && isOwner ? (
                   <Badge suppressHydrationWarning className="bg-warning/20 text-warning text-warning text-xs font-bold border-warning-border shrink-0 px-1.5 py-0.5">
                     {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d trial', 'দিন ট্রায়াল')}`}
                   </Badge>
@@ -607,7 +607,7 @@ export function MobileNav() {
             )}
 
             {/* Trial Upgrade Widget in Mobile Menu */}
-            {isTrial && (
+            {isTrial && isOwner && (
               <div className="rounded-lg bg-muted/40 p-3.5 border border-border space-y-2 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5 bangla-text">

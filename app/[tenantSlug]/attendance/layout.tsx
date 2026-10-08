@@ -1,6 +1,5 @@
 import React from 'react'
-import { requireTenantPermission } from '@/lib/auth/tenant-auth'
-import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { requireTenantUser } from '@/lib/auth/tenant-auth'
 
 interface LayoutProps {
   params: Promise<{ tenantSlug: string }>
@@ -9,16 +8,7 @@ interface LayoutProps {
 
 export default async function AttendanceModuleLayout({ params, children }: LayoutProps) {
   const { tenantSlug } = await params
-  await requireTenantPermission(tenantSlug, 'hr.view')
+  await requireTenantUser(tenantSlug)
 
-  return (
-    <PanelAccessGuard
-      module="hr"
-      action="view"
-      panelTitle="Attendance"
-      panelTitleBn="উপস্থিতি"
-    >
-      {children}
-    </PanelAccessGuard>
-  )
+  return <>{children}</>
 }

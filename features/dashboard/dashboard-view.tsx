@@ -758,7 +758,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       />
 
       {/* Free Trial Upgrade Notice Card */}
-      <TrialDashboardCard />
+      {isOwner && <TrialDashboardCard />}
 
       {/* 2. PRIORITIZED QUICK ACTIONS HUB (Mobile-First, Large Touch Targets min 44px) */}
       <DashboardQuickActions

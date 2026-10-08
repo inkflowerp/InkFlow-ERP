@@ -59,11 +59,13 @@ import { getCommunicationLogsAction } from '@/actions/communication.actions'
 import { getDeliveryLogsAction, resendDeliveryJobAction } from '@/actions/notification.actions'
 import { formatBDT } from '@/lib/formatters'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { usePermissions } from '@/hooks/use-permissions'
 
 export default function CommunicationsHubPage() {
  const params = useParams()
  const routeSlug = (params?.tenantSlug as string) || ''
  const { company } = useTenant()
+ const { isOwner, can } = usePermissions()
  const { locale, tBilingual } = useI18n()
  const slug = routeSlug || company?.slug || ''
 
@@ -250,9 +252,19 @@ export default function CommunicationsHubPage() {
 
  return (
     <PanelAccessGuard
- module="settings"action="manage"panelTitle="Communication, In-App Feeds & Gateways"panelTitleBn="মেসেজিং, নোটিফিকেশন ও গেটওয়ে">
-      <FeatureGate feature="whatsapp_notifications">
-        <div className="space-y-6">
+      module="notifications"
+      action="view"
+      panelTitle="Messages & Communications"
+      panelTitleBn="মেসেজিং ও নোটিফিকেশন"
+      allowIfAny={[
+        { module: 'notifications', action: 'view' },
+        { module: 'communications', action: 'view' },
+        { module: 'whatsapp', action: 'view' },
+        { module: 'settings', action: 'manage' },
+        { module: 'settings', action: 'view' },
+      ]}
+    >
+      <div className="space-y-6">
       {/* Header */}
       <PageHeader
         titleEn="Messages & SMS"
@@ -263,30 +275,36 @@ export default function CommunicationsHubPage() {
         iconColor="text-primary"
         actions={
           <div className="flex items-center gap-2">
-            <Link href={`/${slug}/communications/inbox`}>
+            {(isOwner || can('view', 'whatsapp')) && (
+              <Link href={`/${slug}/communications/inbox`}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs gap-1.5 border-border text-foreground hover:bg-muted"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 text-success" />
+                  WhatsApp Inbox
+                </Button>
+              </Link>
+            )}
+            {(isOwner || can('manage', 'settings')) && (
+              <Link href={`/${slug}/settings/whatsapp`}>
+                <Button size="sm" variant="outline" className="text-xs gap-1.5 border-border text-foreground hover:bg-muted">
+                  <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                  Gateway Settings
+                </Button>
+              </Link>
+            )}
+            {(isOwner || can('send', 'whatsapp') || can('create', 'notifications')) && (
               <Button
                 size="sm"
-                variant="outline"
-                className="text-xs gap-1.5 border-border text-foreground hover:bg-muted"
+                onClick={() => setIsSendOpen(true)}
+                className="bg-primary hover:bg-primary/90 text-xs text-primary-foreground bangla-text shadow-xs"
               >
-                <MessageSquare className="h-3.5 w-3.5 text-success" />
-                WhatsApp Inbox
+                <Send className="mr-1.5 h-3.5 w-3.5" />
+                {tBilingual('Send Quick Notification', 'দ্রুত বার্তা পাঠান')}
               </Button>
-            </Link>
-            <Link href={`/${slug}/settings/whatsapp`}>
-              <Button size="sm" variant="outline" className="text-xs gap-1.5 border-border text-foreground hover:bg-muted">
-                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                Gateway Settings
-              </Button>
-            </Link>
-            <Button
-              size="sm"
-              onClick={() => setIsSendOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-xs text-primary-foreground bangla-text shadow-xs"
-            >
-              <Send className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Send Quick Notification', 'দ্রুত বার্তা পাঠান')}
-            </Button>
+            )}
           </div>
         }
       />
@@ -375,17 +393,19 @@ export default function CommunicationsHubPage() {
             Message Templates (টেমপ্লেট)
           </Button>
 
-          <Button
-            size="sm"
-            variant={activeTab === 'gateways' ? 'default' : 'ghost'}
- onClick={() => setActiveTab('gateways')}
- className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
- activeTab === 'gateways' ? 'bg-card-elevated text-foreground shadow-xs' : 'text-muted-foreground '
-            }`}
-          >
-            <Settings className="h-3.5 w-3.5 mr-1.5"/>
- Gateways &amp; SMS (গেটওয়ে)
-          </Button>
+          {(isOwner || can('manage', 'settings')) && (
+            <Button
+              size="sm"
+              variant={activeTab === 'gateways' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('gateways')}
+              className={`text-xs h-10 sm:h-8 px-3.5 whitespace-nowrap shrink-0 ${
+                activeTab === 'gateways' ? 'bg-card-elevated text-foreground shadow-xs' : 'text-muted-foreground '
+              }`}
+            >
+              <Settings className="h-3.5 w-3.5 mr-1.5"/>
+              Gateways &amp; SMS (গেটওয়ে)
+            </Button>
+          )}
         </div>
 
         {activeTab === 'in_app' && unreadCount > 0 && (
@@ -936,7 +956,6 @@ export default function CommunicationsHubPage() {
         </form>
       </ModalDialog>
         </div>
-      </FeatureGate>
     </PanelAccessGuard>
   )
 }

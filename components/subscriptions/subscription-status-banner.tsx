@@ -19,6 +19,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
 import { Button } from '@/components/ui/button'
+import { usePermissions } from '@/hooks/use-permissions'
 
 export function SubscriptionStatusBanner() {
  const [mounted, setMounted] = React.useState(false)
@@ -40,11 +41,12 @@ export function SubscriptionStatusBanner() {
  openUpgradeModal,
   } = useSubscription()
  const { company } = useTenant()
+ const { isOwner } = usePermissions()
  const { locale, tBilingual } = useI18n()
  const pathname = usePathname()
  const slug = company?.slug || 'app'
 
- if (!mounted || isLoading) {
+ if (!mounted || isLoading || !isOwner) {
  return null
   }
 

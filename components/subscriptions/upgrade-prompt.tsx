@@ -24,6 +24,7 @@ import {
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { usePermissions } from '@/hooks/use-permissions'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -55,9 +56,12 @@ export function UpgradePrompt({
  isSuspended,
   } = useSubscription()
  const { company } = useTenant()
+ const { isOwner } = usePermissions()
  const { locale, tBilingual } = useI18n()
  const pathname = usePathname()
  const slug = company?.slug || 'app'
+
+ if (!isOwner) return null
 
  const meta = FEATURE_METADATA[feature] || {
  code: feature,
