@@ -47,6 +47,8 @@ import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { MaterialRecord, StockLedgerRecord, MaterialUnit } from '@/types/inventory.types'
 import { CashBookEntryRecord } from '@/types/accounting.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { useDocumentTemplate } from '@/hooks/use-document-template'
+import { PrintLetterheadArt } from '@/components/settings/document-template/print-letterhead-art'
 
 export default function PurchaseOrderDetailPage() {
  const params = useParams()
@@ -55,6 +57,7 @@ export default function PurchaseOrderDetailPage() {
  const { company } = useTenant()
  const { locale, tBilingual } = useI18n()
  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+ const { template: docTemplate } = useDocumentTemplate(slug, 'purchase_order')
 
  const [orders, setOrders] = useDataStore<PurchaseOrderRecord[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
  const po = orders.find((p) => p.id === poId || p.po_number === poId)
@@ -250,7 +253,34 @@ export default function PurchaseOrderDetailPage() {
   }
 
  return (
-    <PageContainer className="space-y-6 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0">
+    <PageContainer
+      style={
+        docTemplate?.use_letterhead
+          ? {
+              paddingTop: `${docTemplate.padding_top || 42}mm`,
+              paddingRight: `${docTemplate.padding_right || 10}mm`,
+              paddingBottom: `${docTemplate.padding_bottom || 25}mm`,
+              paddingLeft: `${docTemplate.padding_left || 10}mm`,
+            }
+          : undefined
+      }
+      className="relative space-y-6 print:max-w-none print:w-full print:bg-white print:text-foreground print:m-0 print:p-0 overflow-hidden"
+    >
+      {docTemplate?.use_letterhead && (
+        <div className="hidden print:block absolute inset-0 pointer-events-none z-0">
+          <PrintLetterheadArt
+            documentTypeTitleEn="PURCHASE ORDER"
+            documentTypeTitleBn="ক্রয়াদেশ"
+            companyName={company?.name || 'PrintFlow'}
+            companyLogoUrl={company?.logo_url || undefined}
+            phone={company?.phone || '+880 1712 345678'}
+            email={company?.email || 'info@printflow.bd'}
+            website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
+            address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
+            mode={docTemplate.letterhead_mode}
+          />
+        </div>
+      )}
       {/* Back Link & Header */}
       <div>
         <Link

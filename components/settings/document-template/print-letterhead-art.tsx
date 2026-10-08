@@ -6,6 +6,8 @@ interface PrintLetterheadArtProps {
   documentTypeTitleEn?: string
   documentTypeTitleBn?: string
   companyName?: string
+  tagline?: string
+  companyLogoUrl?: string
   phone?: string
   email?: string
   website?: string
@@ -18,6 +20,8 @@ export function PrintLetterheadArt({
   documentTypeTitleEn = 'QUOTATION',
   documentTypeTitleBn = 'কোটেশন',
   companyName = 'Vision Sign',
+  tagline,
+  companyLogoUrl,
   phone = '+880 1712 345678',
   email = 'info@printflow.bd',
   website = 'www.printflow.bd',
@@ -25,6 +29,11 @@ export function PrintLetterheadArt({
   mode = 'full_page',
   className = '',
 }: PrintLetterheadArtProps) {
+  // Social media handle derived from company name
+  const socialHandle = companyName
+    ? companyName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    : 'printflowbd'
+
   return (
     <div
       data-letterhead-artwork="true"
@@ -34,35 +43,44 @@ export function PrintLetterheadArt({
       {/* 1. TOP HEADER ARTWORK (Compact height ~13.5% to never overlap safe area) */}
       <div className="absolute top-0 left-0 right-0 h-[13.5%] w-full flex items-start justify-between">
         {/* Top Left: Logo & Corporate Identity */}
-        <div className="pt-2 pl-3.5 sm:pt-2.5 sm:pl-4 z-10 max-w-[50%]">
+        <div className="pt-2 pl-3 sm:pt-2.5 sm:pl-4 z-10 max-w-[48%]">
           <div className="flex items-center gap-2">
-            {/* Swirl Mark */}
-            <svg
-              viewBox="0 0 36 36"
-              fill="none"
-              className="h-7 w-7 shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Upper emerald ribbon loop */}
-              <path
-                d="M6 18C6 11.373 11.373 6 18 6C24.627 6 29 10 29 15C29 20 23 23 18 20C14 17.6 12 14 15 10"
-                stroke="#10B981"
-                strokeWidth="3.6"
-                strokeLinecap="round"
+            {companyLogoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={companyLogoUrl}
+                alt={companyName}
+                className="h-8 w-8 object-contain shrink-0 rounded-xs"
               />
-              {/* Lower dark green ribbon loop */}
-              <path
-                d="M30 18C30 24.627 24.627 30 18 30C11.373 30 7 26 7 21C7 16 13 13 18 16C22 18.4 24 22 21 26"
-                stroke="#064E3B"
-                strokeWidth="3.6"
-                strokeLinecap="round"
-              />
-              {/* Center golden highlight node */}
-              <circle cx="18" cy="18" r="3" fill="#EAB308" />
-            </svg>
+            ) : (
+              /* Ribbon Swirl Logo Mark */
+              <svg
+                viewBox="0 0 36 36"
+                fill="none"
+                className="h-7 w-7 shrink-0"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Upper emerald ribbon loop */}
+                <path
+                  d="M6 18C6 11.373 11.373 6 18 6C24.627 6 29 10 29 15C29 20 23 23 18 20C14 17.6 12 14 15 10"
+                  stroke="#10B981"
+                  strokeWidth="3.6"
+                  strokeLinecap="round"
+                />
+                {/* Lower dark green ribbon loop */}
+                <path
+                  d="M30 18C30 24.627 24.627 30 18 30C11.373 30 7 26 7 21C7 16 13 13 18 16C22 18.4 24 22 21 26"
+                  stroke="#064E3B"
+                  strokeWidth="3.6"
+                  strokeLinecap="round"
+                />
+                {/* Center golden highlight node */}
+                <circle cx="18" cy="18" r="3" fill="#EAB308" />
+              </svg>
+            )}
 
             <div>
-              {/* Company Name: Exactly 24px */}
+              {/* Company Name: Dynamic & Exactly 24px */}
               <div className="flex items-baseline leading-none">
                 {companyName === 'PrintFlow' ? (
                   <>
@@ -82,7 +100,8 @@ export function PrintLetterheadArt({
                 ) : (
                   <span
                     style={{ fontSize: '24px', lineHeight: '26px' }}
-                    className="font-black text-[#111827] tracking-tight block"
+                    className="font-black text-[#111827] tracking-tight block truncate max-w-[220px]"
+                    title={companyName}
                   >
                     {companyName}
                   </span>
@@ -109,7 +128,7 @@ export function PrintLetterheadArt({
                   <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
                 </svg>
               </span>
-              <span className="truncate">{address}</span>
+              <span className="truncate max-w-[210px]">{address}</span>
             </div>
             <div className="flex items-center gap-2.5">
               <span className="flex items-center gap-1">
@@ -141,7 +160,7 @@ export function PrintLetterheadArt({
         </div>
 
         {/* Top Right: Layered Organic Blade & Swoosh Header Banner */}
-        <div className="relative w-[50%] h-full">
+        <div className="relative w-[52%] h-full">
           <svg
             viewBox="0 0 450 140"
             fill="none"
@@ -195,33 +214,42 @@ export function PrintLetterheadArt({
             />
           </svg>
 
-          {/* Title Overlay in Dark Green Banner */}
-          <div className="absolute top-1.5 sm:top-2 right-3 sm:right-6 w-[70%] flex flex-col items-center justify-center text-center z-10 text-white">
-            {/* "QUOTATION": Exactly 24px */}
+          {/* Title Overlay in Dark Green Banner: RIGHT ALIGNED, SINGLE LINE */}
+          <div className="absolute top-1.5 sm:top-2.5 right-0 w-full flex flex-col items-end text-right pr-3.5 sm:pr-6 z-10 text-white pointer-events-none">
+            {/* Document Title: Single line, right-aligned, dynamic scale for long titles */}
             <h1
-              style={{ fontSize: '24px', lineHeight: '26px', letterSpacing: '0.04em' }}
-              className="font-black uppercase text-white drop-shadow-xs"
+              style={{
+                fontSize:
+                  documentTypeTitleEn.length <= 11
+                    ? '24px'
+                    : documentTypeTitleEn.length <= 14
+                    ? '21px'
+                    : '20px',
+                lineHeight: '26px',
+                letterSpacing: '0.02em',
+              }}
+              className="font-black uppercase text-white drop-shadow-xs whitespace-nowrap text-right"
             >
               {documentTypeTitleEn}
             </h1>
 
-            {/* Bengali Subheading with Gold Accent Bar: Exactly 12px */}
-            <div className="flex items-center justify-center gap-1.5 mt-0.5">
-              <div className="w-8 sm:w-10 h-[2px] bg-[#EAB308] rounded-full shrink-0" />
+            {/* Bengali Subheading with Gold Accent Bar: Right-aligned */}
+            <div className="flex items-center justify-end gap-1.5 mt-0.5">
+              <div className="w-7 sm:w-9 h-[2px] bg-[#EAB308] rounded-full shrink-0" />
               <span
                 style={{ fontSize: '12px', lineHeight: '14px' }}
-                className="font-bold text-white tracking-normal"
+                className="font-bold text-white tracking-normal text-right whitespace-nowrap"
               >
                 {documentTypeTitleBn}
               </span>
             </div>
 
-            {/* Partner Subtitle: Exactly 8px */}
+            {/* Partner Subtitle: Right-aligned, Single Line */}
             <p
               style={{ fontSize: '8px', lineHeight: '10px', letterSpacing: '0.12em' }}
-              className="font-bold text-white/90 uppercase tracking-widest mt-0.5 text-center whitespace-nowrap"
+              className="font-bold text-white/90 uppercase tracking-widest mt-0.5 text-right whitespace-nowrap"
             >
-              YOUR PRINTING & SIGNAGE PARTNER
+              {tagline || 'YOUR PRINTING & SIGNAGE PARTNER'}
             </p>
           </div>
         </div>
@@ -387,7 +415,7 @@ export function PrintLetterheadArt({
             </svg>
           </div>
 
-          {/* Contact Strip: Exactly 8px */}
+          {/* Contact Strip: Dynamic from Business Information */}
           <div
             style={{ fontSize: '8px', lineHeight: '10px' }}
             className="bg-[#064E3B] text-white px-3 py-1 flex items-center justify-between font-medium z-10 relative"
@@ -436,7 +464,7 @@ export function PrintLetterheadArt({
                   </svg>
                 </span>
               </div>
-              <span className="tracking-wide">/printflowbd</span>
+              <span className="tracking-wide">/{socialHandle}</span>
             </div>
           </div>
         </div>

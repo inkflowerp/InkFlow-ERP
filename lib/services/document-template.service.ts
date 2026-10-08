@@ -40,6 +40,18 @@ export function getAllDocumentTemplates(
         ...parsed,
       }
     }
+
+    // Fallback: If not found under specific tenant slug, check default key
+    if (companySlug && companySlug !== 'default') {
+      const fallbackRaw = localStorage.getItem(getTemplateStorageKey('default'))
+      if (fallbackRaw) {
+        const fallbackParsed = JSON.parse(fallbackRaw)
+        return {
+          ...DEFAULT_TEMPLATE_SETTINGS,
+          ...fallbackParsed,
+        }
+      }
+    }
   } catch (err) {
     console.warn('[DocTemplateService] Failed reading template settings:', err)
   }
@@ -67,9 +79,12 @@ export function saveAllDocumentTemplates(
 ): void {
   if (typeof window === 'undefined') return
 
-  const key = getTemplateStorageKey(companySlug)
   try {
+    const key = getTemplateStorageKey(companySlug)
     localStorage.setItem(key, JSON.stringify(templates))
+    if (companySlug && companySlug !== 'default') {
+      localStorage.setItem(getTemplateStorageKey('default'), JSON.stringify(templates))
+    }
     // Broadcast event so any active quotation, invoice, challan, or receipt print views update immediately
     window.dispatchEvent(
       new CustomEvent('printflow_template_updated', {

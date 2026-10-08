@@ -97,6 +97,23 @@ export function DocumentTemplateDesigner() {
     { key: 'purchase_order', label: 'Sample Purchase Order' },
   ]
 
+  const effectiveCompanyName =
+    company?.name ||
+    (company?.slug
+      ? company.slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+      : 'Vision Sign')
+
+  const effectiveAddress =
+    company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'
+
+  const effectivePhone = company?.phone || '+880 1712 345678'
+
+  const effectiveEmail = company?.email || 'info@printflow.bd'
+
+  const effectiveWebsite =
+    company?.website ||
+    (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')
+
   return (
     <div className="space-y-6">
       {/* 1. HEADER SECTION */}
@@ -201,7 +218,11 @@ export function DocumentTemplateDesigner() {
             settings={currentSettings}
             activeDocType={activeDocType}
             onDocTypeChange={(newType) => setActiveDocType(newType)}
-            companyName={company?.name || 'PrintFlow'}
+            companyName={effectiveCompanyName}
+            companyAddress={effectiveAddress}
+            companyPhone={effectivePhone}
+            companyEmail={effectiveEmail}
+            companyWebsite={effectiveWebsite}
             companyLogoUrl={company?.logo_url || undefined}
             onPreviewPdf={handlePreviewPdf}
             onDownloadPdf={handleDownloadPdf}

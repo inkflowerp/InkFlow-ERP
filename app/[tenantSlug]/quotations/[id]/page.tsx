@@ -762,9 +762,11 @@ function QuotationDetailContent() {
                 documentTypeTitleEn="QUOTATION"
                 documentTypeTitleBn="কোটেশন"
                 companyName={company?.name || 'PrintFlow'}
-                phone={company?.phone || undefined}
-                email={company?.email || undefined}
-                address={company?.address || undefined}
+                companyLogoUrl={company?.logo_url || undefined}
+                phone={company?.phone || '+880 1712 345678'}
+                email={company?.email || 'info@printflow.bd'}
+                website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
+                address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
                 mode={docTemplate.letterhead_mode}
               />
             )
@@ -772,31 +774,35 @@ function QuotationDetailContent() {
           <div className="relative z-10 space-y-6">
           {/* Document Header */}
           <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <div className="h-11 w-11 rounded-xl bg-primary text-white font-black text-2xl flex items-center justify-center shadow-xs">
-                  {(company?.name || 'I').charAt(0).toUpperCase()}
+            {!docTemplate?.use_letterhead ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-11 w-11 rounded-xl bg-primary text-white font-black text-2xl flex items-center justify-center shadow-xs">
+                    {(company?.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
+                      {company?.name || 'PrintFlow Printing & Signage Solutions'}
+                    </h2>
+                    {company?.name_bn && (
+                      <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
-                    {company?.name || 'PrintFlow Printing & Signage Solutions'}
-                  </h2>
-                  {company?.name_bn && (
-                    <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
-                  )}
+                {company?.address && (
+                  <p className="text-xs text-muted-foreground print:text-muted-foreground pt-1">
+                    {company.address}
+                  </p>
+                )}
+                <div className="text-xs text-muted-foreground print:text-muted-foreground flex flex-wrap gap-3 pt-0.5">
+                  {company?.phone && <span>Phone: {company.phone}</span>}
+                  {company?.bin_no && <span>• BIN / মূসক: {company.bin_no}</span>}
+                  {company?.tin_no && <span>• TIN: {company.tin_no}</span>}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground print:text-muted-foreground pt-1">
-                42 Fakirapool Main Road, Motijheel Commercial Area, Dhaka-1000, Bangladesh
-              </p>
-              <div className="text-xs text-muted-foreground print:text-muted-foreground flex flex-wrap gap-3 pt-0.5">
-                <span>Phone: +880 1711-000000</span>
-                <span>•</span>
-                <span>BIN / মূসক: 004819284-0101</span>
-                <span>•</span>
-                <span>TIN: 8492049182</span>
-              </div>
-            </div>
+            ) : (
+              <div />
+            )}
 
             <div className="text-right space-y-1">
               <div className="text-2xl font-black text-primary text-primary uppercase tracking-wide print:text-primary">

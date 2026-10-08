@@ -110,4 +110,68 @@ describe('Document Templates Settings & Navigation Tests', () => {
       'titleEn must be Document Templates'
     )
   })
+
+  it('6. Verifies PrintLetterheadArt enforces right alignment, single line, and dynamic business info', () => {
+    const artPath = path.resolve(
+      process.cwd(),
+      'components/settings/document-template/print-letterhead-art.tsx'
+    )
+    const content = fs.readFileSync(artPath, 'utf-8')
+
+    // Right-aligned and single line invariants
+    assert.ok(content.includes('items-end text-right'), 'Must align right')
+    assert.ok(content.includes('whitespace-nowrap'), 'Must prevent wrapping into 2 lines')
+    assert.ok(content.includes('justify-end'), 'Bengali bar must align to right')
+
+    // Dynamic business info props
+    assert.ok(content.includes('companyName'), 'Must support companyName prop')
+    assert.ok(content.includes('companyLogoUrl'), 'Must support companyLogoUrl prop')
+    assert.ok(content.includes('address'), 'Must support address prop')
+    assert.ok(content.includes('phone'), 'Must support phone prop')
+    assert.ok(content.includes('email'), 'Must support email prop')
+    assert.ok(content.includes('website'), 'Must support website prop')
+  })
+
+  it('7. Verifies LiveA4Preview synchronizes all 5 document types dynamically', () => {
+    const previewPath = path.resolve(
+      process.cwd(),
+      'components/settings/document-template/print-a4-preview.tsx'
+    )
+    const content = fs.readFileSync(previewPath, 'utf-8')
+
+    assert.ok(content.includes("'TAX INVOICE'"), 'Must contain TAX INVOICE header')
+    assert.ok(content.includes("'DELIVERY CHALLAN'"), 'Must contain DELIVERY CHALLAN header')
+    assert.ok(content.includes("'MONEY RECEIPT'"), 'Must contain MONEY RECEIPT header')
+    assert.ok(content.includes("'PURCHASE ORDER'"), 'Must contain PURCHASE ORDER header')
+    assert.ok(content.includes("'QUOTATION'"), 'Must contain QUOTATION header')
+
+    assert.ok(content.includes('companyName={companyName}'), 'Must pass companyName')
+    assert.ok(content.includes('address={companyAddress}'), 'Must pass companyAddress')
+    assert.ok(content.includes('phone={companyPhone}'), 'Must pass companyPhone')
+    assert.ok(content.includes('email={companyEmail}'), 'Must pass companyEmail')
+    assert.ok(content.includes('website={companyWebsite}'), 'Must pass companyWebsite')
+  })
+
+  it('8. Verifies storage service and hook support fallback key and cross-tab synchronization', () => {
+    const servicePath = path.resolve(
+      process.cwd(),
+      'lib/services/document-template.service.ts'
+    )
+    const serviceContent = fs.readFileSync(servicePath, 'utf-8')
+    assert.ok(
+      serviceContent.includes("getTemplateStorageKey('default')"),
+      'Must support default fallback key'
+    )
+    assert.ok(
+      serviceContent.includes('printflow_template_updated'),
+      'Must dispatch update event'
+    )
+
+    const hookPath = path.resolve(process.cwd(), 'hooks/use-document-template.ts')
+    const hookContent = fs.readFileSync(hookPath, 'utf-8')
+    assert.ok(
+      hookContent.includes("window.addEventListener('storage'"),
+      'Hook must listen to cross-tab storage events'
+    )
+  })
 })

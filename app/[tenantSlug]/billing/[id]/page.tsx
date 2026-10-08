@@ -394,12 +394,14 @@ export default function InvoiceCockpitPage() {
             />
           ) : (
             <PrintLetterheadArt
-              documentTypeTitleEn="INVOICE"
-              documentTypeTitleBn="চালান ও বিল"
+              documentTypeTitleEn="TAX INVOICE"
+              documentTypeTitleBn="চালান বিল"
               companyName={company?.name || 'PrintFlow'}
-              phone={company?.phone || undefined}
-              email={company?.email || undefined}
-              address={company?.address || undefined}
+              companyLogoUrl={company?.logo_url || undefined}
+              phone={company?.phone || '+880 1712 345678'}
+              email={company?.email || 'info@printflow.bd'}
+              website={company?.website || (company?.slug ? `www.${company.slug}.printflow.bd` : 'www.printflow.bd')}
+              address={company?.address || 'House 12, Road 5, Sector 7, Uttara, Dhaka-1230'}
               mode={docTemplate.letterhead_mode}
             />
           )

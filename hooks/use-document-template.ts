@@ -41,13 +41,22 @@ export function useDocumentTemplate(
       }
     }
 
+    // Listen for storage event across tabs/windows
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key && e.key.includes('printflow_doc_designer_templates_')) {
+        setTemplate(getDocumentTemplate(companySlug, docType))
+      }
+    }
+
     if (typeof window !== 'undefined') {
       window.addEventListener('printflow_template_updated', handleUpdate)
+      window.addEventListener('storage', handleStorage)
     }
 
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('printflow_template_updated', handleUpdate)
+        window.removeEventListener('storage', handleStorage)
       }
     }
   }, [companySlug, docType])
