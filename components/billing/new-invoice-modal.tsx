@@ -1652,7 +1652,7 @@ export function NewInvoiceModal({
             </div>
             <div>
               <h2 className="text-base font-black text-foreground">
-                tBilingual('New Invoice', 'নতুন চালান / ইনভয়েস')
+                {tBilingual('New Invoice', 'নতুন চালান / ইনভয়েস')}
               </h2>
             </div>
           </div>

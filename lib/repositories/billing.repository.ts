@@ -152,18 +152,70 @@ export class BillingRepository {
 
         // Try admin client RPC if standard client had permission or RLS issues
         const admin = createAdminClient()
-        const { data: adminData, error: adminErr } = await (admin as any).rpc('get_next_document_number', {
-          p_company_id: effectiveCompanyId,
-          p_doc_type: docType,
-          p_fiscal_year: null,
-        })
+        if (admin) {
+          const { data: adminData, error: adminErr } = await (admin as any).rpc('get_next_document_number', {
+            p_company_id: effectiveCompanyId,
+            p_doc_type: docType,
+            p_fiscal_year: null,
+          })
 
-        if (!adminErr && adminData) {
-          return String(adminData)
-        }
+          if (!adminErr && adminData) {
+            return String(adminData)
+          }
 
-        if (mode === 'production') {
-          throw new Error(`Database sequence generator failed for ${docType}: ${adminErr?.message || error?.message || 'RPC unavailable'}`)
+          // Direct table query/upsert fallback with admin client
+          try {
+            const fiscalYear = new Date().getFullYear().toString()
+            const prefixMap: Record<string, string> = {
+              invoice: 'INV',
+              quotation: 'QUO',
+              order: 'ORD',
+              challan: 'CHL',
+              payment: 'PAY',
+              purchase: 'PUR',
+            }
+            const prefix = prefixMap[docType] || 'DOC'
+
+            const { data: existingSeq } = await (admin as any)
+              .from('document_sequences')
+              .select('current_val, padding, prefix')
+              .eq('company_id', effectiveCompanyId)
+              .eq('doc_type', docType)
+              .eq('fiscal_year', fiscalYear)
+              .maybeSingle()
+
+            let nextVal = 1
+            const padding = existingSeq?.padding || 6
+            if (existingSeq?.current_val != null) {
+              nextVal = Number(existingSeq.current_val) + 1
+              await (admin as any)
+                .from('document_sequences')
+                .update({ current_val: nextVal, prefix: existingSeq.prefix || prefix, updated_at: new Date().toISOString() })
+                .eq('company_id', effectiveCompanyId)
+                .eq('doc_type', docType)
+                .eq('fiscal_year', fiscalYear)
+            } else {
+              await (admin as any)
+                .from('document_sequences')
+                .insert({
+                  company_id: effectiveCompanyId,
+                  doc_type: docType,
+                  fiscal_year: fiscalYear,
+                  prefix: prefix,
+                  current_val: nextVal,
+                  padding: padding,
+                  updated_at: new Date().toISOString(),
+                })
+            }
+
+            return `${prefix}-${fiscalYear}-${String(nextVal).padStart(padding, '0')}`
+          } catch (fbErr: any) {
+            console.warn('[BillingRepository.getNextDocumentNumber] Direct table fallback notice:', fbErr?.message)
+          }
+
+          if (mode === 'production') {
+            throw new Error(`Database sequence generator failed for ${docType}: ${adminErr?.message || error?.message || 'RPC unavailable'}`)
+          }
         }
       } catch (err: any) {
         if (mode === 'production') {
