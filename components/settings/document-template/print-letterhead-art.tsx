@@ -40,7 +40,7 @@ export function PrintLetterheadArt({
       className={`absolute inset-0 pointer-events-none overflow-hidden select-none ${className}`}
       aria-hidden="true"
     >
-      {/* 1. TOP HEADER ARTWORK: Exact match to Reference Image 2 */}
+      {/* 1. TOP HEADER ARTWORK: Exact match to Reference Image */}
       <div className="absolute top-0 left-0 right-0 h-[13.5%] w-full flex items-start justify-between overflow-hidden">
         {/* Full-width Precision Swoosh SVG */}
         <svg
@@ -52,13 +52,13 @@ export function PrintLetterheadArt({
         >
           {/* Subtle Light Sage Shadow / Swoosh Layer */}
           <path
-            d="M 495 0 L 595 160 Q 615 200 655 213 L 1024 213 L 1024 0 Z"
+            d="M 502 0 L 624 180 Q 640 205 675 213 L 1024 213 L 1024 0 Z"
             fill="#E7EDEA"
           />
 
           {/* Main Deep Forest Green Banner (#0A2E26) */}
           <path
-            d="M 545 0 L 642 165 Q 662 202 705 213 L 1024 213 L 1024 0 Z"
+            d="M 549 0 L 648 180 Q 665 205 700 213 L 1024 213 L 1024 0 Z"
             fill="#0A2E26"
           />
         </svg>
@@ -75,29 +75,48 @@ export function PrintLetterheadArt({
                   alt={companyName}
                   className="h-9 w-auto max-w-[130px] object-contain shrink-0 rounded-xs"
                 />
-              ) : (
-                /* Stylized "P" Ribbon Logo Mark matching Reference */
+              ) : companyName.toLowerCase().startsWith('print') ? (
+                /* Stylized "P" Ribbon Logo Mark for PrintFlow */
                 <svg
                   viewBox="0 0 36 36"
                   fill="none"
                   className="h-8 w-8 shrink-0"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* Stem of P in deep dark forest green */}
                   <path
                     d="M6 5v26h6V20h8c6.6 0 10.5-3.5 10.5-7.5S26.6 5 20 5H6z"
                     fill="#0A2E26"
                   />
-                  {/* Golden top swoop flourish */}
                   <path
                     d="M6 11c5-3 12-4 17-2 3.5 1.5 5.5 3.5 6.5 5.5-2.5-3.5-7-6-13-5.5C11.5 9.5 8 10 6 11z"
                     fill="#F59E0B"
                   />
-                  {/* Emerald middle swoop flourish */}
                   <path
                     d="M6 18c6-3.5 13-4 18-2 3 1.5 5 3.5 5.5 5-2-3-6-5-12-4.5C12 17 8 17.5 6 18z"
                     fill="#10B981"
                   />
+                </svg>
+              ) : (
+                /* Universal Circular Ribbon Swirl Mark for other companies */
+                <svg
+                  viewBox="0 0 36 36"
+                  fill="none"
+                  className="h-8 w-8 shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 18C6 11.373 11.373 6 18 6C24.627 6 29 10 29 15C29 20 23 23 18 20C14 17.6 12 14 15 10"
+                    stroke="#10B981"
+                    strokeWidth="3.6"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M30 18C30 24.627 24.627 30 18 30C11.373 30 7 26 7 21C7 16 13 13 18 16C22 18.4 24 22 21 26"
+                    stroke="#0A2E26"
+                    strokeWidth="3.6"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="18" cy="18" r="3" fill="#EAB308" />
                 </svg>
               )}
 
@@ -181,30 +200,32 @@ export function PrintLetterheadArt({
         </div>
 
         {/* Top Right: Header Title Block in Dark Green Banner */}
-        <div className="relative z-10 w-[46%] h-full flex flex-col items-end text-right justify-center pr-6 sm:pr-10 pointer-events-none">
+        <div className="relative z-10 w-[44%] h-full flex flex-col items-end text-right justify-center pr-6 sm:pr-8 pointer-events-none">
           {/* Document Title: Single line, right-aligned, dynamic scale */}
           <h1
             style={{
               fontSize:
                 documentTypeTitleEn.length <= 9
-                  ? '30px'
+                  ? '28px'
                   : documentTypeTitleEn.length <= 13
-                  ? '25px'
-                  : '21px',
+                  ? '24px'
+                  : '20px',
               lineHeight: '1.1',
               letterSpacing: '0.04em',
+              color: '#FFFFFF',
+              fontWeight: 900,
             }}
-            className="font-black uppercase text-white tracking-wide whitespace-nowrap drop-shadow-xs text-right"
+            className="font-black uppercase tracking-wide whitespace-nowrap text-right !text-white"
           >
             {documentTypeTitleEn}
           </h1>
 
           {/* Bengali Subheading with Gold Accent Bar: Right-aligned */}
-          <div className="flex items-center justify-end gap-2.5 mt-1">
-            <div className="w-8 sm:w-10 h-[2.5px] bg-[#B88C2F] rounded-full shrink-0" />
+          <div className="flex items-center justify-end gap-2 mt-1">
+            <div className="w-8 sm:w-10 h-[2px] bg-[#B88C2F] rounded-full shrink-0" />
             <span
-              style={{ fontSize: '18px', lineHeight: '22px' }}
-              className="font-bold text-white tracking-normal whitespace-nowrap text-right"
+              style={{ fontSize: '17px', lineHeight: '20px', color: '#FFFFFF', fontWeight: 700 }}
+              className="font-bold tracking-normal whitespace-nowrap text-right !text-white"
             >
               {documentTypeTitleBn}
             </span>
@@ -212,8 +233,14 @@ export function PrintLetterheadArt({
 
           {/* Partner Subtitle: Right-aligned, Single Line */}
           <p
-            style={{ fontSize: '8.5px', lineHeight: '11px', letterSpacing: '0.18em' }}
-            className="font-bold text-white/90 uppercase tracking-widest mt-2 whitespace-nowrap text-right"
+            style={{
+              fontSize: '7.5px',
+              lineHeight: '10px',
+              letterSpacing: '0.08em',
+              color: '#FFFFFF',
+              fontWeight: 700,
+            }}
+            className="font-bold uppercase tracking-wider mt-2.5 whitespace-nowrap text-right !text-white"
           >
             {tagline || 'YOUR PRINTING & SIGNAGE PARTNER'}
           </p>
