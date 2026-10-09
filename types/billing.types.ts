@@ -1,6 +1,7 @@
 export type InvoiceType = 'sales_invoice' | 'vat_invoice' | 'payment_receipt'
 
 export type InvoiceStatus =
+  | 'draft'
   | 'unpaid'
   | 'partially_paid'
   | 'paid'

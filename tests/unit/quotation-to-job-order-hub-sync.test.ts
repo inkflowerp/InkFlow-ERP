@@ -89,5 +89,13 @@ test('Quotation to Job Order: verifies order, job ticket, and cross-partition sy
     assert.equal(matchingOrder.quotation_id, quote.id)
     assert.equal(matchingOrder.items.length, 1)
     assert.equal(matchingOrder.items[0].unit_price, 75, 'Quoted unit rate must remain immutable')
+
+    // Check Draft Invoice created
+    const invoices = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const matchingInvoice = invoices.find((inv) => inv.sales_order_id === result.id || inv.quotation_id === quote.id)
+    assert.ok(matchingInvoice, 'Draft Invoice must be generated upon conversion')
+    assert.equal(matchingInvoice.status, 'draft', 'Generated invoice must have draft status')
+    assert.equal(matchingInvoice.customer_name, 'Metro Billboard Ltd')
+    assert.equal(updatedQuote?.converted_invoice_id, matchingInvoice.invoice_number)
   })
 })

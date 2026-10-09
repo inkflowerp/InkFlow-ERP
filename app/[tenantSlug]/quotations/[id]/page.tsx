@@ -31,11 +31,22 @@ import {
  RefreshCw,
  MessageSquare,
  ArrowUpRight,
+ ChevronDown,
+ XCircle,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { DEFAULT_DOCUMENT_TEMPLATES } from '@/lib/communication/document-templates'
+import type { DocumentType, DocumentTemplateConfigRecord } from '@/types/tax-and-docs.types'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,10 +78,7 @@ import {
  numberToWordsBangla,
 } from '@/lib/formatters'
 import * as QuotationService from '@/lib/quotations/quotation-utils'
-import { FollowUpModal } from '@/components/quotations/follow-up-modal'
-import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { ConvertToOrderModal } from '@/components/quotations/convert-to-order-modal'
-import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -104,11 +112,17 @@ function QuotationDetailContent() {
  const [isConvertingOrder, setIsConvertingOrder] = useState(false)
  const [isSendingEmail, setIsSendingEmail] = useState(false)
 
+  // Synchronize Settings -> Print Formats (Document Templates)
+  const [docTemplates] = useDataStore<Record<DocumentType, DocumentTemplateConfigRecord>>(
+    STORAGE_KEYS.DOCUMENT_TEMPLATES,
+    DEFAULT_DOCUMENT_TEMPLATES,
+    slug
+  )
+  const activeTemplate = docTemplates?.quotation || DEFAULT_DOCUMENT_TEMPLATES.quotation
+
   // Modals state
- const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
- const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
   const [isConvertToOrderOpen, setIsConvertToOrderOpen] = useState(false)
-  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false)
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
 
  const showNotification = (msg: string) => {
  setNotification(msg)
@@ -290,6 +304,16 @@ function QuotationDetailContent() {
     }
   }
 
+  // Reject Quotation Handler
+  const handleRejectQuotation = async () => {
+    try {
+      await handleStatusChange('rejected')
+      setIsRejectDialogOpen(false)
+    } catch (err: any) {
+      showNotification(`Rejection failed: ${err?.message}`)
+    }
+  }
+
   // Convert to Job Order Confirmation Handler (via Advance Payment Modal)
   const handleConfirmConvertToOrder = async ({
     advanceAmount,
@@ -375,7 +399,15 @@ function QuotationDetailContent() {
           window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
 
-        showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number} with Advance ৳${advanceAmount}!`)
+        const linkedInvoice = res.data.invoice || (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).find((inv: any) => inv.sales_order_id === res.data.id || inv.order_number === res.data.order_number)
+        const invNumber = linkedInvoice?.invoice_number || `INV-${res.data.order_number.replace('ORD-', '')}`
+        if (linkedInvoice && slug && slug !== 'default') {
+          PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, linkedInvoice, slug)
+        }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:invoices'))
+        }
+        showNotification(`Successfully converted to Order #${res.data.order_number}, Job Ticket, and Draft Invoice #${invNumber}!`)
         setIsConvertToOrderOpen(false)
         fetchQuotationDetail(true)
       } else {
@@ -432,86 +464,6 @@ function QuotationDetailContent() {
     } catch (err: any) {
       setIsConvertingOrder(false)
       showNotification(`Conversion error: ${err?.message}`)
-    }
-  }
-
-  // Invoice Created Callback from NewInvoiceModal
-  const handleInvoiceCreated = (createdInv: any) => {
-    const invNumber = createdInv.invoice_number || createdInv.id
-    try {
-      PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-        status: 'converted',
-        converted_invoice_id: invNumber,
-      }, slug)
-      PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
-        status: 'converted',
-        converted_invoice_id: invNumber,
-      })
-    } catch {}
-
-    setQuote((prev) =>
-      prev
-        ? {
-            ...prev,
-            status: 'converted',
-            converted_invoice_id: invNumber,
-          }
-        : prev
-    )
-
-    showNotification(`Successfully converted to Invoice #${invNumber}!`)
-    setIsInvoiceModalOpen(false)
-    fetchQuotationDetail(true)
-  }
-
-  // Convert to Invoice Action (Server Action)
- const handleConvertToInvoice = async () => {
- setIsConvertingInvoice(true)
- try {
- const res = await convertQuotationToInvoiceAction(quote.id, company?.id)
- setIsConvertingInvoice(false)
- if (res.success && res.data) {
- try {
- PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
- if (slug && slug !== 'default') {
- PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
- PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
- status: 'converted',
- converted_invoice_id: res.data.id || res.data.invoice_number,
-            }, slug)
-          }
- PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
- status: 'converted',
- converted_invoice_id: res.data.id || res.data.invoice_number,
-          })
-        } catch {}
-
- const invoiceData = res.data
- setQuote((prev) =>
- prev
-            ? {
-                ...prev,
- status: 'converted',
- converted_invoice_id: invoiceData.id || invoiceData.invoice_number,
-              }
-            : prev
-        )
-
- if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printflow_data_sync'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:invoices'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced'))
-        }
-
- showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
- fetchQuotationDetail(true)
-      } else {
- showNotification(`Conversion failed: ${res.error}`)
-      }
-    } catch (err: any) {
- setIsConvertingInvoice(false)
- showNotification(`Conversion error: ${err?.message}`)
     }
   }
 
@@ -706,75 +658,107 @@ function QuotationDetailContent() {
 
             {/* Bottom Row: Clear Action Hierarchy */}
             <div className="flex flex-wrap items-center justify-between gap-2.5">
-              {/* PRIMARY & SECONDARY ACTIONS */}
+              {/* ACTIONS: Send (WhatsApp, Email) & Rejected */}
               <div className="flex flex-wrap items-center gap-2">
-                {/* 1. PRIMARY ACTION: Follow Up */}
+                {/* 1. Send Dropdown (WhatsApp, Email) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-9 text-xs bg-card hover:bg-muted text-foreground border-border gap-1.5 cursor-pointer shadow-xs font-semibold"
+                    >
+                      <Send className="h-4 w-4 text-primary" />
+                      <span>Send</span>
+                      <ChevronDown className="h-3 w-3 opacity-60" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    <DropdownMenuItem onClick={handleSendWhatsApp} className="gap-2 cursor-pointer text-xs">
+                      <MessageSquare className="h-4 w-4 text-success" />
+                      <span>Send via WhatsApp</span>
+                    </DropdownMenuItem>
+                    {quote.customer_email ? (
+                      <DropdownMenuItem onClick={handleSendEmail} className={`gap-2 cursor-pointer text-xs ${isSendingEmail ? "opacity-50 pointer-events-none" : ""}`}>
+                        <Mail className="h-4 w-4 text-primary" />
+                        <span>{isSendingEmail ? "Sending..." : "Email PDF Attachment"}</span>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem className="gap-2 text-xs opacity-50 pointer-events-none">
+                        <Mail className="h-4 w-4" />
+                        <span>No Email on File</span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Direct Send WhatsApp */}
                 <Button
- size="sm"onClick={() => setIsFollowUpOpen(true)}
- className="h-9 text-xs bg-warning hover:bg-warning text-foreground font-black px-4 shadow-xs gap-1.5 cursor-pointer">
-                  <Clock className="h-4 w-4"/>
- Follow Up
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSendWhatsApp}
+                  className="h-9 text-xs bg-success/20 text-success border-success-border/40 hover:bg-success/30 gap-1.5 cursor-pointer font-semibold"
+                >
+                  <MessageSquare className="h-4 w-4 text-success" />
+                  <span>Send WhatsApp</span>
                 </Button>
 
-                {/* 2. WhatsApp Direct */}
-                <Button
- size="sm"variant="outline"onClick={handleSendWhatsApp}
- className="h-9 text-xs bg-success/20 text-success border-success-border/40 hover:bg-success/30 gap-1.5 cursor-pointer">
-                  <MessageSquare className="h-4 w-4 text-success"/>
- Send WhatsApp
-                </Button>
-
-                {/* 3. Send Email */}
+                {/* Direct Email PDF */}
                 {quote.customer_email && (
                   <Button
- size="sm"variant="outline"onClick={handleSendEmail}
- disabled={isSendingEmail}
- className="h-9 text-xs bg-primary/20 text-primary border-border/40 hover:bg-primary/30 gap-1.5 cursor-pointer">
-                    <Mail className="h-4 w-4 text-primary"/>
-                    {isSendingEmail ? 'Sending...' : 'Email PDF'}
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail}
+                    className="h-9 text-xs bg-primary/20 text-primary border-border/40 hover:bg-primary/30 gap-1.5 cursor-pointer font-semibold"
+                  >
+                    <Mail className="h-4 w-4 text-primary" />
+                    <span>{isSendingEmail ? "Sending..." : "Email PDF"}</span>
                   </Button>
                 )}
 
-                {/* 4. Negotiate Margin */}
+                {/* 2. Rejected Action */}
                 <Button
- size="sm"variant="outline"onClick={() => setIsNegotiationOpen(true)}
- className="h-9 text-xs bg-card hover:bg-muted text-foreground border-border gap-1.5 cursor-pointer">
-                  <Sliders className="h-3.5 w-3.5 text-primary"/>
- Negotiate Margin
-                </Button>
-
-                {/* 5. Duplicate */}
-                <Button
- size="sm"variant="outline"onClick={handleDuplicate}
- className="h-9 text-xs bg-card hover:bg-muted text-foreground border-border gap-1.5 cursor-pointer">
-                  <Copy className="h-3.5 w-3.5"/>
- Duplicate
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsRejectDialogOpen(true)}
+                  disabled={quote.status === "rejected" || quote.status === "converted"}
+                  className={`h-9 text-xs gap-1.5 cursor-pointer font-bold ${
+                    quote.status === "rejected"
+                      ? "border-destructive/40 bg-destructive/10 text-destructive opacity-75"
+                      : "border-destructive/30 text-destructive hover:bg-destructive/10"
+                  }`}
+                >
+                  <XCircle className="h-4 w-4" />
+                  <span>{quote.status === "rejected" ? "Rejected" : "Rejected"}</span>
                 </Button>
               </div>
 
-              {/* CONVERSION & UTILITY */}
+              {/* CONVERSION & PRINT: Print & Convert to Order */}
               <div className="flex flex-wrap items-center gap-2">
-                {/* Print / Vector PDF Engine */}
+                {/* 3. Print / Vector PDF Engine */}
                 <PdfActionButtons
- document={
+                  document={
                     <QuotationPdfDocument
- quotation={quote}
- company={{
- name: company?.name,
- tagline: company?.legal_name || 'Printing & Signage Specialists',
- address: company?.address,
- phone: company?.phone,
- email: company?.email,
- binNumber: company?.bin_no,
+                      quotation={quote}
+                      company={{
+                        name: company?.name,
+                        tagline: company?.legal_name || "Printing & Signage Specialists",
+                        address: company?.address,
+                        phone: company?.phone,
+                        email: company?.email,
+                        binNumber: company?.bin_no,
                       }}
+                      languageMode={languageMode === "bilingual" ? "bn" : languageMode}
+                      template={activeTemplate}
                     />
                   }
- filename={`QUO-${quote.quotation_number}`}
- title={`Quotation #${quote.quotation_number}`}
+                  filename={`QUO-${quote.quotation_number}`}
+                  title={`Quotation #${quote.quotation_number}`}
                 />
 
-                {/* Convert to Job Order (Opens Advance Payment Modal) */}
-                {quote.status !== 'converted' && !quote.converted_order_id ? (
+                {/* 4. Convert to Order (Opens Advance Payment Modal -> Orders, Jobs + Draft Invoice) */}
+                {quote.status !== "converted" && !quote.converted_order_id ? (
                   <Button
                     size="sm"
                     onClick={() => setIsConvertToOrderOpen(true)}
@@ -782,7 +766,7 @@ function QuotationDetailContent() {
                     className="h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
                   >
                     <FileCheck className="h-4 w-4" />
-                    <span>Convert to Job Order</span>
+                    <span>Convert to Order</span>
                   </Button>
                 ) : quote.converted_order_id ? (
                   <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
@@ -791,23 +775,10 @@ function QuotationDetailContent() {
                       className="h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
                     >
                       <ArrowUpRight className="h-4 w-4" />
-                      View Job Order #{quote.converted_order_id} →
+                      View Order #{quote.converted_order_id} →
                     </Button>
                   </Link>
                 ) : null}
-
-                {/* Convert to Invoice (Opens New Invoice Modal with Pre-filled Info) */}
-                {quote.status !== 'converted' && !quote.converted_invoice_id && (
-                  <Button
-                    size="sm"
-                    onClick={() => setIsInvoiceModalOpen(true)}
-                    disabled={isConvertingInvoice}
-                    className="h-9 text-xs bg-success hover:bg-success/90 text-success-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <Receipt className="h-4 w-4" />
-                    <span>Convert to Invoice</span>
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -859,7 +830,7 @@ function QuotationDetailContent() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black tracking-tight text-foreground print:text-foreground">
-                    {company?.name || 'PrintFlow Printing & Signage Solutions'}
+                    {(languageMode === 'bn' && activeTemplate.company_name_bn) ? activeTemplate.company_name_bn : (company?.name || 'PrintFlow Printing & Signage Solutions')}
                   </h2>
                   {company?.name_bn && (
                     <div className="text-xs text-muted-foreground print:text-muted-foreground font-semibold">{company.name_bn}</div>
@@ -888,7 +859,7 @@ function QuotationDetailContent() {
 
             <div className="text-right space-y-1">
               <div className="text-2xl font-black text-primary text-primary uppercase tracking-wide print:text-primary">
-                {languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION'}
+                {activeTemplate.header_disclaimer || (languageMode === 'bn' ? 'উদ্ধৃতিপত্র / প্রাক্কলন' : 'OFFICIAL QUOTATION')}
               </div>
               <div className="text-sm tabular-nums font-bold text-foreground print:text-foreground">
                 {quote.quotation_number}
@@ -1074,7 +1045,7 @@ function QuotationDetailContent() {
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
                 <pre className="font-sans whitespace-pre-line text-muted-foreground print:text-muted-foreground text-xs leading-relaxed mt-1">
-                  {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
+                  {quote.terms_and_conditions || (languageMode === 'bn' ? (activeTemplate.footer_terms_bn || DEFAULT_QUOTATION_TERMS_BN) : (activeTemplate.footer_terms_en || DEFAULT_QUOTATION_TERMS))}
                 </pre>
               </div>
 
@@ -1151,7 +1122,7 @@ function QuotationDetailContent() {
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-bold text-foreground print:text-foreground">Authorized Signatory</div>
+              <div className="font-bold text-foreground print:text-foreground">{activeTemplate.authorized_signatory_title || (languageMode === 'bn' ? 'অনুমোদিত স্বাক্ষর' : 'Authorized Signatory')}</div>
               <div className="text-xs text-muted-foreground print:text-muted-foreground">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'PrintFlow Solutions'}`}
               </div>
@@ -1208,30 +1179,6 @@ function QuotationDetailContent() {
         </div>
 
         {/* Modals */}
-        <FollowUpModal
- open={isFollowUpOpen}
- onOpenChange={setIsFollowUpOpen}
- quotation={quote}
- onFollowUpRecorded={(updated) => {
- setQuote(updated)
- showNotification(`Follow-up saved for #${updated.quotation_number}`)
- fetchQuotationDetail(true)
-          }}
- companyId={company?.id || 'c-01'}
-        />
-
-        <NegotiationModal
- open={isNegotiationOpen}
- onOpenChange={setIsNegotiationOpen}
- quotation={quote}
- onNegotiationApplied={(updated) => {
- setQuote(updated)
- showNotification(`Negotiated total ${formatBDT(updated.grand_total)} applied (Margin: ${updated.margin_percent}%).`)
- fetchQuotationDetail(true)
-          }}
- companyId={company?.id || 'c-01'}
-        />
-
         {/* Advance Payment Modal for Job Order Conversion */}
         <ConvertToOrderModal
           open={isConvertToOrderOpen}
@@ -1241,43 +1188,17 @@ function QuotationDetailContent() {
           onConfirm={handleConfirmConvertToOrder}
         />
 
-        {/* Convert to Invoice Modal with all information pre-filled */}
-        {quote && (
-          <NewInvoiceModal
-            open={isInvoiceModalOpen}
-            onOpenChange={setIsInvoiceModalOpen}
-            preselectedQuotationId={quote.id}
-            preselectedCustomerId={quote.customer_id || undefined}
-            preselectedCustomerName={quote.customer_name}
-            preselectedCustomerPhone={quote.customer_phone}
-            preselectedCustomerEmail={quote.customer_email || undefined}
-            preselectedCustomerAddress={quote.customer_address || undefined}
-            preselectedWhatsappNumber={quote.customer_whatsapp || undefined}
-            preselectedCompanyName={quote.customer_company || undefined}
-            preselectedCustomerType={quote.customer_type || undefined}
-            preselectedDiscountAmount={quote.discount_amount}
-            preselectedVatPercentage={quote.vat_rate}
-            preselectedAdvanceAmount={quote.advance_amount ?? undefined}
-            preselectedNotes={quote.notes || undefined}
-            preselectedItems={quote.items.map((it) => ({
-              productId: it.product_id,
-              itemName: it.description,
-              description_bn: it.description_bn,
-              material_spec: it.material_spec,
-              dimensions_spec: it.dimensions_spec,
-              width: it.width,
-              height: it.height,
-              dimension_unit: it.dimension_unit,
-              quantity: it.quantity,
-              unit: it.unit,
-              rate: it.unit_rate,
-              finishing: it.finishing,
-              category_preset: it.category_preset,
-              item_kind: it.item_kind,
-            }))}
-            onInvoiceCreated={handleInvoiceCreated}
-          />
-        )}
+        {/* Reject Confirmation Dialog */}
+        <ConfirmDialog
+          open={isRejectDialogOpen}
+          onOpenChange={setIsRejectDialogOpen}
+          title="Mark Quotation as Rejected?"
+          description={`Are you sure you want to mark Quotation #${quote.quotation_number} as Rejected? This will update the status to Rejected in the commercial pipeline.`}
+          confirmLabel="Mark as Rejected"
+          cancelLabel="Keep Active"
+          variant="destructive"
+          onConfirm={handleRejectQuotation}
+        />
       </div>
     </FeatureGate>
   )

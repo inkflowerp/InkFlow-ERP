@@ -15,6 +15,7 @@ import { PdfSignatureBlock } from "../primitives/signature";
 import { PdfQRCode } from "../primitives/qrcode";
 import type { PdfcnTheme } from "../themes/types";
 import type { QuotationRecord, QuotationItemRecord } from "@/types/quotation.types";
+import type { DocumentTemplateConfigRecord } from "@/types/tax-and-docs.types";
 import { formatLakhCrore, numberToWordsBDT } from "@/lib/formatters";
 
 export interface QuotationPdfProps {
@@ -30,16 +31,28 @@ export interface QuotationPdfProps {
     binNumber?: string | null;
   };
   languageMode?: 'en' | 'bn';
+  template?: DocumentTemplateConfigRecord | null;
 }
 
-const QuotationPdfContent = ({ quotation, company, languageMode }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"]; languageMode?: 'en' | 'bn' }) => {
-  const isBn = (languageMode || quotation.language_mode) === 'bn';
+const QuotationPdfContent = ({
+  quotation,
+  company,
+  languageMode,
+  template,
+}: {
+  quotation: QuotationRecord;
+  company?: QuotationPdfProps["company"];
+  languageMode?: 'en' | 'bn';
+  template?: DocumentTemplateConfigRecord | null;
+}) => {
+  const isBn = (languageMode || quotation.language_mode) === 'bn' || (!languageMode && template?.default_language === 'bengali');
   const theme = usePdfcnTheme();
 
-  const companyName = company?.name || BRAND.name;
+  const companyName = (isBn && template?.company_name_bn) ? template.company_name_bn : (company?.name || BRAND.name);
   const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
   const companyAddress = company?.address || "";
   const companyContact = `${company?.phone || "+880 1700-000000"} · ${company?.email || "sales@printflow.bd"}`;
+  const headerRightText = template?.header_disclaimer || (isBn ? "বাণিজ্যিক দরপত্র / প্রাক্কলন" : "PRICE ESTIMATE / QUOTATION");
 
   const appOrigin =
     typeof window !== 'undefined' && window.location?.origin
@@ -139,9 +152,11 @@ const QuotationPdfContent = ({ quotation, company, languageMode }: { quotation: 
 
   const formattedInWords = numberToWordsBDT(quotation.grand_total || 0);
 
-  // Split multi-line terms for crisp layout
-  const rawTerms = quotation.terms_and_conditions ||
-    "1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance.\n4. Delivery timeline starts after artwork confirmation.";
+  // Split multi-line terms for crisp layout (synchronizing with configured template from settings -> Print formats)
+  const defaultTerms = isBn
+    ? (template?.footer_terms_bn || "১. কোটেশনের মেয়াদ প্রদানের তারিখ হতে ১৫ দিন।\n২. কাজের অর্ডারের সাথে অগ্রিম এবং অবশিষ্ট মালামাল ডেলিভারির সময় প্রদেয়।")
+    : (template?.footer_terms_en || "1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance.\n4. Delivery timeline starts after artwork confirmation.");
+  const rawTerms = quotation.terms_and_conditions || defaultTerms;
   const termsList = rawTerms.split("\n").map(t => t.trim()).filter(Boolean);
 
   return (
@@ -159,7 +174,7 @@ const QuotationPdfContent = ({ quotation, company, languageMode }: { quotation: 
             variant="simple"
             title={companyName}
             subtitle={companyAddress ? `${companySubtitle} | ${companyAddress}` : companySubtitle}
-            rightText="PRICE ESTIMATE / QUOTATION"
+            rightText={headerRightText}
             rightSubText={companyContact}
             marginBottom={14}
           />
@@ -393,7 +408,7 @@ const QuotationPdfContent = ({ quotation, company, languageMode }: { quotation: 
                 variant="double"
                 signers={[
                   { label: "Prepared By", name: quotation.salesperson_name || "Sales Executive", date: quotation.quotation_date },
-                  { label: "Client Acceptance", name: "Authorized Signatory", date: "" },
+                  { label: template?.authorized_signatory_title || (isBn ? "অনুমোদিত স্বাক্ষর" : "Client Acceptance"), name: "Authorized Signatory", date: "" },
                 ]}
               />
             </View>
@@ -408,8 +423,15 @@ export const QuotationPdfDocument = ({
   theme,
   quotation,
   company,
+  languageMode,
+  template,
 }: QuotationPdfProps) => (
   <PdfcnThemeProvider theme={theme}>
-    <QuotationPdfContent quotation={quotation} company={company} />
+    <QuotationPdfContent
+      quotation={quotation}
+      company={company}
+      languageMode={languageMode}
+      template={template}
+    />
   </PdfcnThemeProvider>
 );

@@ -27,7 +27,7 @@ export interface CanonicalInvoiceReceivable {
   writeOffAmount: number
   dueAmount: number
   daysOverdue: number
-  status: 'paid' | 'partially_paid' | 'unpaid' | 'overdue' | 'cancelled' | 'written_off'
+  status: 'draft' | 'paid' | 'partially_paid' | 'unpaid' | 'overdue' | 'cancelled' | 'written_off'
   branchId?: string | null
 }
 
@@ -112,8 +112,9 @@ export class CanonicalFinance {
   /**
    * Evaluates invoice status based on payment state and due date
    */
-  static evaluateInvoiceStatus(invoice: InvoiceRecord, asOfDateStr?: string): 'paid' | 'partially_paid' | 'unpaid' | 'overdue' | 'cancelled' | 'written_off' {
+  static evaluateInvoiceStatus(invoice: InvoiceRecord, asOfDateStr?: string): 'draft' | 'paid' | 'partially_paid' | 'unpaid' | 'overdue' | 'cancelled' | 'written_off' {
     const rawStatus = String(invoice.status || '').toLowerCase()
+    if (rawStatus === 'draft') return 'draft'
     if (rawStatus === 'cancelled' || rawStatus === 'void') return 'cancelled'
     if (rawStatus === 'written_off') return 'written_off'
 

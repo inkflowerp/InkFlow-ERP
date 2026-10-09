@@ -1208,29 +1208,19 @@ export class QuotationRepository {
     // Persist to DataStore with all integrated downstream records (job order, prod tasks, mat reqs, costing)
     const integratedOrder = PrintFlowDataStore.createSalesOrderWithIntegrations(salesOrder as any)
 
-    // Update Quotation Status to Converted
-    await this.updateQuotation(quote.id, {
-      status: 'converted',
-      converted_order_id: salesOrder.order_number,
-    }, effectiveCompanyId)
-
-    // Log Activity
-    const activity: QuotationActivityRecord = {
-      id: `qa-${Date.now()}`,
-      quotation_id: quote.id,
-      action: 'converted',
-      details: `Converted to Job Order #${salesOrder.order_number} (Total: ৳${quote.grand_total}, Advance: ৳${advance})`,
-      actor_name: options?.createdByName || 'Sales Staff',
-      created_at: new Date().toISOString(),
-    }
-    await this.addActivity(activity)
-
     const allJobs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
     const matchingJob = allJobs.find((j: any) => j.order_id === salesOrder.id || j.order_id === orderId)
     const allProd = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     const matchingProd = allProd.find((p: any) => p.sales_order_id === salesOrder.id || p.sales_order_id === orderId)
     const allInvs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
     const matchingInv = allInvs.find((i: any) => i.sales_order_id === salesOrder.id || i.sales_order_id === orderId)
+
+    // Update Quotation Status to Converted and attach both order and draft invoice IDs
+    await this.updateQuotation(quote.id, {
+      status: 'converted',
+      converted_order_id: salesOrder.order_number,
+      converted_invoice_id: matchingInv?.invoice_number || undefined,
+    }, effectiveCompanyId)
 
     return {
       ...salesOrder,
