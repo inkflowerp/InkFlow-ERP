@@ -95,17 +95,81 @@ export function PrintFloorConsumptionUnit({
  const [isIssueRollOpen, setIsIssueRollOpen] = useState<boolean>(false)
 
   // Strictly filter only rolls actually mounted or on the print floor (excludes unissued warehouse stock)
- const activeFloorRolls = useMemo(() => {
- return (rolls || []).filter(
+  // and synthesize any active on-floor roll consumption records so issued rolls are always visible
+  const activeFloorRolls = useMemo(() => {
+    const list = (rolls || []).filter(
       (r) =>
- r.status === 'mounted' ||
- r.status === 'in_use' ||
- r.status === 'on_floor' ||
- r.location_name === 'Print Floor' ||
- Boolean(r.mounted_machine_id) ||
- Boolean(r.mounted_machine_name)
+        r.status === 'mounted' ||
+        r.status === 'in_use' ||
+        r.status === 'on_floor' ||
+        r.location_name === 'Print Floor' ||
+        Boolean(r.mounted_machine_id) ||
+        Boolean(r.mounted_machine_name)
     )
-  }, [rolls])
+
+    const seenRollKeys = new Set<string>()
+    for (const r of list) {
+      if (r.id) seenRollKeys.add(r.id.toLowerCase())
+      if (r.roll_code) seenRollKeys.add(r.roll_code.toLowerCase())
+      if (r.roll_tag) seenRollKeys.add(r.roll_tag.toLowerCase())
+    }
+
+    // Also synthesize from active floorConsumptions with remaining balance if not in rolls
+    for (const fc of floorConsumptions || []) {
+      if (Number(fc.remaining_floor_balance) <= 0) continue
+      if (fc.status === 'fully_consumed' || fc.status === 'returned') continue
+
+      const idMatch = Boolean(fc.roll_id && seenRollKeys.has(fc.roll_id.toLowerCase()))
+      const codeMatch = Boolean(fc.roll_code && seenRollKeys.has(fc.roll_code.toLowerCase()))
+      if (idMatch || codeMatch) continue
+
+      const mat = (materials || []).find((m) => m.id === fc.material_id) || fc.material
+      const isRoll = mat?.category === 'Roll Media' || fc.unit === 'sft' || Boolean(fc.roll_code)
+      if (!isRoll) continue
+
+      const widthFt = Number(mat?.roll_width_ft || mat?.width || 4)
+      const lengthFt = Number(mat?.standard_roll_length_ft || mat?.roll_length_ft || mat?.length || 164)
+      const initialArea = Number(fc.issued_quantity || (widthFt * lengthFt))
+      const remArea = Number(fc.remaining_floor_balance || initialArea)
+      const remLen = widthFt > 0 ? Math.round((remArea / widthFt) * 100) / 100 : lengthFt
+
+      const syntheticRoll: InventoryRollRecord = {
+        id: fc.roll_id || fc.id,
+        company_id: fc.company_id,
+        branch_id: fc.branch_id || null,
+        location_id: null,
+        location_name: 'Print Floor',
+        material_id: fc.material_id,
+        roll_code: fc.roll_code || `ROL-${fc.sku || 'MAT'}-${fc.issue_number || fc.id.slice(-6)}`,
+        roll_tag: fc.roll_code || `ROL-${fc.sku || 'MAT'}-${fc.issue_number || fc.id.slice(-6)}`,
+        width_ft: widthFt,
+        initial_length_ft: lengthFt,
+        current_length_ft: remLen,
+        initial_area_sft: initialArea,
+        remaining_area_sft: remArea,
+        consumed_area_sft: Number(fc.consumed_quantity || 0),
+        current_area_sft: remArea,
+        status: fc.machine_id ? 'mounted' : 'on_floor',
+        mounted_machine_id: fc.machine_id || null,
+        mounted_machine_name: fc.machine_name || null,
+        mounted_press_name: fc.machine_name || null,
+        mounted_at: fc.created_at,
+        mounted_by_name: fc.operator_name || 'Floor Operator',
+        unit_cost: fc.unit_cost || 0,
+        total_cost: fc.total_cost || 0,
+        notes: fc.notes || null,
+        created_at: fc.created_at,
+        updated_at: fc.updated_at,
+        material: mat,
+      }
+
+      seenRollKeys.add(syntheticRoll.id.toLowerCase())
+      if (syntheticRoll.roll_code) seenRollKeys.add(syntheticRoll.roll_code.toLowerCase())
+      list.push(syntheticRoll)
+    }
+
+    return list
+  }, [rolls, floorConsumptions, materials])
 
   // Pending store requisitions requested by floor operators
  const pendingRequests = useMemo(() => {
