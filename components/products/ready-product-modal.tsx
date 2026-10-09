@@ -422,15 +422,43 @@ export function ReadyProductModal({
  setMinOrderQty(initialData.min_order_quantity || 1)
  setMinBillableQty(initialData.min_billable_quantity || 1)
 
- const sp = initialData.selling_price || ''
- const cost = initialData.base_cost ?? initialData.purchase_price ?? ''
- setSellingPrice(sp)
- setBaseCost(cost)
- setPurchasePrice(initialData.purchase_price ?? cost)
- setFreightCost((initialData as any).freight_cost ?? '')
- setMinPrice(initialData.min_price || '')
- setTargetMargin(initialData.target_margin_percentage ?? 35)
- setMinAllowedMargin(initialData.min_allowed_margin_percent ?? 15)
+  const sp = initialData.selling_price || ''
+
+  // Accurately separate factory purchase price and freight / landed add
+  const savedFreight =
+    (initialData as any).freight_cost !== undefined && (initialData as any).freight_cost !== null && (initialData as any).freight_cost !== ''
+      ? Number((initialData as any).freight_cost)
+      : (initialData.pricing_formula as any)?.freight_cost !== undefined && (initialData.pricing_formula as any)?.freight_cost !== null
+      ? Number((initialData.pricing_formula as any)?.freight_cost)
+      : (initialData.cost_breakdown as any)?.delivery_cost !== undefined && (initialData.cost_breakdown as any)?.delivery_cost !== null
+      ? Number((initialData.cost_breakdown as any)?.delivery_cost)
+      : 0
+
+  const savedFactoryPrice =
+    (initialData.pricing_formula as any)?.factory_purchase_price !== undefined && (initialData.pricing_formula as any)?.factory_purchase_price !== null
+      ? Number((initialData.pricing_formula as any)?.factory_purchase_price)
+      : initialData.purchase_price !== undefined && initialData.purchase_price !== null && Number(initialData.purchase_price) > 0
+      ? (savedFreight > 0 && Number(initialData.purchase_price) === Number(initialData.base_cost)
+          ? Math.max(0, Number(initialData.purchase_price) - savedFreight)
+          : Number(initialData.purchase_price))
+      : (savedFreight > 0 && Number(initialData.base_cost) > savedFreight
+          ? Math.max(0, Number(initialData.base_cost) - savedFreight)
+          : (initialData.base_cost ? Number(initialData.base_cost) : ''))
+
+  const inferredFreight =
+    savedFreight > 0
+      ? savedFreight
+      : (typeof savedFactoryPrice === 'number' && Number(initialData.base_cost) > savedFactoryPrice)
+      ? Math.round((Number(initialData.base_cost) - savedFactoryPrice) * 100) / 100
+      : ''
+
+  setSellingPrice(sp)
+  setPurchasePrice(savedFactoryPrice !== '' ? savedFactoryPrice : '')
+  setFreightCost(inferredFreight !== 0 && inferredFreight !== '' ? inferredFreight : '')
+  setBaseCost(savedFactoryPrice !== '' ? savedFactoryPrice : '')
+  setMinPrice(initialData.min_price || '')
+  setTargetMargin(initialData.target_margin_percentage ?? 35)
+  setMinAllowedMargin(initialData.min_allowed_margin_percent ?? 15)
 
  const tiers = initialData.price_tiers || {}
  setPriceTiers({
@@ -530,12 +558,12 @@ export function ReadyProductModal({
  setActiveTab('basic')
   }, [initialData, isOpen])
 
-  // Total Landed Cost (Base Purchase Cost + Freight/Import Surcharge)
- const totalLandedCost = useMemo(() => {
- const pCost = Number(baseCost || purchasePrice) || 0
- const fCost = Number(freightCost) || 0
- return pCost + fCost
-  }, [baseCost, purchasePrice, freightCost])
+  // Total Landed Cost (Factory Purchase Cost + Freight/Landed Add)
+  const totalLandedCost = useMemo(() => {
+    const pCost = Number(purchasePrice !== '' ? purchasePrice : baseCost) || 0
+    const fCost = Number(freightCost) || 0
+    return pCost + fCost
+  }, [purchasePrice, baseCost, freightCost])
 
   // Live Gross Margin & Profit Calculation
  const marginMetrics = useMemo(() => {
@@ -583,6 +611,7 @@ export function ReadyProductModal({
  setPurchaseUnit(preset.purchaseUnit)
  setBaseCost(preset.defaultCost)
  setPurchasePrice(preset.defaultCost)
+ setFreightCost('')
  setSellingPrice(preset.defaultSellingPrice)
  setUnitWeightKg(preset.weightKg)
  setPcsPerCarton(preset.pcsPerCarton)
@@ -628,42 +657,50 @@ export function ReadyProductModal({
  setFieldErrors({})
 
  try {
- const sp = Number(sellingPrice) || 0
- const cost = totalLandedCost
- const purPrice = Number(purchasePrice || baseCost) || cost
- const minimumPrice =
- minPrice !== '' && Number(minPrice) > 0
-          ? Number(minPrice)
-          : Math.round(sp * (1 - (minAllowedMargin / 100)))
+  const sp = Number(sellingPrice) || 0
+  const purPrice = Number(purchasePrice !== '' ? purchasePrice : baseCost) || 0
+  const fCost = freightCost !== '' ? Number(freightCost) : 0
+  const cost = purPrice + fCost
+  const minimumPrice =
+    minPrice !== '' && Number(minPrice) > 0
+      ? Number(minPrice)
+      : Math.round(sp * (1 - (minAllowedMargin / 100)))
 
- const finalPriceTiers: ProductPriceTiers = {
- retail: priceTiers.retail !== '' ? Number(priceTiers.retail) : sp,
- corporate: priceTiers.corporate !== '' ? Number(priceTiers.corporate) : sp,
- dealer: priceTiers.dealer !== '' ? Number(priceTiers.dealer) : sp,
- wholesale: priceTiers.wholesale !== '' ? Number(priceTiers.wholesale) : sp,
- custom: priceTiers.custom !== '' ? Number(priceTiers.custom) : sp,
-      }
+  const finalPriceTiers: ProductPriceTiers = {
+    retail: priceTiers.retail !== '' ? Number(priceTiers.retail) : sp,
+    corporate: priceTiers.corporate !== '' ? Number(priceTiers.corporate) : sp,
+    dealer: priceTiers.dealer !== '' ? Number(priceTiers.dealer) : sp,
+    wholesale: priceTiers.wholesale !== '' ? Number(priceTiers.wholesale) : sp,
+    custom: priceTiers.custom !== '' ? Number(priceTiers.custom) : sp,
+  }
 
- await onSave({
- name: name.trim(),
- name_bn: nameBn.trim() || undefined,
- sku: sku.trim() || '',
- barcode: barcode.trim() || undefined,
- brand: brand.trim() || undefined,
- category: category || 'display_stands',
- product_type: 'ready_product',
- entity_type: 'product',
- commercial_type: 'ready_product',
- is_ready_product: true,
- unit,
- selling_unit: unit,
- purchase_unit: purchaseUnit || unit,
- pricing_method: 'per_piece',
- selling_price: sp,
- base_cost: cost,
- purchase_price: purPrice,
- freight_cost: freightCost !== '' ? Number(freightCost) : 0,
- min_price: minimumPrice,
+  await onSave({
+    name: name.trim(),
+    name_bn: nameBn.trim() || undefined,
+    sku: sku.trim() || '',
+    barcode: barcode.trim() || undefined,
+    brand: brand.trim() || undefined,
+    category: category || 'display_stands',
+    product_type: 'ready_product',
+    entity_type: 'product',
+    commercial_type: 'ready_product',
+    is_ready_product: true,
+    unit,
+    selling_unit: unit,
+    purchase_unit: purchaseUnit || unit,
+    pricing_method: 'per_piece',
+    selling_price: sp,
+    base_cost: cost,
+    purchase_price: purPrice,
+    freight_cost: fCost,
+    cost_breakdown: {
+      material_cost: purPrice,
+      delivery_cost: fCost,
+      freight_cost: fCost,
+      other_direct_cost: 0,
+      total_direct_cost: cost,
+    },
+    min_price: minimumPrice,
  target_margin_percentage: Number(targetMargin) || 35.0,
  min_allowed_margin_percent: Number(minAllowedMargin) || 15.0,
  cost_basis_type: 'direct_cost',
@@ -720,6 +757,9 @@ export function ReadyProductModal({
  lead_time_days: leadTimeDays !== '' ? Number(leadTimeDays) : undefined,
  pricing_formula: {
           ...(typeof initialData?.pricing_formula === 'object' && initialData?.pricing_formula !== null ? initialData.pricing_formula : {}),
+          factory_purchase_price: purPrice,
+          freight_cost: fCost,
+          total_landed_cost: cost,
  opening_stock: (() => {
    if (openingStock !== '') return Number(openingStock)
    return initialData ? Number((initialData as any)?.opening_stock ?? (initialData?.pricing_formula as any)?.opening_stock ?? 0) : undefined
@@ -1285,13 +1325,18 @@ export function ReadyProductModal({
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"min="0"placeholder="e.g. 420"value={baseCost}
- onChange={(e) => {
- const val = e.target.value === '' ? '' : parseFloat(e.target.value)
- setBaseCost(val)
- setPurchasePrice(val)
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="e.g. 420"
+                      value={purchasePrice}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                        setPurchasePrice(val)
+                        setBaseCost(val)
                       }}
- className="pl-7 h-9 text-xs tabular-nums font-semibold"/>
+                      className="pl-7 h-9 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
 

@@ -367,6 +367,7 @@ export interface ProductCostBreakdown {
   fabrication_cost?: number
   installation_cost?: number
   delivery_cost?: number
+  freight_cost?: number
   other_direct_cost?: number
   total_direct_cost?: number
   // Shorthand aliases
@@ -512,6 +513,7 @@ export interface ProductRecord {
   selling_unit?: string | null
   purchase_unit?: string | null
   purchase_price?: number
+  freight_cost?: number | null
   conversion_ratio?: number
   measurement_type?: MeasurementType
   production_unit?: string | null

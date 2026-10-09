@@ -160,7 +160,24 @@ export function enrichProductRecord(p: any): ProductRecord {
     }
   }
 
-  const purchasePrice = Number(p.purchase_price) || 0
+  const rawFreight =
+    p.freight_cost !== undefined && p.freight_cost !== null
+      ? Number(p.freight_cost)
+      : formula.freight_cost !== undefined && formula.freight_cost !== null
+      ? Number(formula.freight_cost)
+      : formula.delivery_cost !== undefined && formula.delivery_cost !== null
+      ? Number(formula.delivery_cost)
+      : 0
+
+  const explicitFactoryPrice =
+    formula.factory_purchase_price !== undefined && formula.factory_purchase_price !== null && !isNaN(Number(formula.factory_purchase_price))
+      ? Number(formula.factory_purchase_price)
+      : undefined
+
+  const purchasePrice =
+    explicitFactoryPrice !== undefined
+      ? explicitFactoryPrice
+      : Number(p.purchase_price) || 0
   const conversionRatio = getProductConversionRatio(p)
   const defaultWastage = Math.max(0, Number(p.default_wastage_percentage) || 0)
   const targetMargin = p.target_margin_percentage !== undefined && p.target_margin_percentage !== null && !isNaN(Number(p.target_margin_percentage)) ? Number(p.target_margin_percentage) : 35.0
@@ -294,6 +311,7 @@ export function enrichProductRecord(p: any): ProductRecord {
     selling_unit: p.selling_unit || p.unit,
     purchase_unit: p.purchase_unit || (isOutsource ? p.selling_unit || p.unit : p.product_type === 'print_service' || p.category?.includes('flex') ? 'roll' : p.unit),
     purchase_price: purchasePrice,
+    freight_cost: rawFreight,
     conversion_ratio: conversionRatio,
     production_unit: p.production_unit || p.unit,
     default_wastage_percentage: defaultWastage,
@@ -316,6 +334,7 @@ export function enrichProductRecord(p: any): ProductRecord {
       fabrication_cost: fabCost,
       installation_cost: instCost,
       delivery_cost: delCost,
+      freight_cost: rawFreight,
       other_direct_cost: othCost,
       total_direct_cost: estimatedDirectCost,
     },
