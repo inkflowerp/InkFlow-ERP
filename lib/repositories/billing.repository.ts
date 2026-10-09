@@ -484,14 +484,20 @@ export class BillingRepository {
       }
     }
 
-    const all = PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    return (
-      all.find(
-        (inv) =>
-          (inv.id === id || inv.invoice_number === id) &&
-          (!inv.company_id || inv.company_id === companyId || inv.company_id === effectiveCompanyId)
-      ) || null
+    const all = [
+      ...(companyId ? (PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companyId) || []) : []),
+      ...(effectiveCompanyId && effectiveCompanyId !== companyId ? (PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, effectiveCompanyId) || []) : []),
+      ...(PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
+    ]
+    const matchedTenant = all.find(
+      (inv) =>
+        (inv.id === id || inv.invoice_number === id) &&
+        (!inv.company_id || inv.company_id === companyId || inv.company_id === effectiveCompanyId)
     )
+    if (matchedTenant) return matchedTenant
+
+    // Resilient fallback by exact document ID / invoice number
+    return all.find((inv) => inv && (inv.id === id || inv.invoice_number === id)) || null
   }
 
   static async getNextInvoiceNumber(companyId: string): Promise<string> {

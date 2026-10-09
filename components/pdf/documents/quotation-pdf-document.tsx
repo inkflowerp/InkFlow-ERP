@@ -163,8 +163,8 @@ const QuotationPdfContent = ({
     <Document title={`Quotation ${quotation.quotation_number}`}>
       <Page size="A4" margin={{ bottom: 36, left: 36, right: 36, top: 36 }}>
         <PageFooter
-          leftText={`Quotation valid until: ${quotation.valid_until} · Subject to terms`}
-          rightText={`Quotation ${quotation.quotation_number}`}
+          leftText={`Quotation valid until: ${quotation.valid_until || "15 days from issuance"} · Subject to terms`}
+          rightText={`Quotation ${quotation.quotation_number || ""}`}
           sticky
         />
 
@@ -227,11 +227,11 @@ const QuotationPdfContent = ({
                 size="sm"
                 labelFlex={0.75}
                 items={[
-                  { key: "Quote No:", value: quotation.quotation_number },
-                  { key: "Quote Date:", value: quotation.quotation_date },
-                  { key: "Valid Until:", value: quotation.valid_until },
-                  { key: "Sales Executive:", value: quotation.salesperson_name || "Sales Team" },
-                  ...(quotation.reference_no ? [{ key: "Customer Ref:", value: quotation.reference_no }] : []),
+                  { key: "Quote No:", value: String(quotation.quotation_number || "N/A") },
+                  { key: "Quote Date:", value: String(quotation.quotation_date || new Date().toISOString().split("T")[0]) },
+                  { key: "Valid Until:", value: String(quotation.valid_until || "15 days from issuance") },
+                  { key: "Sales Executive:", value: String(quotation.salesperson_name || "Sales Team") },
+                  ...(quotation.reference_no ? [{ key: "Customer Ref:", value: String(quotation.reference_no) }] : []),
                 ]}
               />
             </View>
@@ -245,8 +245,8 @@ const QuotationPdfContent = ({
                 <TableCell width="39%">{isBn ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}</TableCell>
                 <TableCell width="14%" align="center">{isBn ? 'পরিমাপ (W × H)' : 'Dimensions'}</TableCell>
                 <TableCell width="14%" align="center">{isBn ? 'ক্ষেত্রফল / সংখ্যা' : 'Area / Qty'}</TableCell>
-                <TableCell width="13%" align="right">{isBn ? 'একক দর (৳)' : 'Unit Rate (৳)'}</TableCell>
-                <TableCell width="15%" align="right">{isBn ? 'মোট মূল্য (৳)' : 'Total (৳)'}</TableCell>
+                <TableCell width="13%" align="right">{isBn ? 'একক দর (BDT)' : 'Unit Rate (BDT)'}</TableCell>
+                <TableCell width="15%" align="right">{isBn ? 'মোট মূল্য (BDT)' : 'Total (BDT)'}</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -257,7 +257,7 @@ const QuotationPdfContent = ({
 
                 const areaOrQty = item.area_sft && item.area_sft > 0
                   ? `${item.area_sft} sqft`
-                  : `${item.quantity} ${item.unit || 'pcs'}`;
+                  : `${item.quantity || 1} ${item.unit || 'pcs'}`;
 
                 const specBadges = [
                   item.material_spec ? `Material: ${item.material_spec}` : null,
@@ -266,7 +266,11 @@ const QuotationPdfContent = ({
 
                 return (
                   <TableRow key={item.id || idx}>
-                    <TableCell width="5%" align="center">{`${idx + 1}`}</TableCell>
+                    <TableCell width="5%" align="center">
+                      <Text variant="xs" weight="medium" noMargin>
+                        {`${idx + 1}`}
+                      </Text>
+                    </TableCell>
                     <TableCell width="39%">
                       <Text variant="xs" weight="bold" noMargin>
                         {isBn && item.description_bn ? item.description_bn : (item.description || "Printing Item")}
@@ -292,11 +296,13 @@ const QuotationPdfContent = ({
                       </Text>
                     </TableCell>
                     <TableCell width="13%" align="right">
-                      {formatLakhCrore(item.unit_rate || item.unit_price || 0)}
+                      <Text variant="xs" noMargin>
+                        {formatLakhCrore(item.unit_rate || item.unit_price || 0)}
+                      </Text>
                     </TableCell>
                     <TableCell width="15%" align="right">
                       <Text variant="xs" weight="bold" noMargin>
-                        {formatLakhCrore(item.item_total || (item.quantity * (item.unit_rate || 0)))}
+                        {formatLakhCrore(item.item_total || ((item.quantity || 1) * (item.unit_rate || 0)))}
                       </Text>
                     </TableCell>
                   </TableRow>

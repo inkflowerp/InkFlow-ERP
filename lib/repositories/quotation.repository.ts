@@ -1214,6 +1214,9 @@ export class QuotationRepository {
     const matchingProd = allProd.find((p: any) => p.sales_order_id === salesOrder.id || p.sales_order_id === orderId)
     const allInvs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
     const matchingInv = allInvs.find((i: any) => i.sales_order_id === salesOrder.id || i.sales_order_id === orderId)
+    if (matchingInv && effectiveCompanyId) {
+      PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, matchingInv, effectiveCompanyId)
+    }
 
     // Update Quotation Status to Converted and attach both order and draft invoice IDs
     await this.updateQuotation(quote.id, {

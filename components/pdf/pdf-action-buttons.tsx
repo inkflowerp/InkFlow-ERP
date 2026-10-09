@@ -1,69 +1,82 @@
 "use client";
 
-import React, { useState } from"react";
-import { Button } from"@/components/ui/button";
-import { Download, Printer, Loader2 } from"lucide-react";
-import { downloadPdf } from"@/lib/pdf/pdf-generator";
-import { PdfViewerModal } from"./pdf-viewer-modal";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Download, Printer, Loader2 } from "lucide-react";
+import { downloadPdf } from "@/lib/pdf/pdf-generator";
+import { PdfViewerModal } from "./pdf-viewer-modal";
 
 interface PdfActionButtonsProps {
- document: React.ReactElement;
- filename: string;
- title: string;
- className?: string;
+  document: React.ReactElement;
+  filename: string;
+  title: string;
+  className?: string;
+  hideDownload?: boolean;
+  printLabel?: string;
 }
 
 export function PdfActionButtons({
- document,
- filename,
- title,
- className ="",
+  document,
+  filename,
+  title,
+  className = "",
+  hideDownload = false,
+  printLabel = "Print / Preview",
 }: PdfActionButtonsProps) {
- const [isDownloading, setIsDownloading] = useState(false);
- const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
- const handleDownload = async () => {
- try {
- setIsDownloading(true);
- await downloadPdf(document, filename);
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true);
+      await downloadPdf(document, filename);
     } catch (err) {
- console.error("Download PDF error:", err);
+      console.error("Download PDF error:", err);
       // Fallback: open print dialog if client wasm fails
- window.print();
+      window.print();
     } finally {
- setIsDownloading(false);
+      setIsDownloading(false);
     }
   };
 
- return (
+  return (
     <>
       <div className={`flex items-center gap-2 ${className}`}>
         <Button
- size="sm"variant="outline"onClick={() => setIsPreviewOpen(true)}
- className="h-9 text-xs font-semibold border-input hover:bg-muted text-foreground"title="Preview Vector PDF before printing or downloading">
-          <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground"/>
- Print / Preview
+          size="sm"
+          variant="outline"
+          onClick={() => setIsPreviewOpen(true)}
+          className="h-9 text-xs font-semibold border-input hover:bg-muted text-foreground"
+          title="Preview Vector PDF before printing or downloading"
+        >
+          <Printer className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+          {printLabel}
         </Button>
 
-        <Button
- size="sm"disabled={isDownloading}
- onClick={handleDownload}
- className="border border-border bg-card text-foreground hover:bg-muted text-xs h-9 font-bold shadow-sm"title="Directly download high-resolution vector PDF">
-          {isDownloading ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin"/>
-          ) : (
-            <Download className="mr-1.5 h-3.5 w-3.5"/>
-          )}
- Download PDF
-        </Button>
+        {!hideDownload && (
+          <Button
+            size="sm"
+            disabled={isDownloading}
+            onClick={handleDownload}
+            className="border border-border bg-card text-foreground hover:bg-muted text-xs h-9 font-bold shadow-sm"
+            title="Directly download high-resolution vector PDF"
+          >
+            {isDownloading ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Download PDF
+          </Button>
+        )}
       </div>
 
       <PdfViewerModal
- isOpen={isPreviewOpen}
- onClose={() => setIsPreviewOpen(false)}
- title={title}
- document={document}
- filename={filename}
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title={title}
+        document={document}
+        filename={filename}
       />
     </>
   );

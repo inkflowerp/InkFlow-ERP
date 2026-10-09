@@ -378,12 +378,17 @@ function QuotationDetailContent() {
           console.warn('[QuotationDetail] Client store hydration:', e)
         }
 
+        const linkedInvoice = res.data.invoice || (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).find((inv: any) => inv.sales_order_id === res.data.id || inv.order_number === res.data.order_number)
+        const invId = linkedInvoice?.id || linkedInvoice?.invoice_number || `INV-${res.data.order_number.replace('ORD-', '')}`
+        const invNumber = linkedInvoice?.invoice_number || `INV-${res.data.order_number.replace('ORD-', '')}`
+
         setQuote((prev) =>
           prev
             ? {
                 ...prev,
                 status: 'converted',
                 converted_order_id: res.data.order_number,
+                converted_invoice_id: invId,
                 advance_amount: advanceAmount,
               }
             : prev
@@ -399,8 +404,6 @@ function QuotationDetailContent() {
           window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
 
-        const linkedInvoice = res.data.invoice || (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).find((inv: any) => inv.sales_order_id === res.data.id || inv.order_number === res.data.order_number)
-        const invNumber = linkedInvoice?.invoice_number || `INV-${res.data.order_number.replace('ORD-', '')}`
         if (linkedInvoice && slug && slug !== 'default') {
           PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, linkedInvoice, slug)
         }
@@ -449,12 +452,20 @@ function QuotationDetailContent() {
               total_price: it.item_total,
             })),
           } as any)
+          const allInvs = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+          const localInv = allInvs.find((i: any) => i.sales_order_id === localOrder.id || i.order_number === localOrderNumber)
+          const fallbackInvId = localInv?.id || localInv?.invoice_number || undefined
+          if (localInv && slug && slug !== 'default') {
+            PrintFlowDataStore.addItem(STORAGE_KEYS.INVOICES, localInv, slug)
+          }
+
           PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
             status: 'converted',
             converted_order_id: localOrderNumber,
+            converted_invoice_id: fallbackInvId,
             advance_amount: advanceAmount,
           }, slug)
-          setQuote((prev) => prev ? { ...prev, status: 'converted', converted_order_id: localOrderNumber, advance_amount: advanceAmount } : prev)
+          setQuote((prev) => prev ? { ...prev, status: 'converted', converted_order_id: localOrderNumber, converted_invoice_id: fallbackInvId, advance_amount: advanceAmount } : prev)
           setIsConvertToOrderOpen(false)
           showNotification(`Converted to Job Order Ticket #${localOrderNumber}!`)
         } catch {
@@ -594,9 +605,12 @@ function QuotationDetailContent() {
                     </Link>
                   )}
                   {quote.converted_invoice_id && (
-                    <Badge variant="outline" className="bg-success-surface text-success border-success-border text-xs tabular-nums font-bold">
-                      Invoice Converted
-                    </Badge>
+                    <Link href={getTenantNavHref(`/billing/${quote.converted_invoice_id}`, pathname, slug)}>
+                      <Badge variant="outline" className="bg-success-surface text-success border-success-border text-xs tabular-nums font-bold hover:bg-success-surface/80 transition-colors cursor-pointer flex items-center gap-1">
+                        <span>Invoice #{quote.converted_invoice_id}</span>
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Badge>
+                    </Link>
                   )}
                 </div>
 
@@ -692,31 +706,6 @@ function QuotationDetailContent() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Direct Send WhatsApp */}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleSendWhatsApp}
-                  className="h-9 text-xs bg-success/20 text-success border-success-border/40 hover:bg-success/30 gap-1.5 cursor-pointer font-semibold"
-                >
-                  <MessageSquare className="h-4 w-4 text-success" />
-                  <span>Send WhatsApp</span>
-                </Button>
-
-                {/* Direct Email PDF */}
-                {quote.customer_email && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleSendEmail}
-                    disabled={isSendingEmail}
-                    className="h-9 text-xs bg-primary/20 text-primary border-border/40 hover:bg-primary/30 gap-1.5 cursor-pointer font-semibold"
-                  >
-                    <Mail className="h-4 w-4 text-primary" />
-                    <span>{isSendingEmail ? "Sending..." : "Email PDF"}</span>
-                  </Button>
-                )}
-
                 {/* 2. Rejected Action */}
                 <Button
                   size="sm"
@@ -755,6 +744,8 @@ function QuotationDetailContent() {
                   }
                   filename={`QUO-${quote.quotation_number}`}
                   title={`Quotation #${quote.quotation_number}`}
+                  hideDownload={true}
+                  printLabel="Print"
                 />
 
                 {/* 4. Convert to Order (Opens Advance Payment Modal -> Orders, Jobs + Draft Invoice) */}

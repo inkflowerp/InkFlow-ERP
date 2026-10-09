@@ -47,6 +47,51 @@ import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { InvoicePdfDocument } from '@/components/pdf/documents/invoice-pdf-document'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+
+function findLocalInvoice(id: string, slug?: string, companySlug?: string, companyId?: string): InvoiceRecord | null {
+  if (!id) return null
+
+  const candidatePartitions = [slug, companySlug, companyId, undefined].filter((p, idx, arr) => arr.indexOf(p) === idx)
+  for (const part of candidatePartitions) {
+    const item = part
+      ? PrintFlowDataStore.findItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, id, part)
+      : PrintFlowDataStore.findItem<InvoiceRecord>(STORAGE_KEYS.INVOICES, id)
+    if (item) return item
+
+    const all = part
+      ? PrintFlowDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, part)
+      : PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
+    if (Array.isArray(all)) {
+      const match = all.find((i: any) => i && (i.id === id || i.invoice_number === id))
+      if (match) return match
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    const storageKeys = [
+      slug ? `${STORAGE_KEYS.INVOICES}__${slug}` : null,
+      companySlug && companySlug !== slug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
+      companyId ? `${STORAGE_KEYS.INVOICES}__${companyId}` : null,
+      STORAGE_KEYS.INVOICES,
+    ].filter(Boolean) as string[]
+
+    for (const key of storageKeys) {
+      try {
+        const raw = localStorage.getItem(key)
+        if (raw) {
+          const list = JSON.parse(raw)
+          if (Array.isArray(list)) {
+            const match = list.find((i: any) => i && (i.id === id || i.invoice_number === id))
+            if (match) return match
+          }
+        }
+      } catch {}
+    }
+  }
+
+  return null
+}
 
 export default function InvoiceCockpitPage() {
  const params = useParams()
@@ -69,32 +114,81 @@ export default function InvoiceCockpitPage() {
   }, [])
 
  const loadInvoice = useCallback(async () => {
- if (!invId) return
- setIsLoading(true)
- try {
- const directRes = await getInvoiceByIdAction(invId, companyId)
- if (directRes.success && directRes.data) {
- setInvoice(directRes.data)
- setDocMode(directRes.data.invoice_type || 'sales_invoice')
- return
+    if (!invId) return
+    setIsLoading(true)
+
+    // Check local store first for instant UI response without waiting on network
+    const local = findLocalInvoice(invId, slug, company?.slug, companyId)
+    if (local) {
+      setInvoice(local)
+      setDocMode(local.invoice_type || 'sales_invoice')
+      setIsLoading(false)
+      // Background revalidation
+      getInvoiceByIdAction(invId, companyId).then((res) => {
+        if (res.success && res.data) {
+          setInvoice(res.data)
+        }
+      }).catch(() => {})
+      return
+    }
+
+    try {
+      const directRes = await getInvoiceByIdAction(invId, companyId)
+      if (directRes.success && directRes.data) {
+        setInvoice(directRes.data)
+        setDocMode(directRes.data.invoice_type || 'sales_invoice')
+        return
       }
 
- const res = await getInvoicesAction(undefined, companyId)
- if (res.success && res.data) {
- const found = res.data.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
- if (found) {
- setInvoice(found)
- setDocMode(found.invoice_type || 'sales_invoice')
- return
+      const res = await getInvoicesAction(undefined, companyId)
+      if (res.success && res.data) {
+        const found = res.data.find((i: InvoiceRecord) => i.id === invId || i.invoice_number === invId)
+        if (found) {
+          setInvoice(found)
+          setDocMode(found.invoice_type || 'sales_invoice')
+          return
         }
       }
- setInvoice(null)
+
+      // Fallback check against local partitions
+      const fallback = findLocalInvoice(invId, slug, company?.slug, companyId)
+      if (fallback) {
+        setInvoice(fallback)
+        setDocMode(fallback.invoice_type || 'sales_invoice')
+        return
+      }
+
+      setInvoice(null)
     } catch {
- setInvoice(null)
+      const fallback = findLocalInvoice(invId, slug, company?.slug, companyId)
+      if (fallback) {
+        setInvoice(fallback)
+        setDocMode(fallback.invoice_type || 'sales_invoice')
+      } else {
+        setInvoice(null)
+      }
     } finally {
- setIsLoading(false)
+      setIsLoading(false)
     }
-  }, [invId, companyId])
+  }, [invId, companyId, slug, company?.slug])
+
+  // Real-time table sync event listener
+  useEffect(() => {
+    const handleSync = () => {
+      const found = findLocalInvoice(invId, slug, company?.slug, companyId)
+      if (found) {
+        setInvoice(found)
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printflow_table_synced:invoices', handleSync)
+      window.addEventListener('printflow_data_sync', handleSync)
+      return () => {
+        window.removeEventListener('printflow_table_synced:invoices', handleSync)
+        window.removeEventListener('printflow_data_sync', handleSync)
+      }
+    }
+  }, [invId, slug, company?.slug, companyId])
 
  useEffect(() => {
  loadInvoice()
