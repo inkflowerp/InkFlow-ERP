@@ -60,10 +60,9 @@ import {
 } from '@/types/quotation.types'
 import * as QuotationService from '@/lib/quotations/quotation-utils'
 import {
- getQuotationsAction,
- deleteQuotationAction,
- convertQuotationToJobOrderAction,
- convertQuotationToInvoiceAction,
+  getQuotationsAction,
+  convertQuotationToJobOrderAction,
+  convertQuotationToInvoiceAction,
 } from '@/actions/quotation.actions'
 import { moveToTrashAction } from '@/actions/trash.actions'
 import { QuotationTable } from '@/components/quotations/quotation-table'
@@ -818,51 +817,67 @@ export default function QuotationsPage() {
 
   const confirmTrashQuotation = async () => {
     if (!quoteToTrash) return
-    setIsTrashing(true)
     const targetQuote = quoteToTrash
     const targetId = targetQuote.id
     const targetNum = targetQuote.quotation_number
 
+    // 1. Instantly close confirmation dialog (<16ms perceived latency, zero spinner hang)
+    setIsTrashConfirmOpen(false)
+    setQuoteToTrash(null)
+    setIsTrashing(false)
+
+    // 2. Optimistically purge from browser localStorage and client DataStore across all keys immediately
+    removeLocalQuotation(targetId, targetNum, slug, company?.slug, company?.id)
+
+    // 3. Update local state immediately so UI updates without lag
+    setQuotations((prev) =>
+      prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
+    )
+
+    // 4. Instantly notify the user with success toast
+    showNotification(`Quotation #${targetNum || targetId} moved to Trash.`, 'success')
+
+    // 5. Optimistically sync to client TRASH_ITEMS so Trash page sees it immediately
+    const nowISO = new Date().toISOString()
+    const optimisticTrashRecord: any = {
+      id: `trash-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      company_id: company?.id || 'default',
+      category: 'quotations',
+      original_id: targetId,
+      title: targetQuote.customer_name ? `Quote: ${targetQuote.customer_name}` : `Quotation #${targetNum || targetId}`,
+      subtitle: targetQuote.items?.[0]?.description || (targetQuote.grand_total ? `৳ ${targetQuote.grand_total}` : ''),
+      reference_number: targetNum || '',
+      deleted_at: nowISO,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      deleted_by_name: 'System User',
+      payload: targetQuote,
+    }
+    const localTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [
+      optimisticTrashRecord,
+      ...localTrash.filter((t: any) => t.original_id !== targetId && t.reference_number !== targetNum),
+    ])
+
+    // 6. Asynchronously execute server moveToTrashAction in background without blocking UI
     try {
-      // 1. Purge from browser localStorage and client DataStore across all keys immediately
-      removeLocalQuotation(targetId, targetNum, slug, company?.slug, company?.id)
-
-      // 2. Update local state immediately so UI updates without lag
-      setQuotations((prev) =>
-        prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
-      )
-
-      // 3. Move to Trash / Recycle Bin on server
       const res = await moveToTrashAction('quotations', targetQuote, company?.id, slug)
 
-      // 4. Explicitly invoke deleteQuotationAction to ensure deletion from active DB
-      const delRes = await deleteQuotationAction(targetId, targetNum, company?.id, slug).catch((err: any) => ({
-        success: false,
-        error: err?.message,
-      }))
-
-      if (!res.success && !delRes.success) {
-        showNotification(res.error || delRes.error || 'Error deleting quotation.', 'error')
-        loadQuotationsData(true)
-        return
-      }
-
-      // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
       if (res.success && res.record) {
-        const localTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
-        PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
+        // Reconcile client trash store with authoritative server record
+        const currentTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+        PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [
+          res.record,
+          ...currentTrash.filter((t: any) => t.id !== res.record.id && t.original_id !== targetId),
+        ])
+      } else if (!res.success) {
+        showNotification(res.error || 'Failed to move quotation to trash.', 'error')
+        // Rollback state if server action failed
+        loadQuotationsData(true)
       }
-
-      setIsTrashConfirmOpen(false)
-      setQuoteToTrash(null)
-      showNotification(`Quotation #${targetNum} moved to Trash.`, 'success')
-
-      // 6. Silently reload to ensure sync
-      loadQuotationsData(true)
     } catch (err: any) {
-      showNotification(err.message || 'Error moving quotation to trash.', 'error')
-    } finally {
-      setIsTrashing(false)
+      console.warn('[Quotations] Server trash background notice:', err)
+      showNotification(err?.message || 'Error moving quotation to trash.', 'error')
+      loadQuotationsData(true)
     }
   }
 

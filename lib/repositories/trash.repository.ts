@@ -45,8 +45,8 @@ export class TrashRepository {
       try {
         const { createAdminClient } = await import('../supabase/admin.ts')
         const admin = createAdminClient()
-        for (const pid of purgedIds) {
-          await (admin as any).from('audit_logs').delete().eq('action', 'TRASH_ITEM').eq('entity_id', pid)
+        if (admin) {
+          await (admin as any).from('audit_logs').delete().eq('action', 'TRASH_ITEM').in('entity_id', purgedIds)
         }
       } catch {}
     }
@@ -133,6 +133,10 @@ export class TrashRepository {
     const { category, item, companyId, deletedByName = 'System User' } = params
     const originalId = item.id || item.original_id || `temp-${Date.now()}`
 
+    const isUUID = (val: string | null | undefined): boolean =>
+      Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
+    let resolvedCompanyId: string | null = isUUID(companyId) ? companyId : null
+
     // Extract title, subtitle, reference number based on category
     let title = 'Deleted Item'
     let subtitle = ''
@@ -166,9 +170,6 @@ export class TrashRepository {
         const { createAdminClient } = await import('../supabase/admin.ts')
         const admin = createAdminClient()
         if (admin) {
-          const isUUID = (val: string | null | undefined): boolean =>
-            Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
-
           let effectiveCompanyId = companyId
           if (companyId && !isUUID(companyId)) {
             try {
@@ -177,8 +178,9 @@ export class TrashRepository {
                 .select('id')
                 .eq('slug', companyId)
                 .maybeSingle()
-              if (comp?.id) {
+              if (comp?.id && isUUID(comp.id)) {
                 effectiveCompanyId = comp.id
+                resolvedCompanyId = comp.id
                 // Also purge under resolved company UUID partition
                 const uList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, effectiveCompanyId) || []
                 PrintFlowDataStore.set(
@@ -205,8 +207,10 @@ export class TrashRepository {
 
           if (targetUuid) {
             try {
-              await (admin as any).from('quotation_items').delete().eq('quotation_id', targetUuid)
-              await (admin as any).from('quotation_activities').delete().eq('quotation_id', targetUuid)
+              await Promise.allSettled([
+                (admin as any).from('quotation_items').delete().eq('quotation_id', targetUuid),
+                (admin as any).from('quotation_activities').delete().eq('quotation_id', targetUuid),
+              ])
               let query = (admin as any).from('quotations').delete().eq('id', targetUuid)
               if (isUUID(effectiveCompanyId)) query = query.eq('company_id', effectiveCompanyId)
               await query
@@ -331,21 +335,26 @@ export class TrashRepository {
     try {
       const { createAdminClient } = await import('../supabase/admin.ts')
       const admin = createAdminClient()
-      const effectiveComp = (!companyId || companyId === 'default' || companyId === 'c-01') ? null : companyId
-      await (admin as any).from('audit_logs').insert({
-        company_id: effectiveComp,
-        action: 'TRASH_ITEM',
-        entity_type: category,
-        entity_id: originalId,
-        new_values: trashRecord,
-        created_at: nowISO,
-      })
+      const validAuditCompanyId = isUUID(companyId)
+        ? companyId
+        : (isUUID(resolvedCompanyId) ? resolvedCompanyId : null)
+
+      if (admin) {
+        await (admin as any).from('audit_logs').insert({
+          company_id: validAuditCompanyId,
+          action: 'TRASH_ITEM',
+          entity_type: category,
+          entity_id: originalId,
+          new_values: trashRecord,
+          created_at: nowISO,
+        })
+      }
     } catch (e) {
       console.warn('[TrashRepository] Failed to write trash to audit_logs:', e)
     }
 
-    // Purge any preexisting expired records in the background
-    this.purgeExpiredTrash(companyId).catch(() => {})
+    // Purge any preexisting expired records in the background without blocking
+    void this.purgeExpiredTrash(companyId).catch(() => {})
 
     // Broadcast client sync events
     if (typeof window !== 'undefined') {
