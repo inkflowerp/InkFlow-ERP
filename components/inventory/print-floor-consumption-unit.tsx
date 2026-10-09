@@ -492,24 +492,7 @@ export function PrintFloorConsumptionUnit({
                   {/* Action Button: Consume from this Piece */}
                   <Button
  size="sm"onClick={() => {
- const matchingFloorRec = floorConsumptions.find(
-                        (fc) => fc.material_id === roll.material_id && fc.remaining_floor_balance > 0
-                      )
- onOpenLogConsumption(
- matchingFloorRec || ({
- id: roll.id,
- material_id: roll.material_id,
- material_name: roll.material?.name || 'Substrate',
- sku: roll.material?.sku,
- machine_name: roll.mounted_machine_name,
- machine_id: roll.mounted_machine_id,
- remaining_floor_balance: currentLen,
- issued_quantity: initialLen,
- consumed_quantity: initialLen - currentLen,
- unit: 'ft',
- status: 'on_floor',
-                        } as any)
-                      )
+ onOpenLogConsumption(roll as any)
                     }}
  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold h-7.5 cursor-pointer shadow-xs gap-1 mt-1">
                     <Scissors className="h-3.5 w-3.5"/>
@@ -760,7 +743,14 @@ export function PrintFloorConsumptionUnit({
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Button
- size="sm"variant="outline"onClick={() => onOpenLogConsumption(rec)}
+ size="sm"variant="outline"onClick={() => {
+                            const matchingRoll = rec.roll_id ? (rolls || []).find((r) => r.id === rec.roll_id) : null
+                            if (matchingRoll) {
+                              onOpenLogConsumption(matchingRoll as any)
+                            } else {
+                              onOpenLogConsumption(rec)
+                            }
+                          }}
  className="h-7 text-xs font-bold text-primary border-primary/20 hover:bg-primary/10 text-primary border-border cursor-pointer px-2"title="Log actual consumption or scrap for this item">
                             <Scissors className="h-3 w-3 mr-1"/>
  Log Run

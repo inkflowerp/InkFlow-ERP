@@ -200,4 +200,45 @@ test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) 
     assert.equal(breakdown.purchase_unit_display, '45 pcs')
     assert.equal(breakdown.formatted_summary, '45 pcs')
   })
+
+  await t.test('6. Print Floor Piece Consumption Sign-Off validates linear length without false area mismatch', async () => {
+    // Create 2.25 ft wide x 164 ft master roll = 369 sqft
+    const masterRoll = await InventoryRepository.createPhysicalRoll({
+      company_id: companyId,
+      material_id: 'mat-pvc-001',
+      roll_code: 'ROL-PVC-164FT-TEST',
+      width_ft: 2.25,
+      initial_length_ft: 164.0,
+      unit_cost: 25,
+    })
+
+    // In Piece Consumption, linear length available is 164 ft, not area 369 sqft
+    const availableLength = masterRoll.current_length_ft > 0
+      ? masterRoll.current_length_ft
+      : (masterRoll.remaining_area_sft / masterRoll.width_ft)
+    assert.equal(availableLength, 164)
+
+    // Operator consumes 10 ft linear cut with 3 inch (0.25 ft) bleed
+    const cutLength = 10
+    const bleedFt = 0.25
+    const totalDeduction = cutLength + bleedFt // 10.25 ft
+
+    // Verify deduction does NOT exceed available piece length
+    assert.ok(totalDeduction <= availableLength, '10.25 ft must not exceed 164 ft piece length')
+
+    // Execute consumption
+    const result = await InventoryRepository.consumeFromPhysicalRoll({
+      company_id: companyId,
+      roll_id: masterRoll.id,
+      linear_length_consumed_ft: cutLength,
+      bleed_allowance_ft: bleedFt,
+      operator_name: 'Operator Shamol',
+      notes: 'Sign-off 10ft cut on 164ft roll',
+    })
+
+    assert.equal(result.roll.current_length_ft, 153.75)
+    assert.equal(result.totalDeductedFt, 10.25)
+    assert.equal(result.roll.remaining_area_sft, Math.round(153.75 * 2.25 * 100) / 100)
+  })
 })
+

@@ -314,7 +314,7 @@ export default function FloorConsumptionPage() {
  requests={requests}
  onRequestMaterial={() => setIsMaterialRequestOpen(true)}
  onOpenLogConsumption={(record) => {
- if (record && (record as any).width_ft) {
+ if (record && ((record as any).width_ft || (record as any).roll_code || (record as any).initial_length_ft)) {
             // It's a roll piece
  setSelectedRollId(record.id)
  setSelectedFloorRecord(null)

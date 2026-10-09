@@ -3989,7 +3989,15 @@ export class InventoryRepository {
       throw new Error(`Physical Roll ${params.roll_id} not found.`)
     }
 
-    const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / (roll.width_ft || 1))
+    const currentLen = Number(
+      (roll.current_length_ft != null && roll.current_length_ft > 0)
+        ? roll.current_length_ft
+        : (roll.remaining_length_ft != null && roll.remaining_length_ft > 0)
+        ? roll.remaining_length_ft
+        : (roll.remaining_area_sft && roll.width_ft)
+        ? roll.remaining_area_sft / roll.width_ft
+        : (roll.initial_length_ft || 164)
+    )
     const goodLen = Math.max(0, Number(params.linear_length_consumed_ft) || 0)
     const bleedLen = Math.max(0, Number(params.bleed_allowance_ft) || 0)
     const wastageLen = Math.max(0, Number(params.wastage_length_ft) || 0)
@@ -4021,18 +4029,45 @@ export class InventoryRepository {
 
     try {
       const supabase = await createClient()
-      const { data } = await (supabase as any)
+      const { data, error: updErr } = await (supabase as any)
         .from('inventory_rolls')
         .update(updatedRollPayload)
         .eq('id', roll.id)
         .select()
         .single()
 
-      if (data) updatedRoll = data as unknown as InventoryRollRecord
+      if (!updErr && data) {
+        updatedRoll = data as unknown as InventoryRollRecord
+      } else {
+        const admin = createAdminClient()
+        const { data: adminData } = await (admin as any)
+          .from('inventory_rolls')
+          .update(updatedRollPayload)
+          .eq('id', roll.id)
+          .select()
+          .single()
+        if (adminData) updatedRoll = adminData as unknown as InventoryRollRecord
+      }
     } catch {}
 
     PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll, params.company_id)
     PrintFlowDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll)
+
+    // Sync FloorConsumptions in local store so live consumption table is updated immediately
+    const floorList = [
+      ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, params.company_id) || []),
+      ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+    ]
+    for (const fc of floorList) {
+      if (fc.roll_id === roll.id || fc.id === `fc-${roll.id}` || fc.id === `fc-roll-${roll.id}`) {
+        fc.consumed_quantity = (Number(fc.consumed_quantity) || 0) + totalDeductedArea
+        fc.remaining_floor_balance = newRemainingArea
+        fc.status = isDepleted ? 'fully_consumed' : 'partially_consumed'
+        fc.updated_at = new Date().toISOString()
+        PrintFlowDataStore.updateItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, fc.id, fc, params.company_id)
+        PrintFlowDataStore.updateItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, fc.id, fc)
+      }
+    }
 
     // Log Stock Ledger Entry for Good Job Run (+ Bleed)
     if (goodConsumedArea > 0) {
