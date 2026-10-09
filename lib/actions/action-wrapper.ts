@@ -131,7 +131,12 @@ export function withTenantAction<TArgs extends any[], TReturn>(
             }
           } else if (typeof arg === 'string') {
             const clean = arg.trim()
-            if (clean.startsWith('comp-') || clean.startsWith('co-')) {
+            if (
+              clean.startsWith('comp-') ||
+              clean.startsWith('co-') ||
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean) ||
+              (/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/i.test(clean) && !['create', 'edit', 'delete', 'all', 'orders', 'view', 'update', 'status'].includes(clean.toLowerCase()))
+            ) {
               targetSlugOrId = clean
               break
             }

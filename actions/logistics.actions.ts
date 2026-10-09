@@ -1,6 +1,6 @@
 'use server'
 
-import { withTenantAction } from '@/lib/actions/action-wrapper'
+import { withTenantAction } from '../lib/actions/action-wrapper.ts'
 
 
 import { revalidatePath } from 'next/cache'

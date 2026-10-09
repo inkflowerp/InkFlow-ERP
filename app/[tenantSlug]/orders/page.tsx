@@ -164,12 +164,12 @@ export default function OrdersPage() {
 
  try {
  const [ordersRes, jobsRes, invoicesRes, prodRes, designRes, challansRes] = await Promise.allSettled([
- getOrdersAction(companyId),
- getJobOrdersAction(companyId),
- getInvoicesAction({}, companyId),
- getProductionTasksAction({}, companyId),
- getDesignJobsAction(companyId),
- getChallansAction(companyId),
+          getOrdersAction(companyId).catch(() => ({ success: false, data: [] })),
+          getJobOrdersAction(companyId).catch(() => ({ success: false, data: [] })),
+          getInvoicesAction({}, companyId).catch(() => ({ success: false, data: [] })),
+          getProductionTasksAction({}, companyId).catch(() => ({ success: false, data: [] })),
+          getDesignJobsAction(companyId).catch(() => ({ success: false, data: [] })),
+          getChallansAction(companyId).catch(() => ({ success: false, data: [] })),
         ])
 
  if (ordersRes.status === 'fulfilled' && ordersRes.value.success && ordersRes.value.data) {
@@ -205,58 +205,44 @@ export default function OrdersPage() {
  PrintFlowDataStore.set(STORAGE_KEYS.INVOICES, serverInvoices, true, tenantSlug)
       }
 
-      // Offline fallback: if server returned empty, fallback to cached partition
- const rawOrders: SalesOrderRecord[] =
- serverOrders.length > 0
-          ? serverOrders
-          : (PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) ||
- PrintFlowDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) ||
-             [])
-
- const rawJobs: JobOrderRecord[] =
- serverJobs.length > 0
-          ? serverJobs
-          : (PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) ||
- PrintFlowDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) ||
-             [])
-
- const rawInvoices: InvoiceRecord[] =
- serverInvoices.length > 0
-          ? serverInvoices
-          : (PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) ||
- PrintFlowDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) ||
-             [])
-
- const rawProdTasks: ProductionTaskRecord[] =
- serverProdTasks.length > 0
-          ? serverProdTasks
-          : (PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS, tenantSlug) ||
- PrintFlowDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) ||
-             [])
-
- const rawDesignJobs: DesignJobRecord[] =
- serverDesignJobs.length > 0
-          ? serverDesignJobs
-          : (PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, tenantSlug) ||
- PrintFlowDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) ||
-             [])
-
- const rawChallans: DeliveryChallanRecord[] =
- serverChallans.length > 0
-          ? serverChallans
-          : (PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, tenantSlug) ||
- PrintFlowDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) ||
-             [])
-
- const isMatchingTenant = (itemCompId?: string | null) => {
- if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default') return true
- const c1 = String(itemCompId).toLowerCase()
- const c2 = String(companyId).toLowerCase()
- const s = String(tenantSlug).toLowerCase()
- return c1 === c2 || c1 === s
+      // Offline multi-partition fallback: if server returned empty, fallback to cached partition
+      const candidatePartitions = [tenantSlug, company?.slug, companyId, 'default', undefined]
+      const getFromPartitions = <T,>(key: any): T[] => {
+        for (const p of candidatePartitions) {
+          const found = PrintFlowDataStore.get<T[]>(key, p)
+          if (Array.isArray(found) && found.length > 0) return found
+        }
+        return []
       }
 
- const tenantOrders = rawOrders.filter((o) => isMatchingTenant(o.company_id))
+      const rawOrders: SalesOrderRecord[] =
+        serverOrders.length > 0 ? serverOrders : getFromPartitions<SalesOrderRecord>(STORAGE_KEYS.ORDERS)
+
+      const rawJobs: JobOrderRecord[] =
+        serverJobs.length > 0 ? serverJobs : getFromPartitions<JobOrderRecord>(STORAGE_KEYS.JOB_ORDERS)
+
+      const rawInvoices: InvoiceRecord[] =
+        serverInvoices.length > 0 ? serverInvoices : getFromPartitions<InvoiceRecord>(STORAGE_KEYS.INVOICES)
+
+      const rawProdTasks: ProductionTaskRecord[] =
+        serverProdTasks.length > 0 ? serverProdTasks : getFromPartitions<ProductionTaskRecord>(STORAGE_KEYS.PRODUCTION_TASKS)
+
+      const rawDesignJobs: DesignJobRecord[] =
+        serverDesignJobs.length > 0 ? serverDesignJobs : getFromPartitions<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS)
+
+      const rawChallans: DeliveryChallanRecord[] =
+        serverChallans.length > 0 ? serverChallans : getFromPartitions<DeliveryChallanRecord>(STORAGE_KEYS.DELIVERY_CHALLANS)
+
+      const isMatchingTenant = (itemCompId?: string | null) => {
+        if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default') return true
+        const c1 = String(itemCompId).toLowerCase()
+        const c2 = String(companyId).toLowerCase()
+        const s = String(tenantSlug).toLowerCase()
+        const cs = company?.slug ? String(company.slug).toLowerCase() : ''
+        return c1 === c2 || c1 === s || (cs && c1 === cs)
+      }
+
+      const tenantOrders = rawOrders.filter((o) => isMatchingTenant(o.company_id))
  const tenantJobs = rawJobs.filter((j) => isMatchingTenant(j.company_id))
  const tenantInvoices = rawInvoices.filter((i) => isMatchingTenant(i.company_id))
  const tenantProdTasks = rawProdTasks.filter((t) => isMatchingTenant(t.company_id))
@@ -755,7 +741,7 @@ export default function OrdersPage() {
  setIsLoading(false)
  setIsRefreshing(false)
     }
-  }, [companyId, tenantSlug, showNotification])
+  }, [companyId, tenantSlug, company?.slug, showNotification])
 
  useEffect(() => {
  setIsMounted(true)

@@ -3,7 +3,7 @@
 // Authoritative PostgreSQL persistence via OrderRepository
 // ==============================================================================
 
-import {
+import type {
   SalesOrderRecord,
   JobOrderRecord,
   OrderTimelineEventRecord,

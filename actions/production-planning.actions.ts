@@ -1,6 +1,6 @@
 'use server'
 
-import { withTenantAction } from '@/lib/actions/action-wrapper'
+import { withTenantAction } from '../lib/actions/action-wrapper.ts'
 
 
 import { revalidatePath } from 'next/cache'
@@ -9,7 +9,7 @@ import { AuditService } from '@/services/audit.service'
 import { AuditRepository } from '@/lib/repositories/audit.repository'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { ProductionRepository } from '@/lib/repositories/production.repository'
-import {
+import type {
   ProductionTaskRecord,
   CreateProductionTaskInput,
   UpdateProductionTaskInput,
@@ -18,7 +18,7 @@ import {
   ReworkTaskInput,
   MachineQueueGroup,
 } from '@/types/production.types'
-import { TaskFilterOptions } from '@/lib/repositories/production-task.repository'
+import type { TaskFilterOptions } from '@/lib/repositories/production-task.repository'
 
 export interface ServerActionResult<T> {
   success: boolean
