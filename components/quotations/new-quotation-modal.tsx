@@ -890,265 +890,506 @@ export function NewQuotationModal({
  effectiveCompanyId,
   ])
 
+  // -------------------------------------------------------------
+  // PRICING CALCULATIONS & TIER RESOLUTION
+  // -------------------------------------------------------------
+  const calculateItemArea = (w: number, h: number, qty: number, dimUnit: 'ft' | 'inch' | 'm' = 'ft') => {
+    if (w <= 0 || h <= 0) return 0
+    if (dimUnit === 'inch') {
+      return Math.round(((w * h) / 144) * qty * 100) / 100
+    }
+    if (dimUnit === 'm') {
+      return Math.round(w * h * 10.7639 * qty * 100) / 100
+    }
+    return Math.round(w * h * qty * 100) / 100
+  }
+
+  const calculateLineTotal = (
+    w: number,
+    h: number,
+    qty: number,
+    rate: number,
+    prod?: ProductRecord | null,
+    dimUnit: 'ft' | 'inch' | 'm' = 'ft'
+  ) => {
+    const calc = calculateCommercialPricing({
+      pricingMethod: prod?.pricing_method,
+      unitPrice: rate,
+      quantity: qty,
+      width: w,
+      height: h,
+      dimensionUnit: dimUnit,
+      minBillableQuantity: prod && prod.min_billable_quantity !== undefined && prod.min_billable_quantity !== null ? Math.max(0, Number(prod.min_billable_quantity)) : 0,
+      minOrderQuantity: prod && prod.min_order_quantity !== undefined && prod.min_order_quantity !== null ? Math.max(0, Number(prod.min_order_quantity)) : 1,
+      minimumCharge: prod && prod.minimum_charge !== undefined ? Math.max(0, Number(prod.minimum_charge)) : 0,
+      materialUnitCost: prod ? Number(prod.effective_unit_cost ?? prod.base_cost) || 0 : 0,
+    })
+    return {
+      area: calc.areaSqft || calculateItemArea(w, h, qty, dimUnit),
+      total: calc.finalAmount,
+      calcResult: calc,
+    }
+  }
+
+  const resolveLineItemRate = (
+    prod: ProductRecord | null | undefined,
+    targetCustomerType: string,
+    cachedResolved?: ResolvedProductRate | null
+  ): { rate: number; source: RateSource; tierApplied: string | null } => {
+    if (!prod) {
+      return { rate: 0, source: 'default', tierApplied: null }
+    }
+
+    const defaultPrice = Number(prod.selling_price) || 0
+    const cType = (targetCustomerType || 'retail').toLowerCase().trim()
+
+    // 1. If we have a cached resolved rate for an existing customer that is a CUSTOM contract rate,
+    // honor that custom negotiated rate.
+    if (cachedResolved && (cachedResolved.customerRate !== null && cachedResolved.customerRate !== undefined)) {
+      return {
+        rate: Number(cachedResolved.effectiveRate) || defaultPrice,
+        source: 'custom',
+        tierApplied: 'Customer Contract Rate',
+      }
+    }
+
+    // 2. Check active Pricing Rules from PrintFlowDataStore for this company & customerType
+    try {
+      const rules = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.PRICING_RULES, effectiveCompanyId) || []).filter(
+        (r) =>
+          (!r.company_id || r.company_id === effectiveCompanyId) &&
+          (r.customer_type === cType || (!r.customer_type && cType === 'retail')) &&
+          (r.status === 'active' || !r.status)
+      )
+
+      const matchedRule = rules.find(
+        (r) => r.product_id === prod.id || (!r.product_id && r.category && r.category === prod.category)
+      )
+
+      if (matchedRule) {
+        if (matchedRule.calculated_price !== undefined && Number(matchedRule.calculated_price) > 0) {
+          return {
+            rate: Number(matchedRule.calculated_price),
+            source: 'custom',
+            tierApplied: `${cType.toUpperCase()} Rule`,
+          }
+        }
+        if (matchedRule.fixed_price !== undefined && Number(matchedRule.fixed_price) > 0) {
+          return {
+            rate: Number(matchedRule.fixed_price),
+            source: 'custom',
+            tierApplied: `${cType.toUpperCase()} Rule`,
+          }
+        }
+        if (matchedRule.pricing_rule_type === 'percentage_adjustment' && matchedRule.adjustment_value !== undefined) {
+          const pct = Number(matchedRule.adjustment_value) || 0
+          const calcPrice = Math.round(defaultPrice * (1 + pct / 100) * 100) / 100
+          return {
+            rate: calcPrice,
+            source: 'custom',
+            tierApplied: `${cType.toUpperCase()} Rule (${pct > 0 ? '+' : ''}${pct}%)`,
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[resolveLineItemRate] Error reading client pricing rules:', err)
+    }
+
+    // 3. Check Product price_tiers (applies across ALL product types)
+    const tiers = (prod.price_tiers as Record<string, any>) || {}
+    let tierRate: number | null = null
+    let tierLabel: string | null = null
+
+    if (cType === 'corporate') {
+      const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Corporate Tier'
+      }
+    } else if (cType === 'reseller' || cType === 'dealer') {
+      const val =
+        tiers['reseller'] ??
+        tiers['reseller_price'] ??
+        tiers['dealer'] ??
+        tiers['dealer_price'] ??
+        tiers['wholesale'] ??
+        tiers['wholesale_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Reseller Tier'
+      }
+    } else if (cType === 'government' || cType === 'govt' || cType === 'org') {
+      const val =
+        tiers['government'] ??
+        tiers['government_price'] ??
+        tiers['govt'] ??
+        tiers['govt_price'] ??
+        tiers['org'] ??
+        tiers['corporate'] ??
+        tiers['corporate_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Govt / Org Tier'
+      }
+    } else if (cType === 'wholesale') {
+      const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Wholesale Tier'
+      }
+    } else if (cType === 'vip') {
+      const val = tiers['vip'] ?? tiers['vip_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'VIP Tier'
+      }
+    } else if (cType === 'retail' || cType === 'regular') {
+      const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Retail Tier'
+      }
+    }
+
+    if (tierRate === null && tiers[cType] !== undefined && Number(tiers[cType]) > 0) {
+      tierRate = Number(tiers[cType])
+      tierLabel = `${cType.toUpperCase()} Tier`
+    }
+
+    if (tierRate !== null && tierRate > 0) {
+      return {
+        rate: tierRate,
+        source: 'default',
+        tierApplied: tierLabel,
+      }
+    }
+
+    // 4. If cachedResolved exists (from backend resolution for this customer), fallback to it
+    if (cachedResolved && cachedResolved.effectiveRate > 0) {
+      return {
+        rate: cachedResolved.effectiveRate,
+        source: cachedResolved.source,
+        tierApplied: null,
+      }
+    }
+
+    // 5. Default catalog selling price
+    return {
+      rate: defaultPrice,
+      source: 'default',
+      tierApplied: null,
+    }
+  }
+
+  const handleCustomerTypeChange = (newType: string) => {
+    setCustomerType(newType)
+    setItems((prev) =>
+      prev.map((it) => {
+        if (!it.product_id || it.isManualRate) return it
+        const prod = productsCatalog.find((p) => p.id === it.product_id)
+        if (!prod) return it
+
+        const cached = selectedCustomer ? resolvedRatesMap.get(prod.id) : null
+        const isSameAsCustType = (selectedCustomer?.customer_type || 'retail').toLowerCase() === newType.toLowerCase()
+        const cachedToUse = isSameAsCustType || (cached && cached.customerRate !== null && cached.customerRate !== undefined) ? cached : null
+
+        const { rate: baseRate, source, tierApplied } = resolveLineItemRate(prod, newType, cachedToUse)
+
+        const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+        const aRate = getAddOnRate(it.add_on)
+        const effectiveRate = baseRate + fRate + aRate
+
+        const lineMath = calculateLineTotal(
+          Number(it.width) || 0,
+          Number(it.height) || 0,
+          it.quantity || 1,
+          effectiveRate,
+          prod,
+          it.dimension_unit
+        )
+
+        return {
+          ...it,
+          base_rate: baseRate,
+          finishing_rate: fRate,
+          add_on_rate: aRate,
+          unit_rate: effectiveRate,
+          rate_source: source,
+          tier_applied: tierApplied,
+          area_sft: lineMath.area,
+          item_total: lineMath.total,
+        }
+      })
+    )
+  }
+
   // Handle Customer Selection
- const handleSelectCustomer = async (cust: CustomerRecord) => {
- setSelectedCustomer(cust)
- setCustomerName(cust.name || '')
- setCustomerNameBn(cust.name_bn || '')
- setCustomerCompany(cust.company_name || '')
- setCustomerPhone(cust.mobile || '')
- setCustomerWhatsapp(cust.whatsapp || cust.mobile || '')
- setCustomerEmail(cust.email || '')
- setCustomerAddress(cust.address || '')
- const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
+  const handleSelectCustomer = async (cust: CustomerRecord) => {
+    setSelectedCustomer(cust)
+    setCustomerName(cust.name || '')
+    setCustomerNameBn(cust.name_bn || '')
+    setCustomerCompany(cust.company_name || '')
+    setCustomerPhone(cust.mobile || '')
+    setCustomerWhatsapp(cust.whatsapp || cust.mobile || '')
+    setCustomerEmail(cust.email || '')
+    setCustomerAddress(cust.address || '')
+    const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
       ? (cust.customer_type as any)
       : 'retail'
- setCustomerType(typeMapping)
- setShowCustomerDropdown(false)
- setActiveCustomerSearchField(null)
- setCustomerHighlightedIndex(0)
- setDuplicateWarning(null)
+    setCustomerType(typeMapping)
+    setShowCustomerDropdown(false)
+    setActiveCustomerSearchField(null)
+    setCustomerHighlightedIndex(0)
+    setDuplicateWarning(null)
 
     // Resolve 3-tier rates for this customer
- const res = await resolveQuotationRatesAction(cust.id, effectiveCompanyId)
- if (res.success && res.data) {
- const map = new Map<string, ResolvedProductRate>()
- for (const r of res.data) {
- map.set(r.productId, r)
+    const res = await resolveQuotationRatesAction(cust.id, effectiveCompanyId)
+    const map = new Map<string, ResolvedProductRate>()
+    if (res.success && res.data) {
+      for (const r of res.data) {
+        map.set(r.productId, r)
       }
- setResolvedRatesMap(map)
+      setResolvedRatesMap(map)
+    }
 
-      // Update existing item rates if products are selected
- setItems((prev) =>
- prev.map((it) => {
- if (it.product_id && map.has(it.product_id) && !it.isManualRate) {
- const resolved = map.get(it.product_id)!
- const baseRate = resolved.effectiveRate
- const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
- const aRate = getAddOnRate(it.add_on)
- const effectiveRate = baseRate + fRate + aRate
+    // Update existing item rates if products are selected
+    setItems((prev) =>
+      prev.map((it) => {
+        if (!it.product_id || it.isManualRate) return it
+        const prod = productsCatalog.find((p) => p.id === it.product_id)
+        if (!prod) return it
 
- const prod = productsCatalog.find((p) => p.id === it.product_id)
- const lineMath = calculateLineTotal(
- Number(it.width) || 0,
- Number(it.height) || 0,
- it.quantity || 1,
- effectiveRate,
- prod,
- it.dimension_unit
-            )
- return {
-              ...it,
- base_rate: baseRate,
- finishing_rate: fRate,
- add_on_rate: aRate,
- unit_rate: effectiveRate,
- rate_source: resolved.source,
- area_sft: lineMath.area,
- item_total: lineMath.total,
-            }
+        const resolved = map.get(it.product_id)
+        const { rate: baseRate, source, tierApplied } = resolveLineItemRate(prod, typeMapping, resolved)
+        const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+        const aRate = getAddOnRate(it.add_on)
+        const effectiveRate = baseRate + fRate + aRate
+
+        const lineMath = calculateLineTotal(
+          Number(it.width) || 0,
+          Number(it.height) || 0,
+          it.quantity || 1,
+          effectiveRate,
+          prod,
+          it.dimension_unit
+        )
+        return {
+          ...it,
+          base_rate: baseRate,
+          finishing_rate: fRate,
+          add_on_rate: aRate,
+          unit_rate: effectiveRate,
+          rate_source: source,
+          tier_applied: tierApplied,
+          area_sft: lineMath.area,
+          item_total: lineMath.total,
+        }
+      })
+    )
+  }
+
+  const handleCustomerFieldChange = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    val: string
+  ) => {
+    if (field === 'name') setCustomerName(val)
+    else if (field === 'phone') setCustomerPhone(val)
+    else if (field === 'company') setCustomerCompany(val)
+    else if (field === 'email') setCustomerEmail(val)
+
+    setActiveCustomerSearchField(field)
+    setCustomerHighlightedIndex(0)
+
+    if (selectedCustomer) {
+      setSelectedCustomer(null)
+      setResolvedRatesMap(new Map())
+      setItems((prev) =>
+        prev.map((it) => {
+          if (!it.product_id || it.isManualRate) return it
+          const prod = productsCatalog.find((p) => p.id === it.product_id)
+          if (!prod) return it
+          const { rate: baseRate, source, tierApplied } = resolveLineItemRate(prod, customerType, null)
+          const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+          const aRate = getAddOnRate(it.add_on)
+          const effectiveRate = baseRate + fRate + aRate
+          const lineMath = calculateLineTotal(
+            Number(it.width) || 0,
+            Number(it.height) || 0,
+            it.quantity || 1,
+            effectiveRate,
+            prod,
+            it.dimension_unit
+          )
+          return {
+            ...it,
+            base_rate: baseRate,
+            finishing_rate: fRate,
+            add_on_rate: aRate,
+            unit_rate: effectiveRate,
+            rate_source: source,
+            tier_applied: tierApplied,
+            area_sft: lineMath.area,
+            item_total: lineMath.total,
           }
- return it
         })
       )
     }
   }
 
- const handleCustomerFieldChange = (
- field: 'name' | 'phone' | 'company' | 'email',
- val: string
+  const handleCustomerKeyDown = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    e: React.KeyboardEvent<HTMLInputElement>
   ) => {
- if (field === 'name') setCustomerName(val)
- else if (field === 'phone') setCustomerPhone(val)
- else if (field === 'company') setCustomerCompany(val)
- else if (field === 'email') setCustomerEmail(val)
-
- setActiveCustomerSearchField(field)
- setCustomerHighlightedIndex(0)
-
- if (selectedCustomer) {
- setSelectedCustomer(null)
- setResolvedRatesMap(new Map())
-    }
-  }
-
- const handleCustomerKeyDown = (
- field: 'name' | 'phone' | 'company' | 'email',
- e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
- if (!showCustomerDropdown || searchResults.length === 0) {
- if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
- setActiveCustomerSearchField(field)
+    if (!showCustomerDropdown || searchResults.length === 0) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        setActiveCustomerSearchField(field)
       }
- return
+      return
     }
 
- if (e.key === 'ArrowDown') {
- e.preventDefault()
- setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
     } else if (e.key === 'ArrowUp') {
- e.preventDefault()
- setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
     } else if (e.key === 'Enter') {
- e.preventDefault()
- if (searchResults[customerHighlightedIndex]) {
- handleSelectCustomer(searchResults[customerHighlightedIndex])
+      e.preventDefault()
+      if (searchResults[customerHighlightedIndex]) {
+        handleSelectCustomer(searchResults[customerHighlightedIndex])
       }
     } else if (e.key === 'Escape') {
- e.preventDefault()
- setShowCustomerDropdown(false)
- setActiveCustomerSearchField(null)
+      e.preventDefault()
+      setShowCustomerDropdown(false)
+      setActiveCustomerSearchField(null)
     }
   }
 
- const handleClearCustomer = () => {
- setSelectedCustomer(null)
- setActiveCustomerSearchField(null)
- setCustomerName('')
- setCustomerNameBn('')
- setCustomerCompany('')
- setCustomerPhone('')
- setCustomerWhatsapp('')
- setCustomerEmail('')
- setCustomerAddress('')
- setCustomerType('retail')
- setResolvedRatesMap(new Map())
+  const handleClearCustomer = () => {
+    setSelectedCustomer(null)
+    setActiveCustomerSearchField(null)
+    setCustomerName('')
+    setCustomerNameBn('')
+    setCustomerCompany('')
+    setCustomerPhone('')
+    setCustomerWhatsapp('')
+    setCustomerEmail('')
+    setCustomerAddress('')
+    setCustomerType('retail')
+    setResolvedRatesMap(new Map())
+
+    setItems((prev) =>
+      prev.map((it) => {
+        if (!it.product_id || it.isManualRate) return it
+        const prod = productsCatalog.find((p) => p.id === it.product_id)
+        if (!prod) return it
+
+        const { rate: baseRate, source, tierApplied } = resolveLineItemRate(prod, 'retail', null)
+        const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+        const aRate = getAddOnRate(it.add_on)
+        const effectiveRate = baseRate + fRate + aRate
+
+        const lineMath = calculateLineTotal(
+          Number(it.width) || 0,
+          Number(it.height) || 0,
+          it.quantity || 1,
+          effectiveRate,
+          prod,
+          it.dimension_unit
+        )
+
+        return {
+          ...it,
+          base_rate: baseRate,
+          finishing_rate: fRate,
+          add_on_rate: aRate,
+          unit_rate: effectiveRate,
+          rate_source: source,
+          tier_applied: tierApplied,
+          area_sft: lineMath.area,
+          item_total: lineMath.total,
+        }
+      })
+    )
   }
 
   // Handle New Customer Duplicate Check
- useEffect(() => {
- if (selectedCustomer) {
- setDuplicateWarning(null)
- return
+  useEffect(() => {
+    if (selectedCustomer) {
+      setDuplicateWarning(null)
+      return
     }
 
- if (!customerPhone.trim() && !customerName.trim() && !customerCompany.trim()) {
- setDuplicateWarning(null)
- return
+    if (!customerPhone.trim() && !customerName.trim() && !customerCompany.trim()) {
+      setDuplicateWarning(null)
+      return
     }
 
- const timer = setTimeout(async () => {
- setIsCheckingDuplicate(true)
- const res = await checkCustomerDuplicateAction(
+    const timer = setTimeout(async () => {
+      setIsCheckingDuplicate(true)
+      const res = await checkCustomerDuplicateAction(
         {
- mobile: customerPhone,
- whatsapp: customerWhatsapp,
- name: customerName,
- company_name: customerCompany,
+          mobile: customerPhone,
+          whatsapp: customerWhatsapp,
+          name: customerName,
+          company_name: customerCompany,
         },
- effectiveCompanyId
+        effectiveCompanyId
       )
- setIsCheckingDuplicate(false)
- if (res.success && res.data && res.data.hasDuplicate) {
- setDuplicateWarning(res.data)
+      setIsCheckingDuplicate(false)
+      if (res.success && res.data && res.data.hasDuplicate) {
+        setDuplicateWarning(res.data)
       } else {
- setDuplicateWarning(null)
+        setDuplicateWarning(null)
       }
     }, 400)
 
- return () => clearTimeout(timer)
+    return () => clearTimeout(timer)
   }, [selectedCustomer, customerPhone, customerWhatsapp, customerName, customerCompany, effectiveCompanyId])
 
-  // -------------------------------------------------------------
-  // PRICING CALCULATIONS
-  // -------------------------------------------------------------
- const calculateItemArea = (w: number, h: number, qty: number, dimUnit: 'ft' | 'inch' | 'm' = 'ft') => {
- if (w <= 0 || h <= 0) return 0
- if (dimUnit === 'inch') {
- return Math.round(((w * h) / 144) * qty * 100) / 100
-    }
- if (dimUnit === 'm') {
- return Math.round(w * h * 10.7639 * qty * 100) / 100
-    }
- return Math.round(w * h * qty * 100) / 100
-  }
-
- const calculateLineTotal = (
- w: number,
- h: number,
- qty: number,
- rate: number,
- prod?: ProductRecord | null,
- dimUnit: 'ft' | 'inch' | 'm' = 'ft'
-  ) => {
- const calc = calculateCommercialPricing({
- pricingMethod: prod?.pricing_method,
- unitPrice: rate,
- quantity: qty,
- width: w,
- height: h,
- dimensionUnit: dimUnit,
- minBillableQuantity: prod && prod.min_billable_quantity !== undefined && prod.min_billable_quantity !== null ? Math.max(0, Number(prod.min_billable_quantity)) : 0,
- minOrderQuantity: prod && prod.min_order_quantity !== undefined && prod.min_order_quantity !== null ? Math.max(0, Number(prod.min_order_quantity)) : 1,
- minimumCharge: prod && prod.minimum_charge !== undefined ? Math.max(0, Number(prod.minimum_charge)) : 0,
- materialUnitCost: prod ? Number(prod.effective_unit_cost ?? prod.base_cost) || 0 : 0,
-    })
- return {
- area: calc.areaSqft || calculateItemArea(w, h, qty, dimUnit),
- total: calc.finalAmount,
- calcResult: calc,
-    }
-  }
-
- const handleProductSelect = (index: number, productId: string) => {
- if (!productId) {
- setItems((prev) => {
- const copy = [...prev]
- const current = copy[index]
- copy[index] = {
+  const handleProductSelect = (index: number, productId: string) => {
+    if (!productId) {
+      setItems((prev) => {
+        const copy = [...prev]
+        const current = copy[index]
+        copy[index] = {
           ...current,
- product_id: null,
- item_kind: 'custom',
- tier_applied: null,
- moq: null,
- pcs_per_carton: null,
- available_dimension_presets: [],
- available_finishing_options: [],
- printable_material_name: undefined,
+          product_id: null,
+          item_kind: 'custom',
+          tier_applied: null,
+          moq: null,
+          pcs_per_carton: null,
+          available_dimension_presets: [],
+          available_finishing_options: [],
+          printable_material_name: undefined,
         }
- return copy
+        return copy
       })
- return
+      return
     }
 
- const prod = productsCatalog.find((p) => p.id === productId)
- if (!prod) return
+    const prod = productsCatalog.find((p) => p.id === productId)
+    if (!prod) return
 
- const resolved = resolvedRatesMap.get(prod.id)
- let rate = resolved ? resolved.effectiveRate : Number(prod.selling_price) || 0
- let source: RateSource = resolved ? resolved.source : 'default'
- let tierApplied: string | null = null
+    const activeCustomerType = customerType || selectedCustomer?.customer_type || 'retail'
+    const cachedRate = resolvedRatesMap.get(prod.id)
+    const isSameAsCustType = (selectedCustomer?.customer_type || 'retail').toLowerCase() === activeCustomerType.toLowerCase()
+    const cachedToUse = isSameAsCustType || (cachedRate && cachedRate.customerRate !== null && cachedRate.customerRate !== undefined) ? cachedRate : null
+
+    const { rate, source, tierApplied } = resolveLineItemRate(prod, activeCustomerType, cachedToUse)
 
     // Detect item kind
- const isService = isServiceProduct(prod)
- const isReadyProd = isReadyProduct(prod)
- const isMat = isMaterialProduct(prod)
+    const isService = isServiceProduct(prod)
+    const isReadyProd = isReadyProduct(prod)
+    const isMat = isMaterialProduct(prod)
 
- const itemKind: 'service' | 'ready_product' | 'material' | 'custom' = isService
+    const itemKind: 'service' | 'ready_product' | 'material' | 'custom' = isService
       ? 'service'
       : isReadyProd
       ? 'ready_product'
       : isMat
       ? 'material'
       : 'service'
-
-    // Customer tier pricing resolution for ready products if not already resolved by rate map
- if (isReadyProd && prod.price_tiers && !resolved) {
- const cType = (customerType || selectedCustomer?.customer_type || 'retail').toLowerCase()
- if (cType === 'corporate' && (prod.price_tiers['corporate'] || prod.price_tiers['corporate_price'])) {
- rate = Number(prod.price_tiers['corporate'] ?? prod.price_tiers['corporate_price'])
- tierApplied = 'Corporate Tier'
-      } else if ((cType === 'reseller' || cType === 'dealer') && (prod.price_tiers['dealer'] || prod.price_tiers['dealer_price'])) {
- rate = Number(prod.price_tiers['dealer'] ?? prod.price_tiers['dealer_price'])
- tierApplied = 'Dealer Tier'
-      } else if (cType === 'wholesale' && (prod.price_tiers['wholesale'] || prod.price_tiers['wholesale_price'])) {
- rate = Number(prod.price_tiers['wholesale'] ?? prod.price_tiers['wholesale_price'])
- tierApplied = 'Wholesale Tier'
-      } else if (cType === 'vip' && (prod.price_tiers['vip'] || prod.price_tiers['vip_price'])) {
- rate = Number(prod.price_tiers['vip'] ?? prod.price_tiers['vip_price'])
- tierApplied = 'VIP Tier'
-      }
-    }
 
  const isSignage =
  prod.category === 'signage_3d' ||
@@ -1801,11 +2042,11 @@ export function NewQuotationModal({
                       ].map((tab) => (
                         <button
  key={tab.value}
- type="button"onClick={() => setCustomerType(tab.value)}
+ type="button"onClick={() => handleCustomerTypeChange(tab.value)}
  className={cn(
                             'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
  customerType === tab.value
-                              ? 'bg-card text-primary text-primary shadow-xs font-semibold'
+                              ? 'bg-card text-primary shadow-xs font-semibold'
                               : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
                           )}
                         >

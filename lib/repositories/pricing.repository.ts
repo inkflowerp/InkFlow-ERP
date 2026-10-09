@@ -741,6 +741,80 @@ export class PricingRepository {
       }
 
       // -------------------------------------------------------------
+      // TIER 2.5: Check Product Price Tiers (price_tiers)
+      // -------------------------------------------------------------
+      const tiers = (product.price_tiers as Record<string, any>) || {}
+      const cType = (customerType as string).toLowerCase().trim()
+      let tierRate: number | null = null
+      let tierLabel: string | null = null
+
+      if (cType === 'corporate') {
+        const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Corporate Tier'
+        }
+      } else if (cType === 'reseller' || cType === 'dealer') {
+        const val =
+          tiers['reseller'] ??
+          tiers['reseller_price'] ??
+          tiers['dealer'] ??
+          tiers['dealer_price'] ??
+          tiers['wholesale'] ??
+          tiers['wholesale_price']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Dealer Tier'
+        }
+      } else if (cType === 'government') {
+        const val =
+          tiers['government'] ??
+          tiers['government_price'] ??
+          tiers['govt'] ??
+          tiers['govt_price'] ??
+          tiers['org'] ??
+          tiers['corporate'] ??
+          tiers['corporate_price']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Government Tier'
+        }
+      } else if (cType === 'wholesale') {
+        const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Wholesale Tier'
+        }
+      } else if (cType === 'vip') {
+        const val = tiers['vip'] ?? tiers['vip_price']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'VIP Tier'
+        }
+      } else if (cType === 'retail') {
+        const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Retail Tier'
+        }
+      }
+
+      if (tierRate === null && tiers[cType] !== undefined && Number(tiers[cType]) > 0) {
+        tierRate = Number(tiers[cType])
+        tierLabel = `${cType.toUpperCase()} Tier`
+      }
+
+      if (tierRate !== null && Number(tierRate) > 0) {
+        return {
+          ...result,
+          effectiveUnitPrice: Number(tierRate),
+          source: 'customer_type',
+          sourceLabel: tierLabel || `${customerType} Tier`,
+          sourceDetails: `Product catalog ${tierLabel || customerType} rate ৳${tierRate}/${product.unit}`,
+        }
+      }
+
+      // -------------------------------------------------------------
       // TIER 3 / 4: Fallback to Product Default Rate
       // -------------------------------------------------------------
       return result

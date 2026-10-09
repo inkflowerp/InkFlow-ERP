@@ -768,7 +768,8 @@ export class CustomerRepository {
    */
   static async getCustomerRates(companyId: string, customerId: string): Promise<CustomerRateRecord[]> {
     if (!isSupabaseConfigured()) {
-      return []
+      const allRates = PrintFlowDataStore.get<CustomerRateRecord[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+      return allRates.filter((r) => r.company_id === companyId && r.customer_id === customerId)
     }
     const supabase = await createClient()
     const { data, error } = await (supabase as any)
@@ -778,6 +779,10 @@ export class CustomerRepository {
       .eq('customer_id', customerId)
 
     if (error) {
+      if (isTestMode()) {
+        const allRates = PrintFlowDataStore.get<CustomerRateRecord[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+        return allRates.filter((r) => r.company_id === companyId && r.customer_id === customerId)
+      }
       return []
     }
     return (data || []) as CustomerRateRecord[]
@@ -1109,8 +1114,55 @@ export class CustomerRepository {
           effectiveRate = lastQuotationRate
           source = 'last_quotation'
         } else {
-          effectiveRate = defaultRate
-          source = 'default'
+          // Check product price_tiers for customerType
+          const tiers = (prod.price_tiers as Record<string, any>) || {}
+          const cType = (customerType || 'retail').toLowerCase().trim()
+          let tierPrice: number | null = null
+
+          if (cType === 'corporate') {
+            const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'reseller' || cType === 'dealer') {
+            const val =
+              tiers['reseller'] ??
+              tiers['reseller_price'] ??
+              tiers['dealer'] ??
+              tiers['dealer_price'] ??
+              tiers['wholesale'] ??
+              tiers['wholesale_price']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'government' || cType === 'govt' || cType === 'org') {
+            const val =
+              tiers['government'] ??
+              tiers['government_price'] ??
+              tiers['govt'] ??
+              tiers['govt_price'] ??
+              tiers['org'] ??
+              tiers['corporate'] ??
+              tiers['corporate_price']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'wholesale') {
+            const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'vip') {
+            const val = tiers['vip'] ?? tiers['vip_price']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'retail' || cType === 'regular') {
+            const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          }
+
+          if (tierPrice === null && tiers[cType] !== undefined && Number(tiers[cType]) > 0) {
+            tierPrice = Number(tiers[cType])
+          }
+
+          if (tierPrice !== null && tierPrice > 0) {
+            effectiveRate = tierPrice
+            source = 'default'
+          } else {
+            effectiveRate = defaultRate
+            source = 'default'
+          }
         }
 
         return {
