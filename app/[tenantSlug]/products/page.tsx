@@ -61,6 +61,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
@@ -1738,138 +1745,98 @@ export default function ProductsCatalogPage() {
     }
   }, [products])
 
- const renderProductActionMenu = (item: ProductRecord, idx: number, totalCount: number) => {
- const isOpen = activeMenuProductId === item.id
- return (
-      <td className="py-3.5 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px]">
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleOpenEdit(item)
-            }}
-            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer flex items-center justify-center"
-            title={tBilingual('Edit', 'সম্পাদনা')}
-            aria-label="Edit Item"
-          >
-            <Edit3 className="h-4 w-4" />
-          </Button>
-
-          <div className="relative inline-block text-left"data-product-menu>
-          <Button
- size="sm"variant="ghost"onClick={(e) => {
- e.stopPropagation()
- setActiveMenuProductId(isOpen ? null : item.id)
-            }}
- className={cn(
-              'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
- isOpen
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted'
-            )}
- title={tBilingual('Actions', 'অ্যাকশন')}
- aria-label="Product Actions"aria-expanded={isOpen}
-          >
-            <MoreVertical className="h-4 w-4"/>
-          </Button>
-
-          {isOpen && (
-            <div
- className={cn(
-                'absolute right-0 w-56 bg-card border border-border rounded-xl shadow-xs z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
- idx >= totalCount - 2 && totalCount >= 3
-                  ? 'bottom-full mb-1'
-                  : 'top-full mt-1'
-              )}
+  const renderProductActionMenu = (item: ProductRecord, _idx?: number, _totalCount?: number) => {
+    return (
+      <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+              title={tBilingual('Actions', 'অ্যাকশন')}
+              aria-label="Product Actions"
             >
-              {/* 1. Fast Quote */}
-              <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- handleOpenFastQuote(item)
-                }}
- className="w-full text-left px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/10 flex items-center gap-2.5 text-foreground hover:text-primary dark:hover:text-primary transition-colors cursor-pointer">
-                <Calculator className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
-              </button>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-              {/* 2. Adjust Commercial Price / Tariff */}
-              <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- setPricingProduct(item)
- setNewPrice(item.selling_price)
- setNewPurchasePrice(item.purchase_price || 0)
- setNewTargetMargin(item.target_margin_percentage || 35)
- setNewWastage(item.default_wastage_percentage || 0)
-                }}
- className="w-full text-left px-3 py-2 hover:bg-warning-surface dark:hover:bg-warning-surface flex items-center gap-2.5 text-foreground hover:text-warning dark:hover:text-warning transition-colors cursor-pointer">
-                <Edit3 className="h-3.5 w-3.5 text-warning shrink-0"/>
-                <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
-              </button>
+          <DropdownMenuContent align="end" className="w-56 text-xs font-medium">
+            {/* 1. Edit */}
+            <DropdownMenuItem
+              onClick={() => handleOpenEdit(item)}
+              className="gap-2.5"
+            >
+              <Edit3 className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="font-medium">{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
+            </DropdownMenuItem>
 
-              {/* 3. Edit Item Specs */}
-              <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- handleOpenEdit(item)
-                }}
- className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors cursor-pointer">
-                <Sliders className="h-3.5 w-3.5 text-primary shrink-0"/>
-                <span>{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
-              </button>
+            {/* 2. Fast Quote */}
+            <DropdownMenuItem
+              onClick={() => handleOpenFastQuote(item)}
+              className="gap-2.5 hover:bg-primary/10 hover:text-primary"
+            >
+              <Calculator className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
+            </DropdownMenuItem>
 
-              {/* 4. View Detail Cockpit */}
+            {/* 3. Adjust Commercial Price / Tariff */}
+            <DropdownMenuItem
+              onClick={() => {
+                setPricingProduct(item)
+                setNewPrice(item.selling_price)
+                setNewPurchasePrice(item.purchase_price || 0)
+                setNewTargetMargin(item.target_margin_percentage || 35)
+                setNewWastage(item.default_wastage_percentage || 0)
+              }}
+              className="gap-2.5 hover:bg-warning-surface hover:text-warning"
+            >
+              <Tag className="h-3.5 w-3.5 text-warning shrink-0" />
+              <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
+            </DropdownMenuItem>
+
+            {/* 4. View Detail Cockpit */}
+            <DropdownMenuItem asChild className="gap-2.5">
               <Link
- href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
- onClick={() => setActiveMenuProductId(null)}
- className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-foreground transition-colors">
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
+                href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+                className="gap-2.5"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span>{tBilingual('Open Product Cockpit', 'প্রোডাক্ট ককপিট')}</span>
               </Link>
+            </DropdownMenuItem>
 
-              {/* Divider */}
-              <div className="my-1 border-t border-border"/>
+            <DropdownMenuSeparator />
 
-              {/* 5. Archive / Restore */}
-              {item.is_active !== false ? (
-                <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- handleToggleArchive(item)
-                  }}
- className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2.5 text-muted-foreground transition-colors cursor-pointer">
-                  <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
-                  <span>{tBilingual('Archive Item', 'আইটেম আর্কাইভ করুন')}</span>
-                </button>
-              ) : (
-                <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- handleToggleArchive(item)
-                  }}
- className="w-full text-left px-3 py-2 hover:bg-success-surface dark:hover:bg-success-surface flex items-center gap-2.5 text-success text-success transition-colors cursor-pointer">
-                  <RefreshCw className="h-3.5 w-3.5 text-success shrink-0"/>
-                  <span>{tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}</span>
-                </button>
-              )}
+            {/* 5. Archive / Restore */}
+            {item.is_active !== false ? (
+              <DropdownMenuItem
+                onClick={() => handleToggleArchive(item)}
+                className="gap-2.5 text-muted-foreground"
+              >
+                <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span>{tBilingual('Archive Item', 'আইটেম আর্কাইভ করুন')}</span>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => handleToggleArchive(item)}
+                className="gap-2.5 text-success hover:bg-success-surface"
+              >
+                <RefreshCw className="h-3.5 w-3.5 text-success shrink-0" />
+                <span>{tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}</span>
+              </DropdownMenuItem>
+            )}
 
-              {/* 6. Delete */}
-              <button
- type="button"onClick={() => {
- setActiveMenuProductId(null)
- handleInitiateDelete(item)
-                }}
- className="w-full text-left px-3 py-2 hover:bg-danger-surface dark:hover:bg-danger-surface flex items-center gap-2.5 text-destructive text-destructive transition-colors cursor-pointer">
-                <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0"/>
-                <span>{tBilingual('Delete Item', 'আইটেম মুছে ফেলুন')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-        </div>
+            {/* 6. Delete */}
+            <DropdownMenuItem
+              onClick={() => handleInitiateDelete(item)}
+              className="gap-2.5 text-destructive hover:bg-danger-surface hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-destructive shrink-0" />
+              <span>{tBilingual('Delete Item', 'আইটেম মুছে ফেলুন')}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     )
   }
@@ -2721,7 +2688,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2888,7 +2855,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3048,7 +3015,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Compatible Printing', 'উপযোগী প্রিন্টিং')}</th>
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Effective Cost / Unit', 'কার্যকর খরচ / একক')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3200,7 +3167,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3328,7 +3295,7 @@ export default function ProductsCatalogPage() {
       {/* VIEW 8: UNIFIED ALL COMMERCIAL CATALOG ITEMS             */}
       {/* ======================================================== */}
       {entityTypeFilter === 'all' && (
-        <Card className="shadow-xs overflow-hidden">
+        <Card className="shadow-xs">
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -3377,7 +3344,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
