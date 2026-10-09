@@ -23,7 +23,8 @@ BEGIN
             'finished_product', 'ready_product', 'production_product', 
             'print_service', 'service', 'fabrication_service', 'fabrication',
             'installation_service', 'installation', 'finishing', 'additional',
-            'custom_job', 'material', 'delivery', 'package_bundle', 'PRODUCT', 'SERVICE'
+            'custom_job', 'material', 'delivery', 'package_bundle', 'PRODUCT', 'SERVICE',
+            'outsource', 'outsource_product'
         )
     );
 

@@ -144,6 +144,24 @@ export function sanitizeProductDbPayload(raw: Record<string, any>, isInsert: boo
     }
   }
 
+  // Ensure physical database check constraint (products_product_type_check) is never violated
+  // even if remote database has not yet run migration 129
+  if (out.product_type) {
+    if (out.product_type === 'outsource' || out.product_type === 'outsource_product') {
+      if (out.pricing_formula && typeof out.pricing_formula === 'object') {
+        out.pricing_formula.original_product_type = out.product_type
+        out.pricing_formula.is_outsource = true
+        out.pricing_formula.commercial_type = 'outsource'
+      }
+      // 'custom_job' is universally permitted across all PostgreSQL migration baselines (010, 089)
+      out.product_type = 'custom_job'
+    } else if (out.product_type === 'finished_good') {
+      out.product_type = 'finished_product'
+    } else if (out.product_type === 'production') {
+      out.product_type = 'production_product'
+    }
+  }
+
   return out
 }
 
@@ -282,8 +300,13 @@ export function enrichProductRecord(p: any): ProductRecord {
       ? 'installation'
       : resolvedEntityKind)
 
+  const resolvedProductType =
+    formula.original_product_type ||
+    (isOutsource ? 'outsource' : p.product_type)
+
   return {
     ...p,
+    product_type: resolvedProductType,
     entity_type: entityType,
     service_config: serviceConfig,
     material_config: materialConfig,
