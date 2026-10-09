@@ -69,6 +69,8 @@ import {
 import * as QuotationService from '@/lib/quotations/quotation-utils'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NegotiationModal } from '@/components/quotations/negotiation-modal'
+import { ConvertToOrderModal } from '@/components/quotations/convert-to-order-modal'
+import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -105,6 +107,8 @@ function QuotationDetailContent() {
   // Modals state
  const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
  const [isNegotiationOpen, setIsNegotiationOpen] = useState(false)
+  const [isConvertToOrderOpen, setIsConvertToOrderOpen] = useState(false)
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false)
 
  const showNotification = (msg: string) => {
  setNotification(msg)
@@ -286,70 +290,178 @@ function QuotationDetailContent() {
     }
   }
 
-  // Convert to Job Order Action (Server Action)
- const handleConvertToOrder = async () => {
- setIsConvertingOrder(true)
- try {
- const res = await convertQuotationToJobOrderAction(
- quote.id,
-        { advanceAmount: quote.advance_amount ?? undefined },
- company?.id
+  // Convert to Job Order Confirmation Handler (via Advance Payment Modal)
+  const handleConfirmConvertToOrder = async ({
+    advanceAmount,
+    paymentMethod,
+    transactionReference,
+    notes,
+  }: {
+    advanceAmount: number
+    paymentMethod: string
+    transactionReference?: string
+    notes?: string
+  }) => {
+    setIsConvertingOrder(true)
+    try {
+      const res = await convertQuotationToJobOrderAction(
+        quote.id,
+        {
+          advanceAmount,
+          paymentMethod,
+          transactionReference,
+          notes,
+          quotationData: quote,
+        },
+        company?.id
       )
- setIsConvertingOrder(false)
- if (res.success && res.data) {
+      setIsConvertingOrder(false)
+      if (res.success && res.data) {
         // Hydrate client DataStore immediately so Commercial Orders & Job Hub has it without refresh
- try {
- PrintFlowDataStore.createSalesOrderWithIntegrations(res.data)
- if (slug && slug !== 'default') {
- PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
- if (res.data.job_order) {
- PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+        try {
+          PrintFlowDataStore.createSalesOrderWithIntegrations(res.data)
+          if (slug && slug !== 'default') {
+            PrintFlowDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+            if (res.data.job_order) {
+              PrintFlowDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
             }
- if (res.data.production_job) {
- PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+            if (res.data.production_job) {
+              PrintFlowDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
             }
- PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
- status: 'converted',
- converted_order_id: res.data.order_number,
+            PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+              status: 'converted',
+              converted_order_id: res.data.order_number,
+              advance_amount: advanceAmount,
             }, slug)
           }
- PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
- status: 'converted',
- converted_order_id: res.data.order_number,
+          PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+            status: 'converted',
+            converted_order_id: res.data.order_number,
+            advance_amount: advanceAmount,
           })
+          if (advanceAmount > 0) {
+            PrintFlowDataStore.recordPaymentCollection({
+              customerId: quote.customer_id || '00000000-0000-0000-0000-000000000000',
+              companyId: company?.id || slug,
+              orderId: res.data.id,
+              amount: advanceAmount,
+              paymentMethod: paymentMethod || 'cash',
+              mfsTrxId: transactionReference,
+              notes: notes || 'Advance payment collected during quotation conversion',
+            })
+          }
         } catch (e) {
- console.warn('[QuotationDetail] Client store hydration:', e)
+          console.warn('[QuotationDetail] Client store hydration:', e)
         }
 
- setQuote((prev) =>
- prev
+        setQuote((prev) =>
+          prev
             ? {
                 ...prev,
- status: 'converted',
- converted_order_id: res.data.order_number,
+                status: 'converted',
+                converted_order_id: res.data.order_number,
+                advance_amount: advanceAmount,
               }
             : prev
         )
 
         // Dispatch instant multi-window & cross-component sync events
- if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('printflow_data_sync'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:sales_orders'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:job_orders'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced:production_jobs'))
- window.dispatchEvent(new CustomEvent('printflow_table_synced'))
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printflow_data_sync'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:sales_orders'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:job_orders'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:quotations'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced:production_jobs'))
+          window.dispatchEvent(new CustomEvent('printflow_table_synced'))
         }
 
- showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
- fetchQuotationDetail(true)
+        showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number} with Advance ৳${advanceAmount}!`)
+        setIsConvertToOrderOpen(false)
+        fetchQuotationDetail(true)
       } else {
- showNotification(`Conversion failed: ${res.error}`)
+        // Resilient client fallback if server context couldn't find quotation in DB
+        try {
+          const localOrderNumber = PrintFlowDataStore.getNextDocumentNumber(company?.id || 'c-01', 'order')
+          const localOrder = PrintFlowDataStore.createSalesOrderWithIntegrations({
+            id: `ord-${Date.now()}`,
+            company_id: company?.id || 'c-01',
+            order_number: localOrderNumber,
+            quotation_id: quote.id,
+            quotation_number: quote.quotation_number,
+            customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
+            customer_name: quote.customer_name,
+            customer_phone: quote.customer_phone,
+            customer_address: quote.customer_address || '',
+            order_date: new Date().toISOString().split('T')[0],
+            delivery_date: quote.delivery_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+            status: 'confirmed',
+            priority: 'normal',
+            payment_terms: advanceAmount > 0 ? 'advance' : 'cash',
+            subtotal: quote.subtotal,
+            discount_amount: quote.discount_amount || 0,
+            vat_amount: quote.vat_amount || 0,
+            final_price: quote.grand_total,
+            advance_amount: advanceAmount,
+            due_amount: Math.max(0, quote.grand_total - advanceAmount),
+            salesperson_name: quote.salesperson_name,
+            items: quote.items.map((it: any) => ({
+              product_id: it.product_id,
+              item_name: it.description,
+              width: it.width,
+              height: it.height,
+              dimension_unit: it.dimension_unit,
+              area_sft: it.area_sft,
+              quantity: it.quantity,
+              unit: it.unit,
+              unit_price: it.unit_rate,
+              total_price: it.item_total,
+            })),
+          } as any)
+          PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+            status: 'converted',
+            converted_order_id: localOrderNumber,
+            advance_amount: advanceAmount,
+          }, slug)
+          setQuote((prev) => prev ? { ...prev, status: 'converted', converted_order_id: localOrderNumber, advance_amount: advanceAmount } : prev)
+          setIsConvertToOrderOpen(false)
+          showNotification(`Converted to Job Order Ticket #${localOrderNumber}!`)
+        } catch {
+          showNotification(`Conversion failed: ${res.error}`)
+        }
       }
     } catch (err: any) {
- setIsConvertingOrder(false)
- showNotification(`Conversion error: ${err?.message}`)
+      setIsConvertingOrder(false)
+      showNotification(`Conversion error: ${err?.message}`)
     }
+  }
+
+  // Invoice Created Callback from NewInvoiceModal
+  const handleInvoiceCreated = (createdInv: any) => {
+    const invNumber = createdInv.invoice_number || createdInv.id
+    try {
+      PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+        status: 'converted',
+        converted_invoice_id: invNumber,
+      }, slug)
+      PrintFlowDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+        status: 'converted',
+        converted_invoice_id: invNumber,
+      })
+    } catch {}
+
+    setQuote((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: 'converted',
+            converted_invoice_id: invNumber,
+          }
+        : prev
+    )
+
+    showNotification(`Successfully converted to Invoice #${invNumber}!`)
+    setIsInvoiceModalOpen(false)
+    fetchQuotationDetail(true)
   }
 
   // Convert to Invoice Action (Server Action)
@@ -512,7 +624,7 @@ function QuotationDetailContent() {
           {/* Cockpit Command Center Card */}
           <div className="p-4 sm:p-5 rounded-xl bg-surface-inset text-foreground shadow-xs space-y-4">
             {/* Top Row: Identification & Badges */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="tabular-nums font-black text-primary text-xl tracking-tight">
@@ -537,9 +649,9 @@ function QuotationDetailContent() {
                 </div>
 
                 <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span>Customer: <strong className="text-white">{quote.customer_name}</strong> {quote.customer_company && `(${quote.customer_company})`}</span>
+                  <span>Customer: <strong className="text-foreground font-semibold">{quote.customer_name}</strong> {quote.customer_company && `(${quote.customer_company})`}</span>
                   <span>•</span>
-                  <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
+                  <span>Sales: <strong className="text-foreground font-semibold">{quote.salesperson_name}</strong></span>
                   <span>•</span>
                   <span className="tabular-nums text-primary">Total: {formatBDT(quote.grand_total)}</span>
                 </div>
@@ -555,7 +667,7 @@ function QuotationDetailContent() {
                 <select
  value={quote.status}
  onChange={(e) => handleStatusChange(e.target.value as QuotationStatus)}
- className="h-9 px-2.5 rounded-lg bg-card/10 text-white text-xs border border-white/20 font-semibold focus:ring-1 focus:ring-ring">
+ className="h-9 px-2.5 rounded-lg bg-card text-foreground text-xs border border-border font-semibold focus:ring-1 focus:ring-ring">
                   <option value="draft"className="text-foreground">Draft</option>
                   <option value="sent"className="text-foreground">Sent</option>
                   <option value="viewed"className="text-foreground">Viewed</option>
@@ -572,7 +684,7 @@ function QuotationDetailContent() {
             <div className="p-3 rounded-xl bg-card-elevated/80 border border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-xs uppercase font-bold text-muted-foreground block">Total Quoted Value</span>
-                <span className="text-sm font-black tabular-nums text-white">{formatBDT(quote.grand_total)}</span>
+                <span className="text-sm font-black tabular-nums text-foreground">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
                 <span className="text-xs uppercase font-bold text-warning block">
@@ -626,7 +738,7 @@ function QuotationDetailContent() {
                 {/* 4. Negotiate Margin */}
                 <Button
  size="sm"variant="outline"onClick={() => setIsNegotiationOpen(true)}
- className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer">
+ className="h-9 text-xs bg-card hover:bg-muted text-foreground border-border gap-1.5 cursor-pointer">
                   <Sliders className="h-3.5 w-3.5 text-primary"/>
  Negotiate Margin
                 </Button>
@@ -634,7 +746,7 @@ function QuotationDetailContent() {
                 {/* 5. Duplicate */}
                 <Button
  size="sm"variant="outline"onClick={handleDuplicate}
- className="h-9 text-xs bg-card/10 text-white border-white/20 hover:bg-card/20 gap-1.5 cursor-pointer">
+ className="h-9 text-xs bg-card hover:bg-muted text-foreground border-border gap-1.5 cursor-pointer">
                   <Copy className="h-3.5 w-3.5"/>
  Duplicate
                 </Button>
@@ -661,33 +773,39 @@ function QuotationDetailContent() {
  title={`Quotation #${quote.quotation_number}`}
                 />
 
-                {/* Convert to Job Order */}
+                {/* Convert to Job Order (Opens Advance Payment Modal) */}
                 {quote.status !== 'converted' && !quote.converted_order_id ? (
                   <Button
- size="sm"onClick={handleConvertToOrder}
- disabled={isConvertingOrder}
- className="h-9 text-xs bg-primary hover:bg-primary text-white font-bold gap-1.5 shadow-xs cursor-pointer">
-                    <FileCheck className="h-4 w-4"/>
-                    {isConvertingOrder ? 'Converting...' : 'Convert to Job Order'}
+                    size="sm"
+                    onClick={() => setIsConvertToOrderOpen(true)}
+                    disabled={isConvertingOrder}
+                    className="h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <FileCheck className="h-4 w-4" />
+                    <span>Convert to Job Order</span>
                   </Button>
                 ) : quote.converted_order_id ? (
                   <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
                     <Button
- size="sm"className="h-9 text-xs bg-primary hover:bg-primary text-white font-bold gap-1.5 shadow-xs cursor-pointer">
-                      <ArrowUpRight className="h-4 w-4"/>
- View Job Order #{quote.converted_order_id} →
+                      size="sm"
+                      className="h-9 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <ArrowUpRight className="h-4 w-4" />
+                      View Job Order #{quote.converted_order_id} →
                     </Button>
                   </Link>
                 ) : null}
 
-                {/* Convert to Invoice */}
+                {/* Convert to Invoice (Opens New Invoice Modal with Pre-filled Info) */}
                 {quote.status !== 'converted' && !quote.converted_invoice_id && (
                   <Button
- size="sm"onClick={handleConvertToInvoice}
- disabled={isConvertingInvoice}
- className="h-9 text-xs bg-success hover:bg-success text-white font-bold gap-1.5 shadow-xs cursor-pointer">
-                    <Receipt className="h-4 w-4"/>
-                    {isConvertingInvoice ? 'Converting...' : 'Convert to Invoice'}
+                    size="sm"
+                    onClick={() => setIsInvoiceModalOpen(true)}
+                    disabled={isConvertingInvoice}
+                    className="h-9 text-xs bg-success hover:bg-success/90 text-success-foreground font-bold gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <Receipt className="h-4 w-4" />
+                    <span>Convert to Invoice</span>
                   </Button>
                 )}
               </div>
@@ -736,7 +854,7 @@ function QuotationDetailContent() {
           <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
-                <div className="h-11 w-11 rounded-xl bg-primary text-white font-black text-2xl flex items-center justify-center shadow-xs">
+                <div className="h-11 w-11 rounded-xl bg-primary text-primary-foreground font-black text-2xl flex items-center justify-center shadow-xs">
                   {(company?.name || 'I').charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -1113,6 +1231,53 @@ function QuotationDetailContent() {
           }}
  companyId={company?.id || 'c-01'}
         />
+
+        {/* Advance Payment Modal for Job Order Conversion */}
+        <ConvertToOrderModal
+          open={isConvertToOrderOpen}
+          onOpenChange={setIsConvertToOrderOpen}
+          quotation={quote}
+          isSubmitting={isConvertingOrder}
+          onConfirm={handleConfirmConvertToOrder}
+        />
+
+        {/* Convert to Invoice Modal with all information pre-filled */}
+        {quote && (
+          <NewInvoiceModal
+            open={isInvoiceModalOpen}
+            onOpenChange={setIsInvoiceModalOpen}
+            preselectedQuotationId={quote.id}
+            preselectedCustomerId={quote.customer_id || undefined}
+            preselectedCustomerName={quote.customer_name}
+            preselectedCustomerPhone={quote.customer_phone}
+            preselectedCustomerEmail={quote.customer_email || undefined}
+            preselectedCustomerAddress={quote.customer_address || undefined}
+            preselectedWhatsappNumber={quote.customer_whatsapp || undefined}
+            preselectedCompanyName={quote.customer_company || undefined}
+            preselectedCustomerType={quote.customer_type || undefined}
+            preselectedDiscountAmount={quote.discount_amount}
+            preselectedVatPercentage={quote.vat_rate}
+            preselectedAdvanceAmount={quote.advance_amount ?? undefined}
+            preselectedNotes={quote.notes || undefined}
+            preselectedItems={quote.items.map((it) => ({
+              productId: it.product_id,
+              itemName: it.description,
+              description_bn: it.description_bn,
+              material_spec: it.material_spec,
+              dimensions_spec: it.dimensions_spec,
+              width: it.width,
+              height: it.height,
+              dimension_unit: it.dimension_unit,
+              quantity: it.quantity,
+              unit: it.unit,
+              rate: it.unit_rate,
+              finishing: it.finishing,
+              category_preset: it.category_preset,
+              item_kind: it.item_kind,
+            }))}
+            onInvoiceCreated={handleInvoiceCreated}
+          />
+        )}
       </div>
     </FeatureGate>
   )

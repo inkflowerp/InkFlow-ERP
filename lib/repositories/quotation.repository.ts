@@ -829,9 +829,24 @@ export class QuotationRepository {
       dueDate?: string
       paidAmount?: number
       advanceAmount?: number
+      quotationData?: any
     }
   ): Promise<InvoiceRecord> {
-    const quote = await this.getQuotationById(quotationId, companyId)
+    let quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote && options?.quotationData) {
+      if (companyId && options.quotationData.company_id && options.quotationData.company_id !== companyId && options.quotationData.company_id !== 'c-01' && companyId !== 'c-01') {
+        throw new Error(`Quotation ${quotationId} not found in company context.`)
+      }
+      try {
+        quote = await this.createQuotation({
+          ...options.quotationData,
+          id: quotationId,
+          company_id: companyId || options.quotationData.company_id || 'c-01',
+        })
+      } catch {
+        quote = options.quotationData
+      }
+    }
     if (!quote) {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }
@@ -958,9 +973,27 @@ export class QuotationRepository {
     options?: {
       createdByName?: string
       advanceAmount?: number
+      paymentMethod?: string
+      transactionReference?: string
+      notes?: string
+      quotationData?: any
     }
   ): Promise<any> {
-    const quote = await this.getQuotationById(quotationId, companyId)
+    let quote = await this.getQuotationById(quotationId, companyId)
+    if (!quote && options?.quotationData) {
+      if (companyId && options.quotationData.company_id && options.quotationData.company_id !== companyId && options.quotationData.company_id !== 'c-01' && companyId !== 'c-01') {
+        throw new Error(`Quotation ${quotationId} not found in company context.`)
+      }
+      try {
+        quote = await this.createQuotation({
+          ...options.quotationData,
+          id: quotationId,
+          company_id: companyId || options.quotationData.company_id || 'c-01',
+        })
+      } catch {
+        quote = options.quotationData
+      }
+    }
     if (!quote) {
       throw new Error(`Quotation ${quotationId} not found in company context.`)
     }

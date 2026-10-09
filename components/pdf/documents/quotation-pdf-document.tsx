@@ -29,9 +29,11 @@ export interface QuotationPdfProps {
     website?: string | null;
     binNumber?: string | null;
   };
+  languageMode?: 'en' | 'bn';
 }
 
-const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"] }) => {
+const QuotationPdfContent = ({ quotation, company, languageMode }: { quotation: QuotationRecord; company?: QuotationPdfProps["company"]; languageMode?: 'en' | 'bn' }) => {
+  const isBn = (languageMode || quotation.language_mode) === 'bn';
   const theme = usePdfcnTheme();
 
   const companyName = company?.name || BRAND.name;
@@ -220,35 +222,39 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
             </View>
           </View>
 
-          {/* Line Items Table */}
+          {/* Line Items Table: Matching Preview & Print */}
           <Table variant="bordered" zebraStripe>
             <TableHeader>
               <TableRow header>
-                <TableCell width="6%" align="center">Sl</TableCell>
-                <TableCell width="46%">Job Description & Specifications</TableCell>
-                <TableCell width="14%" align="center">Qty / Size</TableCell>
-                <TableCell width="16%" align="right">Rate (BDT)</TableCell>
-                <TableCell width="18%" align="right">Total (BDT)</TableCell>
+                <TableCell width="5%" align="center">#</TableCell>
+                <TableCell width="39%">{isBn ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}</TableCell>
+                <TableCell width="14%" align="center">{isBn ? 'পরিমাপ (W × H)' : 'Dimensions'}</TableCell>
+                <TableCell width="14%" align="center">{isBn ? 'ক্ষেত্রফল / সংখ্যা' : 'Area / Qty'}</TableCell>
+                <TableCell width="13%" align="right">{isBn ? 'একক দর (৳)' : 'Unit Rate (৳)'}</TableCell>
+                <TableCell width="15%" align="right">{isBn ? 'মোট মূল্য (৳)' : 'Total (৳)'}</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.map((item, idx) => {
                 const dimText = item.width && item.height
-                  ? `${item.width} × ${item.height} ${item.dimension_unit || 'ft'}${item.area_sft ? ` (${item.area_sft} sqft)` : ''}`
-                  : null;
+                  ? `${item.width} × ${item.height} ${item.dimension_unit || 'ft'}`
+                  : '—';
+
+                const areaOrQty = item.area_sft && item.area_sft > 0
+                  ? `${item.area_sft} sqft`
+                  : `${item.quantity} ${item.unit || 'pcs'}`;
 
                 const specBadges = [
                   item.material_spec ? `Material: ${item.material_spec}` : null,
-                  dimText ? `Size: ${dimText}` : null,
                   item.finishing && item.finishing !== 'None' ? `Finishing: ${item.finishing}` : null,
                 ].filter(Boolean);
 
                 return (
                   <TableRow key={item.id || idx}>
-                    <TableCell width="6%" align="center">{`${idx + 1}`}</TableCell>
-                    <TableCell width="46%">
+                    <TableCell width="5%" align="center">{`${idx + 1}`}</TableCell>
+                    <TableCell width="39%">
                       <Text variant="xs" weight="bold" noMargin>
-                        {item.description || "Printing Item"}
+                        {isBn && item.description_bn ? item.description_bn : (item.description || "Printing Item")}
                       </Text>
                       {specBadges.length > 0 && (
                         <View style={{ marginTop: 2 }}>
@@ -261,19 +267,19 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
                       )}
                     </TableCell>
                     <TableCell width="14%" align="center">
-                      <Text variant="xs" weight="bold" noMargin>
-                        {`${item.quantity} ${item.unit || "pcs"}`}
+                      <Text variant="xs" weight="medium" noMargin>
+                        {dimText}
                       </Text>
-                      {item.area_sft && item.area_sft > 0 ? (
-                        <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 1 }}>
-                          {`${item.area_sft} sqft`}
-                        </Text>
-                      ) : null}
                     </TableCell>
-                    <TableCell width="16%" align="right">
+                    <TableCell width="14%" align="center">
+                      <Text variant="xs" weight="bold" noMargin>
+                        {areaOrQty}
+                      </Text>
+                    </TableCell>
+                    <TableCell width="13%" align="right">
                       {formatLakhCrore(item.unit_rate || item.unit_price || 0)}
                     </TableCell>
-                    <TableCell width="18%" align="right">
+                    <TableCell width="15%" align="right">
                       <Text variant="xs" weight="bold" noMargin>
                         {formatLakhCrore(item.item_total || (item.quantity * (item.unit_rate || 0)))}
                       </Text>
@@ -320,6 +326,24 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
                   </Text>
                 </View>
               )}
+
+              {/* Official Payment Accounts (Matching Preview) */}
+              <View style={[styles.termsBox, { marginTop: 6 }] as never}>
+                <Text variant="xs" weight="bold" noMargin color="mutedForeground" uppercase style={{ fontSize: 7 }}>
+                  {isBn ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
+                </Text>
+                <View style={{ marginTop: 2 }}>
+                  <Text variant="xs" noMargin color="foreground" style={{ fontSize: 7.5, lineHeight: 1.3 }}>
+                    • bKash / Nagad (Merchant): 01711-000000 (Counter 1)
+                  </Text>
+                  <Text variant="xs" noMargin color="foreground" style={{ fontSize: 7.5, lineHeight: 1.3 }}>
+                    • Bank: City Bank Ltd, Motijheel Branch, A/C: 1102938471001
+                  </Text>
+                  <Text variant="xs" noMargin color="foreground" style={{ fontSize: 7.5, lineHeight: 1.3 }}>
+                    • Account Name: {companyName}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             {/* Right Financial Box */}

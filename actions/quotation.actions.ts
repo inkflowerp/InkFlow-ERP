@@ -458,9 +458,10 @@ export const convertQuotationToInvoiceAction = withTenantAction(
     entityType: "quotation"
   },
   async (ctx, quotationId: string,
-  requestedCompanyId?: string) : Promise<ServerActionResult<InvoiceRecord>> => {
+  requestedCompanyId?: string,
+  quotationData?: any) : Promise<ServerActionResult<InvoiceRecord>> => {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
+    const tenant = await getCurrentTenant(requestedCompanyId || quotationData?.company_id)
     if (!tenant || !tenant.companyId) {
       return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
@@ -479,6 +480,7 @@ export const convertQuotationToInvoiceAction = withTenantAction(
 
     const invoice = await QuotationRepository.convertQuotationToInvoice(quotationId, companyId, {
       createdByName: tenant.fullName || 'Commercial Executive',
+      quotationData,
     })
 
     // Audit Log
@@ -814,10 +816,16 @@ export const convertQuotationToJobOrderAction = withTenantAction(
     entityType: "quotation"
   },
   async (ctx, quotationId: string,
-  options?: { advanceAmount?: number },
+  options?: {
+    advanceAmount?: number
+    paymentMethod?: string
+    transactionReference?: string
+    notes?: string
+    quotationData?: any
+  },
   requestedCompanyId?: string) : Promise<ServerActionResult<any>> => {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
+    const tenant = await getCurrentTenant(requestedCompanyId || options?.quotationData?.company_id)
     if (!tenant || !tenant.companyId) {
       return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
@@ -837,6 +845,10 @@ export const convertQuotationToJobOrderAction = withTenantAction(
     const order = await QuotationService.convertToOrder(quotationId, companyId, {
       createdByName: tenant.fullName || 'Sales Executive',
       advanceAmount: options?.advanceAmount,
+      paymentMethod: options?.paymentMethod,
+      transactionReference: options?.transactionReference,
+      notes: options?.notes,
+      quotationData: options?.quotationData,
     })
 
     try {

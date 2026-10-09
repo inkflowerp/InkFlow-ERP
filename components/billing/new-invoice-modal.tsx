@@ -57,7 +57,7 @@ export interface NewInvoiceModalProps {
  preselectedCustomerId?: string
  preselectedQuotationId?: string
  preselectedSalesOrderId?: string
- preselectedCustomerType?: 'retail' | 'reseller' | 'corporate' | 'government'
+ preselectedCustomerType?: string
  preselectedWhatsappNumber?: string
  preselectedCustomerName?: string
  preselectedCustomerPhone?: string

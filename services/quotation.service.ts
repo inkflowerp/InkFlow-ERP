@@ -86,12 +86,34 @@ export class QuotationService {
     return QuotationRepository.deleteQuotation(id, companyId, quotationNumber)
   }
 
-  static async convertToOrder(quoteId: string, companyId: string = 'c-01', options?: { createdByName?: string; advanceAmount?: number }): Promise<any> {
+  static async convertToOrder(
+    quoteId: string,
+    companyId: string = 'c-01',
+    options?: {
+      createdByName?: string
+      advanceAmount?: number
+      paymentMethod?: string
+      transactionReference?: string
+      notes?: string
+      quotationData?: any
+    }
+  ): Promise<any> {
     return QuotationRepository.convertQuotationToJobOrder(quoteId, companyId, options)
   }
 
-  static async convertToInvoice(quoteId: string, companyId: string = 'c-01', createdByName?: string): Promise<InvoiceRecord> {
-    return QuotationRepository.convertQuotationToInvoice(quoteId, companyId, { createdByName })
+  static async convertToInvoice(
+    quoteId: string,
+    companyId: string = 'c-01',
+    options?: {
+      createdByName?: string
+      dueDate?: string
+      paidAmount?: number
+      advanceAmount?: number
+      quotationData?: any
+    } | string
+  ): Promise<InvoiceRecord> {
+    const opts = typeof options === 'string' ? { createdByName: options } : options
+    return QuotationRepository.convertQuotationToInvoice(quoteId, companyId, opts)
   }
 
   static async recordFollowUp(
