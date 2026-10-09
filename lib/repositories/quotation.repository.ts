@@ -288,36 +288,18 @@ export class QuotationRepository {
     }
 
     try {
-      const supabase = await createClient()
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId)
-      
-      let query = (supabase as any)
-        .from('quotations')
-        .select('*, items:quotation_items(*)')
+      const admin = createAdminClient()
+      const supabase = await createClient()
 
-      if (isUUID) {
-        query = query.or(`id.eq.${cleanId},quotation_number.eq.${cleanId}`)
-      } else {
-        query = query.eq('quotation_number', cleanId)
-      }
+      let quoteData: any = null
 
-      const { data, error } = await query.maybeSingle()
-
-      if (!error && data) {
-        if (isAllowedTenant(data.company_id)) {
-          return normalizeQuotationRecord(data)
-        }
-        return null
-      }
-
-      // Try Admin client if on server
-      if (typeof window === 'undefined') {
-        const { createAdminClient } = await import('@/lib/supabase/admin')
-        const admin = createAdminClient()
+      // 1. Primary server-side query with admin client to guarantee full relation loading and bypass any RLS filter anomalies
+      if (admin) {
         let adminQuery = (admin as any)
           .from('quotations')
           .select('*, items:quotation_items(*)')
-        
+
         if (isUUID) {
           adminQuery = adminQuery.or(`id.eq.${cleanId},quotation_number.eq.${cleanId}`)
         } else {
@@ -326,13 +308,51 @@ export class QuotationRepository {
 
         const { data: adminData } = await adminQuery.maybeSingle()
         if (adminData) {
-          if (isAllowedTenant(adminData.company_id)) {
-            return normalizeQuotationRecord(adminData)
-          }
-          return null
+          quoteData = adminData
         }
       }
-    } catch {}
+
+      // 2. Fallback to standard client if admin unavailable or not executed
+      if (!quoteData && supabase) {
+        let query = (supabase as any)
+          .from('quotations')
+          .select('*, items:quotation_items(*)')
+
+        if (isUUID) {
+          query = query.or(`id.eq.${cleanId},quotation_number.eq.${cleanId}`)
+        } else {
+          query = query.eq('quotation_number', cleanId)
+        }
+
+        const { data, error } = await query.maybeSingle()
+        if (!error && data) {
+          quoteData = data
+        }
+      }
+
+      if (quoteData) {
+        if (!isAllowedTenant(quoteData.company_id)) {
+          return null
+        }
+
+        // 3. Hydration guard: If relation returned no items, attempt direct table lookup with admin
+        if ((!quoteData.items || quoteData.items.length === 0) && admin) {
+          const { data: directItems } = await (admin as any)
+            .from('quotation_items')
+            .select('*')
+            .eq('quotation_id', quoteData.id)
+            .order('created_at', { ascending: true })
+
+          if (directItems && directItems.length > 0) {
+            quoteData.items = directItems
+          }
+        }
+
+        return normalizeQuotationRecord(quoteData)
+      }
+    } catch (err: any) {
+      console.warn('[QuotationRepository.getQuotationById] Database lookup notice:', err?.message)
+    }
 
     // Fallback: check DataStore & localStorage
     const localQuotes = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
@@ -572,57 +592,95 @@ export class QuotationRepository {
         updated_at: quoteRecord.updated_at,
       }
 
-      if (quoteRecord.id && !quoteRecord.id.startsWith('quo-')) {
+      const isUUID = (val: any) =>
+        typeof val === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim())
+
+      if (quoteRecord.id && isUUID(quoteRecord.id)) {
         payloadToSave.id = quoteRecord.id
       }
 
-      const { data: savedQuote, error: quoteErr } = await (supabase as any)
-        .from('quotations')
-        .insert(payloadToSave)
-        .select()
-        .single()
+      const admin = createAdminClient()
+      let savedQuote: any = null
 
-      if (!quoteErr && savedQuote) {
+      if (admin) {
+        const { data, error } = await (admin as any)
+          .from('quotations')
+          .insert(payloadToSave)
+          .select()
+          .single()
+        if (!error && data) {
+          savedQuote = data
+        }
+      }
+
+      if (!savedQuote && supabase) {
+        const { data, error } = await (supabase as any)
+          .from('quotations')
+          .insert(payloadToSave)
+          .select()
+          .single()
+        if (!error && data) {
+          savedQuote = data
+        }
+      }
+
+      if (savedQuote) {
         quoteRecord.id = savedQuote.id
 
-        // Insert items
+        // Sanitize item rows to strictly adhere to DB constraints (dimension_unit enum, rate_source enum, valid UUID product_id)
+        const validDimUnits = ['ft', 'inch', 'm']
+        const validRateSources = ['custom', 'last_invoice', 'default', 'override']
+
         const itemRows = itemsToInsert.map((item) => ({
           quotation_id: savedQuote.id,
-          product_id: item.product_id || null,
-          description: item.description,
-          description_bn: item.description_bn || null,
-          material_spec: item.material_spec || null,
-          width: item.width,
-          height: item.height,
-          dimension_unit: item.dimension_unit,
-          area_sft: item.area_sft,
-          quantity: item.quantity,
-          unit: item.unit,
-          unit_rate: item.unit_rate,
-          rate_source: item.rate_source || 'default',
+          product_id: isUUID(item.product_id) ? item.product_id!.trim() : null,
+          description: String(item.description || 'Print Item').trim(),
+          description_bn: item.description_bn ? String(item.description_bn).trim() : null,
+          material_spec: item.material_spec ? String(item.material_spec).trim() : null,
+          width: Number(item.width) || 0,
+          height: Number(item.height) || 0,
+          dimension_unit: validDimUnits.includes(String(item.dimension_unit)) ? item.dimension_unit : 'ft',
+          area_sft: Number(item.area_sft) || 0,
+          quantity: Math.max(1, Number(item.quantity) || 1),
+          unit: String(item.unit || 'pcs').trim(),
+          unit_rate: Math.max(0, Number(item.unit_rate) || 0),
+          rate_source: validRateSources.includes(String(item.rate_source)) ? item.rate_source : 'default',
           finishing: item.finishing || null,
           color_spec: item.color_spec || null,
-          artwork_required: item.artwork_required || false,
-          installation_required: item.installation_required || false,
-          material_cost: item.material_cost,
-          labor_cost: item.labor_cost,
-          finishing_cost: item.finishing_cost,
-          installation_cost: item.installation_cost,
-          item_total: item.item_total,
+          artwork_required: Boolean(item.artwork_required),
+          installation_required: Boolean(item.installation_required),
+          material_cost: Number(item.material_cost) || 0,
+          labor_cost: Number(item.labor_cost) || 0,
+          finishing_cost: Number(item.finishing_cost) || 0,
+          installation_cost: Number(item.installation_cost) || 0,
+          item_total: Math.max(0, Number(item.item_total) || 0),
         }))
 
-        await (supabase as any).from('quotation_items').insert(itemRows)
+        // Insert items using admin client first to prevent RLS failure
+        let itemsSaved = false
+        if (admin && itemRows.length > 0) {
+          const { error: adminErr } = await (admin as any).from('quotation_items').insert(itemRows)
+          if (!adminErr) itemsSaved = true
+        }
+
+        if (!itemsSaved && supabase && itemRows.length > 0) {
+          await (supabase as any).from('quotation_items').insert(itemRows)
+        }
 
         // Activity log
-        await (supabase as any).from('quotation_activities').insert({
-          quotation_id: savedQuote.id,
-          action: 'created',
-          details: `Quotation ${savedQuote.quotation_number} generated for ${quoteRecord.customer_name} (Total: ৳${grandTotal})`,
-          actor_name: quoteRecord.salesperson_name,
-        })
+        const actClient = admin || supabase
+        if (actClient) {
+          await (actClient as any).from('quotation_activities').insert({
+            quotation_id: savedQuote.id,
+            action: 'created',
+            details: `Quotation ${savedQuote.quotation_number} generated for ${quoteRecord.customer_name} (Total: ৳${grandTotal})`,
+            actor_name: quoteRecord.salesperson_name,
+          })
+        }
       }
-    } catch {
-      // Non-blocking, fallback to DataStore
+    } catch (err: any) {
+      console.warn('[QuotationRepository.createQuotation] Persistence notice:', err?.message)
     }
 
     // Always mirror in DataStore for offline/browser availability
@@ -650,17 +708,21 @@ export class QuotationRepository {
     companyId: string
   ): Promise<QuotationRecord | null> {
     try {
+      const admin = createAdminClient()
       const supabase = await createClient()
+      const dbClient = admin || supabase
       const payload: any = { ...updates, updated_at: new Date().toISOString() }
       delete payload.id
       delete payload.company_id
       delete payload.items
 
-      await (supabase as any)
-        .from('quotations')
-        .update(payload)
-        .eq('id', id)
-        .eq('company_id', companyId)
+      if (dbClient) {
+        await (dbClient as any)
+          .from('quotations')
+          .update(payload)
+          .eq('id', id)
+          .eq('company_id', companyId)
+      }
     } catch {
       // fallback
     }

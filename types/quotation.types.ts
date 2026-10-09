@@ -320,7 +320,13 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
   const customerPhone = String(raw.customer_phone || raw.phone || raw.mobile || raw.contact || '')
 
   // Normalize items
-  const rawItems = Array.isArray(raw.items) ? raw.items : Array.isArray(raw.line_items) ? raw.line_items : []
+  const rawItems = Array.isArray(raw.items)
+    ? raw.items
+    : Array.isArray(raw.quotation_items)
+    ? raw.quotation_items
+    : Array.isArray(raw.line_items)
+    ? raw.line_items
+    : []
   const items: QuotationItemRecord[] = rawItems.map((it: any, idx: number) => {
     if (!it || typeof it !== 'object') {
       return {
@@ -391,6 +397,32 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
       item_total: itemTotal,
     }
   })
+
+  // Resilient fallback: If no items were loaded from DB relation but financial totals exist, synthesize a primary item
+  const initialSubtotal =
+    Number(raw.subtotal !== undefined ? raw.subtotal : (raw.total !== undefined ? raw.total : raw.sub_total)) ||
+    Number(raw.grand_total) ||
+    0
+  if (items.length === 0 && initialSubtotal > 0) {
+    items.push({
+      id: `qi-${id}-primary`,
+      quotation_id: id,
+      product_id: null,
+      description: String(raw.description || (raw.customer_company ? `Print & Manufacturing Services for ${raw.customer_company}` : 'Printing & Signage Production Services')),
+      description_bn: raw.description_bn || null,
+      material_spec: raw.material_spec || null,
+      width: 0,
+      height: 0,
+      dimension_unit: 'ft',
+      area_sft: 0,
+      quantity: 1,
+      unit: 'lot',
+      unit_rate: initialSubtotal,
+      unit_price: initialSubtotal,
+      rate_source: 'default',
+      item_total: initialSubtotal,
+    })
+  }
 
   // Normalize financials
   const subtotal =

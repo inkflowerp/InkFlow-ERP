@@ -749,14 +749,22 @@ function QuotationDetailContent() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground print:text-muted-foreground pt-1">
-                42 Fakirapool Main Road, Motijheel Commercial Area, Dhaka-1000, Bangladesh
+                {company?.address || 'Printing & Signage Manufacturing'}
               </p>
               <div className="text-xs text-muted-foreground print:text-muted-foreground flex flex-wrap gap-3 pt-0.5">
-                <span>Phone: +880 1711-000000</span>
-                <span>•</span>
-                <span>BIN / মূসক: 004819284-0101</span>
-                <span>•</span>
-                <span>TIN: 8492049182</span>
+                <span>Phone: {company?.phone || '+880 1711-000000'}</span>
+                {company?.email && (
+                  <>
+                    <span>•</span>
+                    <span>Email: {company.email}</span>
+                  </>
+                )}
+                {company?.bin_no && (
+                  <>
+                    <span>•</span>
+                    <span>BIN / মূসক: {company.bin_no}</span>
+                  </>
+                )}
               </div>
             </div>
 
