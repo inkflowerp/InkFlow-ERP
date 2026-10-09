@@ -685,13 +685,42 @@ export function deduplicateQuotations(
       const timeNorm = new Date(norm.updated_at || norm.created_at || 0).getTime()
       const timeExisting = new Date(existing.updated_at || existing.created_at || 0).getTime()
 
+      const existingHasItems = (existing.items?.length || 0) > 0
+      const normHasItems = (norm.items?.length || 0) > 0
+
       let preferred = existing
-      if ((isUUID && !existingIsUUID) || ((norm.items?.length || 0) > (existing.items?.length || 0)) || (timeNorm >= timeExisting)) {
+      if (isUUID && !existingIsUUID) {
+        // Norm is an authoritative database record, existing is local: norm takes precedence
         preferred = {
           ...existing,
           ...norm,
-          id: isUUID ? norm.id : (existingIsUUID ? existing.id : norm.id),
-          items: (norm.items?.length || 0) >= (existing.items?.length || 0) ? norm.items : existing.items,
+          items: normHasItems ? norm.items : existing.items,
+        }
+      } else if (!isUUID && existingIsUUID) {
+        // Existing is an authoritative database record, norm is local: existing takes precedence
+        preferred = {
+          ...norm,
+          ...existing,
+          items: existingHasItems ? existing.items : norm.items,
+        }
+      } else {
+        // Both are authoritative database records or both local.
+        // Respect array order (first-passed record takes precedence), preserving non-empty item collections
+        const chosenItems = existingHasItems ? existing.items : (normHasItems ? norm.items : [])
+        if (timeNorm > timeExisting && !existingHasItems && normHasItems) {
+          preferred = {
+            ...existing,
+            ...norm,
+            id: isUUID ? norm.id : (existingIsUUID ? existing.id : norm.id),
+            items: chosenItems,
+          }
+        } else {
+          preferred = {
+            ...norm,
+            ...existing,
+            id: existingIsUUID ? existing.id : (isUUID ? norm.id : existing.id),
+            items: chosenItems,
+          }
         }
       }
 

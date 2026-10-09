@@ -80,62 +80,88 @@ export class QuotationRepository {
   static async getQuotations(companyId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getQuotations(${companyId})`, async () => {
       const rawCandidates: any[] = []
+      const isUUID = (val: string | null | undefined): boolean =>
+        Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
 
-      // 1. Try standard Supabase Client
+      let admin: any = null
+      let supabase: any = null
       try {
-        const supabase = await createClient()
-        let query = (supabase as any)
-          .from('quotations')
-          .select('*, items:quotation_items(*)')
-        
-        if (companyId && companyId !== 'c-01' && companyId !== 'default') {
-          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
-        } else if (companyId) {
-          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
-        }
+        admin = createAdminClient()
+      } catch {}
+      try {
+        supabase = await createClient()
+      } catch {}
+      const client = admin || supabase
 
-        const { data, error } = await query.order('created_at', { ascending: false })
-        if (!error && data && data.length > 0) {
-          rawCandidates.push(...data)
-        } else if (error) {
-          // If nested relation quotation_items failed on legacy DB, fallback to flat query
-          const { data: flatData, error: flatErr } = await (supabase as any)
-            .from('quotations')
-            .select('*')
-            .order('created_at', { ascending: false })
-          if (!flatErr && flatData && flatData.length > 0) {
-            rawCandidates.push(...flatData)
+      let effectiveCompanyId = companyId
+      if (companyId && !isUUID(companyId) && admin) {
+        try {
+          const { data: comp } = await (admin as any)
+            .from('companies')
+            .select('id')
+            .eq('slug', companyId)
+            .maybeSingle()
+          if (comp?.id) {
+            effectiveCompanyId = comp.id
           }
-        }
-      } catch {
-        // Fallback
+        } catch {}
       }
 
-      // 2. Try Admin Client if on server and no quotes found yet
-      if (rawCandidates.length === 0 && typeof window === 'undefined') {
+      // 1. Authoritative database query with full relational items join
+      if (client) {
         try {
-          const { createAdminClient } = await import('@/lib/supabase/admin')
-          const admin = createAdminClient()
-          let query = (admin as any)
+          let query = (client as any)
             .from('quotations')
             .select('*, items:quotation_items(*)')
 
-          if (companyId && companyId !== 'c-01' && companyId !== 'default') {
-            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
-          } else if (companyId) {
-            query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.eq.default,company_id.is.null`)
+          if (isUUID(effectiveCompanyId)) {
+            query = query.or(`company_id.eq.${effectiveCompanyId},company_id.is.null`)
+          } else if (effectiveCompanyId && effectiveCompanyId !== 'all') {
+            query = query.or('company_id.is.null')
           }
 
           const { data, error } = await query.order('created_at', { ascending: false })
           if (!error && data && data.length > 0) {
             rawCandidates.push(...data)
           } else if (error) {
-            const { data: flatData, error: flatErr } = await (admin as any)
+            // If relational join encountered schema anomaly, fallback to flat select
+            const { data: flatData } = await (client as any)
               .from('quotations')
               .select('*')
               .order('created_at', { ascending: false })
-            if (!flatErr && flatData && flatData.length > 0) {
+            if (flatData && flatData.length > 0) {
               rawCandidates.push(...flatData)
+            }
+          }
+        } catch {}
+      }
+
+      // 2. Child items hydration guard: Ensure items are present on all returned quotations
+      const quotesNeedingItems = rawCandidates.filter(
+        (q) => (!q.items || !Array.isArray(q.items) || q.items.length === 0) && isUUID(q.id)
+      )
+      if (quotesNeedingItems.length > 0 && admin) {
+        try {
+          const ids = quotesNeedingItems.map((q) => q.id)
+          const { data: directItems } = await (admin as any)
+            .from('quotation_items')
+            .select('*')
+            .in('quotation_id', ids)
+
+          if (directItems && directItems.length > 0) {
+            const itemsByQuoteId = new Map<string, any[]>()
+            for (const item of directItems) {
+              const list = itemsByQuoteId.get(item.quotation_id) || []
+              list.push(item)
+              itemsByQuoteId.set(item.quotation_id, list)
+            }
+            for (const q of rawCandidates) {
+              if (!q.items || !Array.isArray(q.items) || q.items.length === 0) {
+                const hydrated = itemsByQuoteId.get(q.id)
+                if (hydrated && hydrated.length > 0) {
+                  q.items = hydrated
+                }
+              }
             }
           }
         } catch {}
@@ -174,7 +200,7 @@ export class QuotationRepository {
       }
 
       // 4. Deduplicate and normalize
-      return deduplicateQuotations(rawCandidates, companyId)
+      return deduplicateQuotations(rawCandidates, effectiveCompanyId)
     })
   }
 
@@ -194,42 +220,67 @@ export class QuotationRepository {
       const page = Math.max(1, options.page || 1)
       const pageSize = Math.min(100, Math.max(1, options.pageSize || 25))
       const offset = (page - 1) * pageSize
+      const isUUID = (val: string | null | undefined): boolean =>
+        Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
 
+      let admin: any = null
+      let supabase: any = null
       try {
-        const supabase = await createClient()
-        let query = (supabase as any)
-          .from('quotations')
-          .select('*, items:quotation_items(*)', { count: 'exact' })
-
-        if (companyId && companyId !== 'c-01' && companyId !== 'default') {
-          query = query.or(`company_id.eq.${companyId},company_id.eq.c-01,company_id.is.null`)
-        } else if (companyId) {
-          query = query.or(`company_id.eq.${companyId},company_id.is.null`)
-        }
-
-        if (options.status && options.status !== 'all') {
-          query = query.eq('status', options.status)
-        }
-
-        if (options.search?.trim()) {
-          const term = `%${options.search.trim()}%`
-          query = query.or(`quotation_number.ilike.${term},customer_name.ilike.${term},customer_phone.ilike.${term}`)
-        }
-
-        query = query
-          .order('created_at', { ascending: false })
-          .range(offset, offset + pageSize - 1)
-
-        const { data, count, error } = await query
-
-        if (!error && data && data.length > 0) {
-          const normalizedRows = data.map((d: any) => normalizeQuotationRecord(d))
-          return buildPaginatedResponse(normalizedRows, count || normalizedRows.length, page, pageSize)
-        }
+        admin = createAdminClient()
       } catch {}
+      try {
+        supabase = await createClient()
+      } catch {}
+      const client = admin || supabase
+
+      let effectiveCompanyId = companyId
+      if (companyId && !isUUID(companyId) && admin) {
+        try {
+          const { data: comp } = await (admin as any)
+            .from('companies')
+            .select('id')
+            .eq('slug', companyId)
+            .maybeSingle()
+          if (comp?.id) {
+            effectiveCompanyId = comp.id
+          }
+        } catch {}
+      }
+
+      if (client) {
+        try {
+          let query = (client as any)
+            .from('quotations')
+            .select('*, items:quotation_items(*)', { count: 'exact' })
+
+          if (isUUID(effectiveCompanyId)) {
+            query = query.or(`company_id.eq.${effectiveCompanyId},company_id.is.null`)
+          }
+
+          if (options.status && options.status !== 'all') {
+            query = query.eq('status', options.status)
+          }
+
+          if (options.search?.trim()) {
+            const term = `%${options.search.trim()}%`
+            query = query.or(`quotation_number.ilike.${term},customer_name.ilike.${term},customer_phone.ilike.${term}`)
+          }
+
+          query = query
+            .order('created_at', { ascending: false })
+            .range(offset, offset + pageSize - 1)
+
+          const { data, count, error } = await query
+
+          if (!error && data && data.length > 0) {
+            const normalizedRows = data.map((d: any) => normalizeQuotationRecord(d))
+            return buildPaginatedResponse(normalizedRows, count || normalizedRows.length, page, pageSize)
+          }
+        } catch {}
+      }
 
       // Fallback
-      const all = await this.getQuotations(companyId)
+      const all = await this.getQuotations(effectiveCompanyId)
       const filtered = all.filter((q) => {
         const matchSearch =
           !options.search ||
@@ -253,21 +304,53 @@ export class QuotationRepository {
    */
   static async getCustomerQuotations(companyId: string, customerId: string): Promise<QuotationRecord[]> {
     return measureAsync(`QuotationRepository.getCustomerQuotations(${customerId})`, async () => {
+      const isUUID = (val: string | null | undefined): boolean =>
+        Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
+
+      let admin: any = null
+      let supabase: any = null
       try {
-        const supabase = await createClient()
-        const { data, error } = await (supabase as any)
-          .from('quotations')
-          .select('*, items:quotation_items(*)')
-          .eq('company_id', companyId)
-          .eq('customer_id', customerId)
-          .order('created_at', { ascending: false })
-
-        if (!error && data) {
-          return data as unknown as QuotationRecord[]
-        }
+        admin = createAdminClient()
       } catch {}
+      try {
+        supabase = await createClient()
+      } catch {}
+      const client = admin || supabase
 
-      const all = await this.getQuotations(companyId)
+      let effectiveCompanyId = companyId
+      if (companyId && !isUUID(companyId) && admin) {
+        try {
+          const { data: comp } = await (admin as any)
+            .from('companies')
+            .select('id')
+            .eq('slug', companyId)
+            .maybeSingle()
+          if (comp?.id) {
+            effectiveCompanyId = comp.id
+          }
+        } catch {}
+      }
+
+      if (client) {
+        try {
+          let query = (client as any)
+            .from('quotations')
+            .select('*, items:quotation_items(*)')
+            .eq('customer_id', customerId)
+
+          if (isUUID(effectiveCompanyId)) {
+            query = query.eq('company_id', effectiveCompanyId)
+          }
+
+          const { data, error } = await query.order('created_at', { ascending: false })
+
+          if (!error && data && data.length > 0) {
+            return data.map((d: any) => normalizeQuotationRecord(d))
+          }
+        } catch {}
+      }
+
+      const all = await this.getQuotations(effectiveCompanyId)
       return all.filter((q) => q.customer_id === customerId)
     })
   }

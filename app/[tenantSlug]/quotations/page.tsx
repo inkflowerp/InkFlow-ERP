@@ -598,9 +598,16 @@ export default function QuotationsPage() {
       }
 
       // 2. Fetch authoritative data from server
- const res = await getQuotationsAction(company?.id, slug)
- if (res.success && Array.isArray(res.data) && res.data.length > 0) {
- setQuotations((prev) => deduplicateQuotations([...res.data!, ...prev, ...localList], company?.id, slug))
+      const res = await getQuotationsAction(company?.id, slug)
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        try {
+          for (const serverQuote of res.data) {
+            if (slug) PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, serverQuote, slug, false)
+            if (company?.slug && company.slug !== slug) PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, serverQuote, company.slug, false)
+            if (company?.id) PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, serverQuote, company.id, false)
+          }
+        } catch {}
+        setQuotations((prev) => deduplicateQuotations([...res.data!, ...prev, ...localList], company?.id, slug))
       } else if (res.error) {
  console.warn('[Quotations] Server fetch notice:', res.error)
       }
