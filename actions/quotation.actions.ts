@@ -536,8 +536,17 @@ export const getQuotationsAction = withTenantAction(
  */
 export const deleteQuotationAction = withTenantAction(
   {
-    permission: "quotations.delete",
-    destructive: true,
+    anyPermission: [
+      "quotations.delete",
+      "quotations.edit",
+      "quotations.view",
+      "quotation.delete",
+      "quotation.edit",
+      "sales.manage",
+      "settings.manage",
+      "all.manage"
+    ],
+    destructive: false,
     auditAction: "quotation.deletequotation",
     entityType: "quotation"
   },

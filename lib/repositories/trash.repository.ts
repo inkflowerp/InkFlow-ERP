@@ -7,6 +7,7 @@ import {
   type TrashRecord,
   type TrashSummary,
 } from '../../types/trash.types.ts'
+import { PURGED_QUOTATION_IDENTIFIERS } from '../../types/quotation.types.ts'
 
 function matchesCompany(itemCompanyId?: string, targetCompanyId?: string): boolean {
   if (targetCompanyId === 'all') return false // Disallow dangerous wildcard wipes
@@ -141,17 +142,22 @@ export class TrashRepository {
       title = item.customer_name ? `Quote: ${item.customer_name}` : `Quotation #${item.quotation_number || originalId}`
       refNum = item.quotation_number || ''
       subtitle = item.items?.[0]?.description || (item.grand_total ? `৳ ${item.grand_total}` : '')
+
+      // 0. Register in purged identifiers
+      if (originalId) PURGED_QUOTATION_IDENTIFIERS.add(String(originalId).toUpperCase())
+      if (refNum) PURGED_QUOTATION_IDENTIFIERS.add(String(refNum).toUpperCase())
+
       // Remove from active quotations
       const list = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
       PrintFlowDataStore.set(
         STORAGE_KEYS.QUOTATIONS,
-        list.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number)
+        list.filter((q) => q.id !== originalId && (!refNum || q.quotation_number !== refNum))
       )
       if (companyId) {
         const compList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
         PrintFlowDataStore.set(
           STORAGE_KEYS.QUOTATIONS,
-          compList.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number),
+          compList.filter((q) => q.id !== originalId && (!refNum || q.quotation_number !== refNum)),
           true,
           companyId
         )
@@ -159,13 +165,64 @@ export class TrashRepository {
       try {
         const { createAdminClient } = await import('../supabase/admin.ts')
         const admin = createAdminClient()
-        if (originalId && !String(originalId).startsWith('temp-')) {
-          await (admin as any).from('quotation_items').delete().eq('quotation_id', originalId)
-          await (admin as any).from('quotation_activities').delete().eq('quotation_id', originalId)
-          await (admin as any).from('quotations').delete().eq('id', originalId)
-        }
-        if (refNum) {
-          await (admin as any).from('quotations').delete().eq('quotation_number', refNum)
+        if (admin) {
+          const isUUID = (val: string | null | undefined): boolean =>
+            Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
+
+          let effectiveCompanyId = companyId
+          if (companyId && !isUUID(companyId)) {
+            try {
+              const { data: comp } = await (admin as any)
+                .from('companies')
+                .select('id')
+                .eq('slug', companyId)
+                .maybeSingle()
+              if (comp?.id) {
+                effectiveCompanyId = comp.id
+                // Also purge under resolved company UUID partition
+                const uList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, effectiveCompanyId) || []
+                PrintFlowDataStore.set(
+                  STORAGE_KEYS.QUOTATIONS,
+                  uList.filter((q) => q.id !== originalId && (!refNum || q.quotation_number !== refNum)),
+                  true,
+                  effectiveCompanyId
+                )
+              }
+            } catch {}
+          }
+
+          let targetUuid = isUUID(originalId) ? originalId : null
+          if (!targetUuid && refNum) {
+            try {
+              let qLookup = (admin as any).from('quotations').select('id').eq('quotation_number', refNum)
+              if (isUUID(effectiveCompanyId)) qLookup = qLookup.eq('company_id', effectiveCompanyId)
+              const { data: found } = await qLookup.maybeSingle()
+              if (found?.id && isUUID(found.id)) {
+                targetUuid = found.id
+              }
+            } catch {}
+          }
+
+          if (targetUuid) {
+            try {
+              await (admin as any).from('quotation_items').delete().eq('quotation_id', targetUuid)
+              await (admin as any).from('quotation_activities').delete().eq('quotation_id', targetUuid)
+              let query = (admin as any).from('quotations').delete().eq('id', targetUuid)
+              if (isUUID(effectiveCompanyId)) query = query.eq('company_id', effectiveCompanyId)
+              await query
+            } catch (delErr) {
+              console.warn('[TrashRepository] Quotation UUID deletion notice:', delErr)
+            }
+          }
+          if (refNum) {
+            try {
+              let qNumQuery = (admin as any).from('quotations').delete().eq('quotation_number', refNum)
+              if (isUUID(effectiveCompanyId)) qNumQuery = qNumQuery.eq('company_id', effectiveCompanyId)
+              await qNumQuery
+            } catch (delErr) {
+              console.warn('[TrashRepository] Quotation number deletion notice:', delErr)
+            }
+          }
         }
       } catch (dbErr) {
         console.warn('[TrashRepository] Failed to delete quotation from Supabase:', dbErr)

@@ -11,6 +11,7 @@ import {
   normalizeQuotationRecord,
   extractQuotationsFromAny,
   deduplicateQuotations,
+  PURGED_QUOTATION_IDENTIFIERS,
 } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
 import { BillingRepository, generateUUID, getFinancialPersistenceMode } from './billing.repository.ts'
@@ -768,6 +769,9 @@ export class QuotationRepository {
 
     // Always mirror in DataStore for offline/browser availability
     PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteRecord)
+    if (quoteRecord.company_id) {
+      PrintFlowDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteRecord, quoteRecord.company_id)
+    }
 
     const activity: QuotationActivityRecord = {
       id: `qa-${Date.now()}`,
@@ -1403,7 +1407,14 @@ export class QuotationRepository {
    * Deletes a quotation and its items/activities from DataStore and Supabase
    */
   static async deleteQuotation(id: string, companyId: string = 'c-01', quotationNumber?: string): Promise<boolean> {
-    // 1. Remove from DataStore
+    const isUUID = (val: string | null | undefined): boolean =>
+      Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim()))
+
+    // 0. Register in purged identifiers to prevent resurrection across layers
+    if (id) PURGED_QUOTATION_IDENTIFIERS.add(id.toUpperCase())
+    if (quotationNumber) PURGED_QUOTATION_IDENTIFIERS.add(quotationNumber.toUpperCase())
+
+    // 1. Remove from DataStore (both unpartitioned and partitioned)
     PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
     if (companyId) {
       PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
@@ -1429,15 +1440,65 @@ export class QuotationRepository {
     try {
       const { createAdminClient } = await import('../supabase/admin.ts')
       const admin = createAdminClient()
-      if (id && !String(id).startsWith('temp-')) {
-        await (admin as any).from('quotation_items').delete().eq('quotation_id', id)
-        await (admin as any).from('quotation_activities').delete().eq('quotation_id', id)
-        let query = (admin as any).from('quotations').delete().eq('id', id)
-        if (companyId) query = query.eq('company_id', companyId)
-        await query
-      }
-      if (quotationNumber && companyId) {
-        await (admin as any).from('quotations').delete().eq('quotation_number', quotationNumber).eq('company_id', companyId)
+      if (admin) {
+        let effectiveCompanyId = companyId
+        if (companyId && !isUUID(companyId)) {
+          try {
+            const { data: comp } = await (admin as any)
+              .from('companies')
+              .select('id')
+              .eq('slug', companyId)
+              .maybeSingle()
+            if (comp?.id) {
+              effectiveCompanyId = comp.id
+              // Also purge DataStore under resolved company UUID partition
+              PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, effectiveCompanyId)
+              const uList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, effectiveCompanyId) || []
+              PrintFlowDataStore.set(
+                STORAGE_KEYS.QUOTATIONS,
+                uList.filter((q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)),
+                true,
+                effectiveCompanyId
+              )
+            }
+          } catch {}
+        }
+
+        let targetUuid = isUUID(id) ? id : null
+        if (!targetUuid && quotationNumber) {
+          try {
+            let quoteQuery = (admin as any).from('quotations').select('id').eq('quotation_number', quotationNumber)
+            if (isUUID(effectiveCompanyId)) {
+              quoteQuery = quoteQuery.eq('company_id', effectiveCompanyId)
+            }
+            const { data: found } = await quoteQuery.maybeSingle()
+            if (found?.id && isUUID(found.id)) {
+              targetUuid = found.id
+            }
+          } catch {}
+        }
+
+        if (targetUuid) {
+          try {
+            await (admin as any).from('quotation_items').delete().eq('quotation_id', targetUuid)
+            await (admin as any).from('quotation_activities').delete().eq('quotation_id', targetUuid)
+            let query = (admin as any).from('quotations').delete().eq('id', targetUuid)
+            if (isUUID(effectiveCompanyId)) query = query.eq('company_id', effectiveCompanyId)
+            await query
+          } catch (delErr) {
+            console.warn('[QuotationRepository.deleteQuotation] Target UUID deletion notice:', delErr)
+          }
+        }
+
+        if (quotationNumber) {
+          try {
+            let qNumQuery = (admin as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+            if (isUUID(effectiveCompanyId)) qNumQuery = qNumQuery.eq('company_id', effectiveCompanyId)
+            await qNumQuery
+          } catch (numErr) {
+            console.warn('[QuotationRepository.deleteQuotation] Quotation number deletion notice:', numErr)
+          }
+        }
       }
     } catch (dbErr) {
       console.warn('[QuotationRepository.deleteQuotation] Supabase deletion error:', dbErr)
@@ -1445,12 +1506,16 @@ export class QuotationRepository {
 
     try {
       const supabase = await createClient()
-      if (id && !String(id).startsWith('temp-')) {
-        let query = (supabase as any).from('quotations').delete().eq('id', id)
-        if (companyId) query = query.eq('company_id', companyId)
-        await query
-      } else if (quotationNumber && companyId) {
-        await (supabase as any).from('quotations').delete().eq('quotation_number', quotationNumber).eq('company_id', companyId)
+      if (supabase) {
+        if (isUUID(id)) {
+          let query = (supabase as any).from('quotations').delete().eq('id', id)
+          if (isUUID(companyId)) query = query.eq('company_id', companyId)
+          await query
+        } else if (quotationNumber) {
+          let query = (supabase as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+          if (isUUID(companyId)) query = query.eq('company_id', companyId)
+          await query
+        }
       }
     } catch {}
 

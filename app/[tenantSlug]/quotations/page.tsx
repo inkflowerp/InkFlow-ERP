@@ -55,6 +55,8 @@ import {
  normalizeQuotationRecord,
  extractQuotationsFromAny,
  deduplicateQuotations,
+ isPurgedQuotation,
+ PURGED_QUOTATION_IDENTIFIERS,
 } from '@/types/quotation.types'
 import * as QuotationService from '@/lib/quotations/quotation-utils'
 import {
@@ -170,6 +172,8 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
 function removeLocalQuotation(id: string, quotationNumber?: string, slug?: string, companySlug?: string, companyId?: string) {
  if (typeof window === 'undefined') return
  try {
+  if (id) PURGED_QUOTATION_IDENTIFIERS.add(String(id).toUpperCase())
+  if (quotationNumber) PURGED_QUOTATION_IDENTIFIERS.add(String(quotationNumber).toUpperCase())
  const candidateKeys = [
  slug ? `${STORAGE_KEYS.QUOTATIONS}__${slug}` : null,
  companySlug && companySlug !== slug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
@@ -191,10 +195,36 @@ function removeLocalQuotation(id: string, quotationNumber?: string, slug?: strin
       } catch {}
     })
 
- if (slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
- if (companySlug && companySlug !== slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
- if (companyId) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
-  } catch {}
+  PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+  if (slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
+  if (companySlug && companySlug !== slug) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
+  if (companyId) PrintFlowDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
+
+  // Filter out any matching records by quotation number as well
+  const unpartitioned = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
+   (q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)
+  )
+  PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, unpartitioned)
+
+  if (slug) {
+   const pList = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, slug) || []).filter(
+    (q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)
+   )
+   PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, pList, true, slug)
+  }
+  if (companySlug && companySlug !== slug) {
+   const pList = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companySlug) || []).filter(
+    (q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)
+   )
+   PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, pList, true, companySlug)
+  }
+  if (companyId) {
+   const pList = (PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []).filter(
+    (q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)
+   )
+   PrintFlowDataStore.set(STORAGE_KEYS.QUOTATIONS, pList, true, companyId)
+  }
+ } catch {}
 }
 
 /**
@@ -599,7 +629,7 @@ export default function QuotationsPage() {
 
       // 2. Fetch authoritative data from server
       const res = await getQuotationsAction(company?.id, slug)
-      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.success && Array.isArray(res.data)) {
         try {
           for (const serverQuote of res.data) {
             if (slug) PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, serverQuote, slug, false)
@@ -607,9 +637,20 @@ export default function QuotationsPage() {
             if (company?.id) PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, serverQuote, company.id, false)
           }
         } catch {}
-        setQuotations((prev) => deduplicateQuotations([...res.data!, ...prev, ...localList], company?.id, slug))
+
+        // Authoritative server records take precedence. Only retain unsynced offline drafts from local storage.
+        const serverIds = new Set(res.data.map((q) => q.id))
+        const serverNums = new Set(res.data.map((q) => q.quotation_number).filter(Boolean))
+        const unsyncedDrafts = localList.filter((q) => {
+          if (isPurgedQuotation(q)) return false
+          if (serverIds.has(q.id)) return false
+          if (q.quotation_number && serverNums.has(q.quotation_number)) return false
+          return String(q.id).startsWith('temp-') || String(q.id).startsWith('draft-') || Boolean((q as any).is_offline)
+        })
+
+        setQuotations(deduplicateQuotations([...res.data, ...unsyncedDrafts], company?.id, slug))
       } else if (res.error) {
- console.warn('[Quotations] Server fetch notice:', res.error)
+        console.warn('[Quotations] Server fetch notice:', res.error)
       }
     } catch (err: any) {
  console.warn('[Quotations] Server fetch exception:', err)
@@ -775,44 +816,53 @@ export default function QuotationsPage() {
  setIsTrashConfirmOpen(true)
   }
 
- const confirmTrashQuotation = async () => {
- if (!quoteToTrash) return
- setIsTrashing(true)
- const targetQuote = quoteToTrash
- const targetId = targetQuote.id
- const targetNum = targetQuote.quotation_number
+  const confirmTrashQuotation = async () => {
+    if (!quoteToTrash) return
+    setIsTrashing(true)
+    const targetQuote = quoteToTrash
+    const targetId = targetQuote.id
+    const targetNum = targetQuote.quotation_number
 
- try {
-      // 1. Move to Trash / Recycle Bin on server
- const res = await moveToTrashAction('quotations', targetQuote, company?.id, slug)
+    try {
+      // 1. Purge from browser localStorage and client DataStore across all keys immediately
+      removeLocalQuotation(targetId, targetNum, slug, company?.slug, company?.id)
 
-      // 2. Explicitly invoke deleteQuotationAction to ensure deletion from active DB
- await deleteQuotationAction(targetId, targetNum, company?.id, slug).catch(() => {})
-
-      // 3. Purge from browser localStorage and client DataStore across all keys
- removeLocalQuotation(targetId, targetNum, slug, company?.slug, company?.id)
-
-      // 4. Update local state immediately
- setQuotations((prev) =>
- prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
+      // 2. Update local state immediately so UI updates without lag
+      setQuotations((prev) =>
+        prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
       )
 
-      // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
- if (res.success && res.record) {
- const localTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
- PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
+      // 3. Move to Trash / Recycle Bin on server
+      const res = await moveToTrashAction('quotations', targetQuote, company?.id, slug)
+
+      // 4. Explicitly invoke deleteQuotationAction to ensure deletion from active DB
+      const delRes = await deleteQuotationAction(targetId, targetNum, company?.id, slug).catch((err: any) => ({
+        success: false,
+        error: err?.message,
+      }))
+
+      if (!res.success && !delRes.success) {
+        showNotification(res.error || delRes.error || 'Error deleting quotation.', 'error')
+        loadQuotationsData(true)
+        return
       }
 
- setIsTrashConfirmOpen(false)
- setQuoteToTrash(null)
- showNotification(`Quotation #${targetNum} moved to Trash.`, 'success')
+      // 5. Sync to client TRASH_ITEMS so Trash page sees it immediately
+      if (res.success && res.record) {
+        const localTrash = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+        PrintFlowDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [res.record, ...localTrash.filter((t: any) => t.id !== res.record.id)])
+      }
+
+      setIsTrashConfirmOpen(false)
+      setQuoteToTrash(null)
+      showNotification(`Quotation #${targetNum} moved to Trash.`, 'success')
 
       // 6. Silently reload to ensure sync
- loadQuotationsData(true)
+      loadQuotationsData(true)
     } catch (err: any) {
- showNotification(err.message || 'Error moving quotation to trash.', 'error')
+      showNotification(err.message || 'Error moving quotation to trash.', 'error')
     } finally {
- setIsTrashing(false)
+      setIsTrashing(false)
     }
   }
 

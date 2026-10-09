@@ -7,7 +7,25 @@ import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { withTenantAction } from '@/lib/actions/action-wrapper'
 
 export const getTrashItemsAction = withTenantAction(
-  { permission: 'settings.manage' },
+  {
+    anyPermission: [
+      'settings.manage',
+      'trash.manage',
+      'trash.view',
+      'quotations.view',
+      'quotations.edit',
+      'orders.view',
+      'orders.edit',
+      'invoices.view',
+      'invoices.edit',
+      'customers.view',
+      'customers.edit',
+      'materials.view',
+      'suppliers.view',
+      'products.view',
+      'all.manage',
+    ],
+  },
   async (ctx, companyId?: string, category?: TrashCategory) => {
     try {
       const data = await TrashService.getTrashItems(ctx.companyId, category)
@@ -19,7 +37,25 @@ export const getTrashItemsAction = withTenantAction(
 )
 
 export const getTrashSummaryAction = withTenantAction(
-  { permission: 'settings.manage' },
+  {
+    anyPermission: [
+      'settings.manage',
+      'trash.manage',
+      'trash.view',
+      'quotations.view',
+      'quotations.edit',
+      'orders.view',
+      'orders.edit',
+      'invoices.view',
+      'invoices.edit',
+      'customers.view',
+      'customers.edit',
+      'materials.view',
+      'suppliers.view',
+      'products.view',
+      'all.manage',
+    ],
+  },
   async (ctx, companyId?: string) => {
     try {
       const summary = await TrashService.getTrashSummary(ctx.companyId)
@@ -31,7 +67,33 @@ export const getTrashSummaryAction = withTenantAction(
 )
 
 export const moveToTrashAction = withTenantAction(
-  { permission: 'settings.manage', auditAction: 'trash.move_to', entityType: 'trash' },
+  {
+    anyPermission: [
+      'settings.manage',
+      'trash.manage',
+      'quotations.delete',
+      'quotations.edit',
+      'quotations.view',
+      'quotation.delete',
+      'quotation.edit',
+      'orders.delete',
+      'orders.edit',
+      'invoices.delete',
+      'invoices.edit',
+      'customers.delete',
+      'customers.edit',
+      'materials.edit',
+      'materials.delete',
+      'suppliers.edit',
+      'suppliers.delete',
+      'products.edit',
+      'products.delete',
+      'sales.manage',
+      'all.manage',
+    ],
+    auditAction: 'trash.move_to',
+    entityType: 'trash',
+  },
   async (
     ctx,
     arg1: TrashCategory | { category: TrashCategory; item: any; companyId?: string; tenantSlug?: string },
@@ -82,7 +144,24 @@ export const moveToTrashAction = withTenantAction(
 )
 
 export const restoreFromTrashAction = withTenantAction(
-  { permission: 'settings.manage', auditAction: 'trash.restore', entityType: 'trash' },
+  {
+    anyPermission: [
+      'settings.manage',
+      'trash.manage',
+      'quotations.delete',
+      'quotations.edit',
+      'orders.edit',
+      'invoices.edit',
+      'customers.edit',
+      'materials.edit',
+      'suppliers.edit',
+      'products.edit',
+      'sales.manage',
+      'all.manage',
+    ],
+    auditAction: 'trash.restore',
+    entityType: 'trash',
+  },
   async (
     ctx,
     arg1: string | { trashId: string; companyId?: string; tenantSlug?: string },

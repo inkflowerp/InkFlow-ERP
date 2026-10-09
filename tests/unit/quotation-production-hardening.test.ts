@@ -4,6 +4,8 @@ import { QuotationService } from '../../services/quotation.service.ts'
 import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
 import { PrintFlowDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import type { QuotationRecord, CreateQuotationPayload } from '../../types/quotation.types.ts'
+import { isPurgedQuotation, PURGED_QUOTATION_IDENTIFIERS, deduplicateQuotations } from '../../types/quotation.types.ts'
+import { TrashRepository } from '../../lib/repositories/trash.repository.ts'
 
 describe('Quotation Production Hardening & Sales-Control Center Test Suite', () => {
   const companyA = 'comp-tenant-a-101'
@@ -484,6 +486,107 @@ describe('Quotation Production Hardening & Sales-Control Center Test Suite', () 
       assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-WRAP-01'))
       assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-DRAFT-01'))
       assert.ok(deduplicated.some((q) => q.quotation_number === 'QUO-SYNC-01'))
+    })
+  })
+
+  describe('10. Quotation Deletion & Purge Resilience', () => {
+    it('should cleanly delete a quotation and prevent resurrection in DataStore and deduplication', async () => {
+      const quote = await QuotationRepository.createQuotation({
+        company_id: companyA,
+        customer_name: 'Deletion Target Client',
+        customer_phone: '01700112233',
+        valid_until: '2026-10-15',
+        salesperson_name: 'Mahmudur Rahman',
+        items: [
+          {
+            description: 'Sample Banner',
+            width: 3,
+            height: 6,
+            dimension_unit: 'ft',
+            quantity: 1,
+            unit_rate: 60,
+          },
+        ],
+      })
+
+      assert.ok(quote.id)
+      assert.ok(quote.quotation_number)
+
+      // Ensure quotation is in DataStore
+      let currentList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyA) || []
+      assert.ok(currentList.some((q) => q.id === quote.id))
+
+      // Delete quotation
+      const deleted = await QuotationRepository.deleteQuotation(quote.id, companyA, quote.quotation_number)
+      assert.strictEqual(deleted, true)
+
+      // Verify removed from DataStore
+      currentList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyA) || []
+      assert.strictEqual(currentList.some((q) => q.id === quote.id), false)
+      assert.strictEqual(currentList.some((q) => q.quotation_number === quote.quotation_number), false)
+
+      // Verify registered in purged identifiers
+      assert.ok(isPurgedQuotation(quote))
+      assert.ok(isPurgedQuotation(quote.quotation_number))
+      assert.ok(isPurgedQuotation(quote.id))
+
+      // Verify deduplication excludes the deleted quotation even if an older array contains it
+      const revivedAttempt = [quote, {
+        id: 'q-survivor-1',
+        quotation_number: 'QUO-SURVIVOR-01',
+        company_id: companyA,
+        customer_name: 'Survivor Client',
+        grand_total: 5000,
+      }]
+      const deduplicated = deduplicateQuotations(revivedAttempt, companyA)
+      assert.strictEqual(deduplicated.length, 1)
+      assert.strictEqual(deduplicated[0].quotation_number, 'QUO-SURVIVOR-01')
+    })
+
+    it('should delete non-UUID mock quotation without throwing syntax error', async () => {
+      const mockQuote: any = {
+        id: 'temp-quo-998877',
+        quotation_number: 'QUO-NON-UUID-01',
+        company_id: 'vision-sign', // Slug companyId
+        customer_name: 'Slug Tenant Client',
+        grand_total: 1500,
+      }
+
+      PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, mockQuote, 'vision-sign')
+      const deleted = await QuotationRepository.deleteQuotation(mockQuote.id, 'vision-sign', mockQuote.quotation_number)
+      assert.strictEqual(deleted, true)
+
+      const storeQuotes = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, 'vision-sign') || []
+      assert.strictEqual(storeQuotes.some((q) => q.id === mockQuote.id), false)
+    })
+
+    it('should move quotation to trash and purge it from active pipeline', async () => {
+      const targetQuote: any = {
+        id: 'quo-trash-target-55',
+        quotation_number: 'QUO-TRASH-55',
+        company_id: companyA,
+        customer_name: 'Recycle Bin Customer',
+        grand_total: 12000,
+      }
+
+      PrintFlowDataStore.addItem(STORAGE_KEYS.QUOTATIONS, targetQuote, companyA)
+      const trashRecord = await TrashRepository.moveToTrash({
+        category: 'quotations',
+        item: targetQuote,
+        companyId: companyA,
+        deletedByName: 'Sales Lead',
+      })
+
+      assert.ok(trashRecord.id)
+      assert.strictEqual(trashRecord.category, 'quotations')
+      assert.strictEqual(trashRecord.reference_number, 'QUO-TRASH-55')
+
+      // Verify active collection is clean
+      const activeList = PrintFlowDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyA) || []
+      assert.strictEqual(activeList.some((q) => q.id === targetQuote.id), false)
+
+      // Verify registered in purged list
+      assert.ok(isPurgedQuotation(targetQuote.quotation_number))
     })
   })
 })
