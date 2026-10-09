@@ -73,8 +73,11 @@ export function ProductPriceEditModal({
  const existingTiers = (product.price_tiers as any) || {}
  setTiers({
  retail: existingTiers.retail ?? baseSell,
- reseller: existingTiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0),
+ wholesale: existingTiers.wholesale ?? (baseSell > 0 ? Math.round(baseSell * 0.8) : 0),
+ dealer: existingTiers.dealer ?? existingTiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0),
  corporate: existingTiers.corporate ?? (baseSell > 0 ? Math.round(baseSell * 0.9) : 0),
+ custom: existingTiers.custom ?? (baseSell > 0 ? Math.round(baseSell * 0.75) : 0),
+ reseller: existingTiers.reseller ?? existingTiers.dealer ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0),
  agency: existingTiers.agency ?? (baseSell > 0 ? Math.round(baseSell * 0.88) : 0),
  government: existingTiers.government ?? (baseSell > 0 ? Math.round(baseSell * 0.95) : 0),
  regular: existingTiers.regular ?? (baseSell > 0 ? Math.round(baseSell * 0.92) : 0),
@@ -148,7 +151,7 @@ export function ProductPriceEditModal({
               <span className="text-base font-black text-foreground">
                 {tBilingual('Edit Selling Rate & Customer Tiers', 'বিক্রয় দর ও গ্রাহক রেট নির্ধারণ')}
               </span>
-              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface bg-success-surface text-success text-success border-success-border border-success-border">
+              <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-success-surface text-success border-success-border">
                 {product.unit || 'sft'}
               </Badge>
             </div>
@@ -280,35 +283,60 @@ export function ProductPriceEditModal({
                       {tBilingual(meta.label, meta.labelBn)}
                     </span>
                     <div className="flex items-center gap-1">
-                      {key === 'reseller' && (
+                      {key === 'wholesale' && (
                         <button
- type="button"onClick={() => handleApplyPresetDiscount(key, 15)}
- className="text-xs font-bold text-primary hover:underline">
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 20)}
+                          className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                        >
+                          -20%
+                        </button>
+                      )}
+                      {(key === 'dealer' || key === 'reseller') && (
+                        <button
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 15)}
+                          className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                        >
                           -15%
                         </button>
                       )}
                       {key === 'corporate' && (
                         <button
- type="button"onClick={() => handleApplyPresetDiscount(key, 10)}
- className="text-xs font-bold text-primary hover:underline">
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 10)}
+                          className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                        >
                           -10%
+                        </button>
+                      )}
+                      {key === 'custom' && (
+                        <button
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 25)}
+                          className="text-xs font-bold text-warning hover:underline cursor-pointer"
+                        >
+                          -25%
                         </button>
                       )}
                       {key === 'agency' && (
                         <button
- type="button"onClick={() => handleApplyPresetDiscount(key, 12)}
- className="text-xs font-bold text-warning hover:underline">
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 12)}
+                          className="text-xs font-bold text-warning hover:underline cursor-pointer"
+                        >
                           -12%
                         </button>
                       )}
                       {key === 'regular' && (
                         <button
- type="button"onClick={() => handleApplyPresetDiscount(key, 8)}
- className="text-xs font-bold text-primary hover:underline">
+                          type="button"
+                          onClick={() => handleApplyPresetDiscount(key, 8)}
+                          className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                        >
                           -8%
                         </button>
-                      )}
-                    </div>
+                      )}</div>
                   </div>
 
                   <div className="relative">

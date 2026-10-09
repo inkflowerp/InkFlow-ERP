@@ -748,23 +748,41 @@ export class PricingRepository {
       let tierRate: number | null = null
       let tierLabel: string | null = null
 
-      if (cType === 'corporate') {
-        const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+      if (cType === 'wholesale') {
+        const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
         if (val !== undefined && val !== null && Number(val) > 0) {
           tierRate = Number(val)
-          tierLabel = 'Corporate Tier'
+          tierLabel = 'Wholesale Tier'
         }
-      } else if (cType === 'reseller' || cType === 'dealer') {
+      } else if (cType === 'dealer' || cType === 'reseller') {
         const val =
-          tiers['reseller'] ??
-          tiers['reseller_price'] ??
           tiers['dealer'] ??
           tiers['dealer_price'] ??
+          tiers['reseller'] ??
+          tiers['reseller_price'] ??
           tiers['wholesale'] ??
           tiers['wholesale_price']
         if (val !== undefined && val !== null && Number(val) > 0) {
           tierRate = Number(val)
           tierLabel = 'Dealer Tier'
+        }
+      } else if (cType === 'corporate') {
+        const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Corporate Tier'
+        }
+      } else if (cType === 'custom') {
+        const val = tiers['custom'] ?? tiers['custom_price']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Custom Tier'
+        }
+      } else if (cType === 'retail' || cType === 'regular') {
+        const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
+        if (val !== undefined && val !== null && Number(val) > 0) {
+          tierRate = Number(val)
+          tierLabel = 'Retail Tier'
         }
       } else if (cType === 'government') {
         const val =
@@ -779,23 +797,11 @@ export class PricingRepository {
           tierRate = Number(val)
           tierLabel = 'Government Tier'
         }
-      } else if (cType === 'wholesale') {
-        const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
-        if (val !== undefined && val !== null && Number(val) > 0) {
-          tierRate = Number(val)
-          tierLabel = 'Wholesale Tier'
-        }
       } else if (cType === 'vip') {
         const val = tiers['vip'] ?? tiers['vip_price']
         if (val !== undefined && val !== null && Number(val) > 0) {
           tierRate = Number(val)
           tierLabel = 'VIP Tier'
-        }
-      } else if (cType === 'retail') {
-        const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
-        if (val !== undefined && val !== null && Number(val) > 0) {
-          tierRate = Number(val)
-          tierLabel = 'Retail Tier'
         }
       }
 

@@ -2893,21 +2893,26 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1 text-xs tabular-nums">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-success-surface text-success bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
- WS: ৳{tiers.wholesale}
+                                <span className="px-1.5 py-0.5 bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
+                                  WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
-                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
+                              {tiers.custom ? (
+                                <span className="px-1.5 py-0.5 bg-warning-surface text-warning rounded border border-warning-border whitespace-nowrap">
+                                  Custom: ৳{tiers.custom}
+                                </span>
+                              ) : null}
+                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && !tiers.custom && (
                                 <span className="text-muted-foreground italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>
@@ -3223,21 +3228,26 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1 text-xs tabular-nums">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
+                                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded border border-primary/20 whitespace-nowrap">
  Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-success-surface text-success bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
- WS: ৳{tiers.wholesale}
+                                <span className="px-1.5 py-0.5 bg-success-surface text-success rounded border border-success-border whitespace-nowrap">
+                                  WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
-                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
+                              {tiers.custom ? (
+                                <span className="px-1.5 py-0.5 bg-warning-surface text-warning rounded border border-warning-border whitespace-nowrap">
+                                  Custom: ৳{tiers.custom}
+                                </span>
+                              ) : null}
+                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && !tiers.custom && (
                                 <span className="text-muted-foreground italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>

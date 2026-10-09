@@ -82,6 +82,7 @@ interface ItemRowState {
  productId?: string
  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
  product_type?: string
+  pricing_method?: string
  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
  itemName: string
  description_bn?: string | null
@@ -602,7 +603,7 @@ export function NewInvoiceModal({
  const [phoneNumber, setPhoneNumber] = useState('')
  const [whatsappNumber, setWhatsappNumber] = useState('')
  const [address, setAddress] = useState('')
- const [customerType, setCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
+ const [customerType, setCustomerType] = useState<string>('retail')
  const [emailAddress, setEmailAddress] = useState('')
  const [saveCustomer, setSaveCustomer] = useState(true)
 
@@ -972,7 +973,138 @@ export function NewInvoiceModal({
   ])
 
   // Select existing customer & auto-fill without creating duplicates
- const handleSelectCustomer = async (cust: CustomerRecord) => {
+   // Centralized line item rate resolution across all product types and tiers
+  const resolveLineItemRate = (
+    prod: ProductRecord,
+    targetCustomerType: string,
+    cachedResolved?: ResolvedProductRate | null
+  ): { rate: number; source: 'custom' | 'last_invoice' | 'last_quotation' | 'default'; tierApplied?: string | null } => {
+    const cType = (targetCustomerType || 'retail').toLowerCase().trim()
+    const defaultPrice = Number(prod.selling_price) || Number((prod as any).base_price) || 0
+
+    // 1. Dedicated customer contract rate
+    if (cachedResolved && cachedResolved.customerRate !== null && cachedResolved.customerRate !== undefined && cachedResolved.customerRate > 0) {
+      return {
+        rate: cachedResolved.customerRate,
+        source: 'custom',
+        tierApplied: 'Contract Rate',
+      }
+    }
+
+    // 2. Check Product price_tiers (applies across ALL product kinds: ready_product, material, service)
+    const tiers = (prod.price_tiers as Record<string, any>) || {}
+    let tierRate: number | null = null
+    let tierLabel: string | null = null
+
+    if (cType === 'wholesale') {
+      const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Wholesale Tier'
+      }
+    } else if (cType === 'dealer' || cType === 'reseller') {
+      const val =
+        tiers['dealer'] ??
+        tiers['dealer_price'] ??
+        tiers['reseller'] ??
+        tiers['reseller_price'] ??
+        tiers['wholesale'] ??
+        tiers['wholesale_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Dealer Tier'
+      }
+    } else if (cType === 'corporate') {
+      const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Corporate Tier'
+      }
+    } else if (cType === 'custom') {
+      const val = tiers['custom'] ?? tiers['custom_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Custom Tier'
+      }
+    } else if (cType === 'retail' || cType === 'regular') {
+      const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Retail Tier'
+      }
+    }
+
+    if (tierRate === null && tiers[cType] !== undefined && Number(tiers[cType]) > 0) {
+      tierRate = Number(tiers[cType])
+      tierLabel = `${cType.toUpperCase()} Tier`
+    }
+
+    if (tierRate !== null && tierRate > 0) {
+      return {
+        rate: tierRate,
+        source: 'default',
+        tierApplied: tierLabel,
+      }
+    }
+
+    // 3. Cached fallback from customer rate resolution
+    if (cachedResolved && cachedResolved.effectiveRate > 0) {
+      return {
+        rate: cachedResolved.effectiveRate,
+        source: cachedResolved.source,
+        tierApplied: null,
+      }
+    }
+
+    // 4. Default catalog selling price
+    return {
+      rate: defaultPrice,
+      source: 'default',
+      tierApplied: null,
+    }
+  }
+
+  const handleCustomerTypeChange = (newType: string) => {
+    setCustomerType(newType)
+    setItems((prev) =>
+      prev.map((it) => {
+        if (!it.productId || it.isManualRate) return it
+        const prod = products.find((p) => p.id === it.productId)
+        if (!prod) return it
+
+        const cached = selectedCustomer ? customerRates.find((r) => r.productId === prod.id) : null
+        const isSameAsCustType = (selectedCustomer?.customer_type || 'retail').toLowerCase() === newType.toLowerCase()
+        const cachedToUse = isSameAsCustType || (cached && cached.customerRate !== null && cached.customerRate !== undefined) ? cached : null
+
+        const { rate: baseRate, source, tierApplied } = resolveLineItemRate(prod, newType, cachedToUse)
+
+        const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+        const aRate = getAddOnRate(it.add_on, it.available_additional_options)
+        const totalRate = baseRate + fRate + aRate
+
+        const w = Number(it.width) || 0
+        const h = Number(it.height) || 0
+        const qty = it.quantity || 1
+        const isService = it.item_kind === 'service'
+        const isArea = isService && it.pricing_method !== 'per_piece' && it.pricing_method !== 'fixed'
+        const area = isArea && w > 0 && h > 0 ? (it.dimension_unit === 'inch' ? (w * h) / 144 : w * h) * qty : qty
+        const total = Math.round(totalRate * (isArea ? area : qty) * 100) / 100
+
+        return {
+          ...it,
+          rate: totalRate,
+          base_rate: baseRate,
+          finishing_rate: fRate,
+          add_on_rate: aRate,
+          rateSource: source,
+          tier_applied: tierApplied || undefined,
+          total,
+        }
+      })
+    )
+  }
+
+  const handleSelectCustomer = async (cust: CustomerRecord) => {
  setSelectedCustomer(cust)
  setCustomerId(cust.id)
  setCustomerName(cust.name)

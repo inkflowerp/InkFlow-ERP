@@ -4,9 +4,12 @@ export type { PricingMethod, UnitOfMeasure, PricingFormulaConfig }
 
 
 export type PricingCustomerType =
-  | 'retail'
-  | 'reseller'
+  | 'wholesale'
+  | 'dealer'
   | 'corporate'
+  | 'retail'
+  | 'custom'
+  | 'reseller'
   | 'agency'
   | 'government'
   | 'regular'
@@ -22,23 +25,23 @@ export interface CustomerTypeMeta {
 }
 
 export const CUSTOMER_TYPES_META: Record<PricingCustomerType, CustomerTypeMeta> = {
-  retail: {
-    type: 'retail',
-    label: 'Retail',
-    labelBn: 'ওয়াক-ইন / খুচরা',
-    description: 'Walk-in & retail customers. Standard catalog margins apply.',
-    descriptionBn: 'সাধারণ খুচরা খদ্দের। স্ট্যান্ডার্ড ক্যাটালগ রেট প্রযোজ্য।',
-    defaultStrategy: 'Standard price / high margin',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
-  },
-  reseller: {
-    type: 'reseller',
-    label: 'Reseller',
-    labelBn: 'রিসেলার / সরাসরি-কাস্টমার',
-    description: 'Subcontractors, printers & resellers with volume expectations.',
-    descriptionBn: 'রিসেলার ও প্রিন্টিং সাবকন্ট্রাক্টর। পাইকারি ভলিউম রেট।',
+  wholesale: {
+    type: 'wholesale',
+    label: 'Wholesale',
+    labelBn: 'পাইকারি',
+    description: 'Bulk print buyers, large-volume traders & recurring contract orders.',
+    descriptionBn: 'বাল্ক প্রিন্ট ক্রেতা এবং বড় ভলিউম পাইকারি অর্ডার।',
     defaultStrategy: 'Wholesale discount / volume rate',
-    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
+    badgeClass: 'bg-primary/10 text-primary border-primary/20',
+  },
+  dealer: {
+    type: 'dealer',
+    label: 'Dealer',
+    labelBn: 'ডিলার / রিসেলার',
+    description: 'Authorized dealers, trade partners & print brokers.',
+    descriptionBn: 'অনুমোদিত ডিলার, ট্রেড পার্টনার ও সাবকন্ট্রাক্টর।',
+    defaultStrategy: 'Dealer rate / reseller margin',
+    badgeClass: 'bg-accent text-accent-foreground border-border',
   },
   corporate: {
     type: 'corporate',
@@ -47,7 +50,34 @@ export const CUSTOMER_TYPES_META: Record<PricingCustomerType, CustomerTypeMeta> 
     description: 'Institutional accounts with negotiated contract rates and credit terms.',
     descriptionBn: 'কর্পোরেট ও প্রাতিষ্ঠানিক একাউন্ট। চুক্তিভিত্তিক নির্ধারিত রেট।',
     defaultStrategy: 'Contracted rate / periodic validity',
-    badgeClass: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
+    badgeClass: 'bg-secondary text-secondary-foreground border-border',
+  },
+  retail: {
+    type: 'retail',
+    label: 'Retail',
+    labelBn: 'ওয়াক-ইন / খুচরা',
+    description: 'Walk-in & retail customers. Standard catalog margins apply.',
+    descriptionBn: 'সাধারণ খুচরা খদ্দের। স্ট্যান্ডার্ড ক্যাটালগ রেট প্রযোজ্য।',
+    defaultStrategy: 'Standard price / high margin',
+    badgeClass: 'bg-success-surface text-success border-success-border',
+  },
+  custom: {
+    type: 'custom',
+    label: 'Custom',
+    labelBn: 'কাস্টম রেট',
+    description: 'Custom negotiated rate, VIP discount or special contract pricing.',
+    descriptionBn: 'বিশেষ সমঝোতামূলক দর বা ক্লায়েন্ট নির্ধারিত কাস্টম রেট।',
+    defaultStrategy: 'Custom negotiated / contract override',
+    badgeClass: 'bg-warning-surface text-warning border-warning-border',
+  },
+  reseller: {
+    type: 'reseller',
+    label: 'Reseller',
+    labelBn: 'রিসেলার / ডিলার',
+    description: 'Subcontractors, printers & resellers with volume expectations.',
+    descriptionBn: 'রিসেলার ও প্রিন্টিং সাবকন্ট্রাক্টর। পাইকারি ভলিউম রেট।',
+    defaultStrategy: 'Wholesale discount / volume rate',
+    badgeClass: 'bg-accent text-accent-foreground border-border',
   },
   agency: {
     type: 'agency',
@@ -56,7 +86,7 @@ export const CUSTOMER_TYPES_META: Record<PricingCustomerType, CustomerTypeMeta> 
     description: 'Ad agencies & design firms with recurring creative production projects.',
     descriptionBn: 'বিজ্ঞাপন সংস্থা ও ডিজাইন হাউস। নিয়মিত প্রোডাকশন রেট।',
     defaultStrategy: 'Partner rate / project margin',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    badgeClass: 'bg-muted text-foreground border-border',
   },
   government: {
     type: 'government',
@@ -65,7 +95,7 @@ export const CUSTOMER_TYPES_META: Record<PricingCustomerType, CustomerTypeMeta> 
     description: 'Government ministries, tenders & public sector contract procurement.',
     descriptionBn: 'সরকারি ও দরপত্র প্রকল্প। টেন্ডার ও স্পেসিফিকেশন রেট।',
     defaultStrategy: 'Tender rate / contract specific',
-    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
+    badgeClass: 'bg-destructive/10 text-destructive border-destructive/20',
   },
   regular: {
     type: 'regular',
@@ -74,7 +104,7 @@ export const CUSTOMER_TYPES_META: Record<PricingCustomerType, CustomerTypeMeta> 
     description: 'Frequent returning clients with relationship loyalty pricing.',
     descriptionBn: 'নিয়মিত ও বিশ্বস্ত খদ্দের। লয়ালটি বিশেষ রেট।',
     defaultStrategy: 'Loyalty discount / standard override',
-    badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800',
+    badgeClass: 'bg-card text-foreground border-border',
   },
 }
 

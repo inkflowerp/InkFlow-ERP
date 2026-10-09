@@ -15,6 +15,8 @@ import {
   CustomerTimelineEvent,
   CustomerSummaryStatistics,
   CustomerRateRecord,
+  CustomerCategory,
+  CustomerRateLevel,
 } from '@/types/crm.types'
 import { checkPermission } from '@/lib/auth/rbac.client'
 import { PrimaryRole } from '@/types/rbac.types'
@@ -25,8 +27,8 @@ export interface CreateCustomerInput {
   customer_id_no?: string | null
   customer_code?: string | null
   customer_kind?: 'business' | 'individual'
-  customer_category?: 'retail' | 'corporate' | 'agency' | 'dealer' | 'government' | 'regular' | 'reseller'
-  rate_level?: 'default' | 'retail' | 'corporate' | 'dealer' | 'custom'
+  customer_category?: CustomerCategory
+  rate_level?: CustomerRateLevel | 'default'
   name: string
   name_bn?: string | null
   company_name?: string | null

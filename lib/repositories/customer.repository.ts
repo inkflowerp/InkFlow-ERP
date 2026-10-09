@@ -1119,17 +1119,26 @@ export class CustomerRepository {
           const cType = (customerType || 'retail').toLowerCase().trim()
           let tierPrice: number | null = null
 
-          if (cType === 'corporate') {
-            const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+          if (cType === 'wholesale') {
+            const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
             if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
-          } else if (cType === 'reseller' || cType === 'dealer') {
+          } else if (cType === 'dealer' || cType === 'reseller') {
             const val =
-              tiers['reseller'] ??
-              tiers['reseller_price'] ??
               tiers['dealer'] ??
               tiers['dealer_price'] ??
+              tiers['reseller'] ??
+              tiers['reseller_price'] ??
               tiers['wholesale'] ??
               tiers['wholesale_price']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'corporate') {
+            const val = tiers['corporate'] ?? tiers['corporate_price'] ?? tiers['b2b']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'custom') {
+            const val = tiers['custom'] ?? tiers['custom_price']
+            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
+          } else if (cType === 'retail' || cType === 'regular') {
+            const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
             if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
           } else if (cType === 'government' || cType === 'govt' || cType === 'org') {
             const val =
@@ -1141,14 +1150,8 @@ export class CustomerRepository {
               tiers['corporate'] ??
               tiers['corporate_price']
             if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
-          } else if (cType === 'wholesale') {
-            const val = tiers['wholesale'] ?? tiers['wholesale_price'] ?? tiers['dealer'] ?? tiers['reseller']
-            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
           } else if (cType === 'vip') {
             const val = tiers['vip'] ?? tiers['vip_price']
-            if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
-          } else if (cType === 'retail' || cType === 'regular') {
-            const val = tiers['retail'] ?? tiers['retail_price'] ?? tiers['regular']
             if (val !== undefined && val !== null && Number(val) > 0) tierPrice = Number(val)
           }
 

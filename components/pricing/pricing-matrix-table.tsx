@@ -66,8 +66,8 @@ export function PricingMatrixTable({
             </CardTitle>
             <CardDescription className="text-xs">
               {tBilingual(
-                'Cross-tabulated pricing comparison across Retail, Reseller, Corporate, Agency, Government & Regular tiers.',
-                'খুচরা, রিসেলার, কর্পোরেট, এজেন্সি ও সরকারি রেট তুলনা।'
+                'Cross-tabulated pricing comparison across Retail, Wholesale, Dealer, Corporate & Custom tiers.',
+                'খুচরা, পাইকারি, ডিলার, কর্পোরেট ও কাস্টম রেট তুলনা।'
               )}
             </CardDescription>
           </div>
@@ -105,20 +105,20 @@ export function PricingMatrixTable({
               <tr>
                 <th className="py-3 px-4 min-w-[200px]">{tBilingual('Product / Service', 'পণ্য / সেবা')}</th>
                 <th className="py-3 px-3 text-center">{tBilingual('Base Cost', 'মূল খরচ')}</th>
-                <th className="py-3 px-3 text-center text-success text-success">
+                <th className="py-3 px-3 text-center text-success">
                   {tBilingual('Retail', 'খুচরা')}
                 </th>
-                <th className="py-3 px-3 text-center text-primary text-primary">
-                  {tBilingual('Reseller', 'রিসেলার')}
+                <th className="py-3 px-3 text-center text-primary">
+                  {tBilingual('Wholesale', 'পাইকারি')}
                 </th>
-                <th className="py-3 px-3 text-center text-primary text-primary">
+                <th className="py-3 px-3 text-center text-primary">
+                  {tBilingual('Dealer', 'ডিলার')}
+                </th>
+                <th className="py-3 px-3 text-center text-primary">
                   {tBilingual('Corporate', 'কর্পোরেট')}
                 </th>
-                <th className="py-3 px-3 text-center text-warning text-warning">
-                  {tBilingual('Agency', 'এজেন্সি')}
-                </th>
-                <th className="py-3 px-3 text-center text-destructive text-destructive">
-                  {tBilingual('Govt', 'সরকারি')}
+                <th className="py-3 px-3 text-center text-warning">
+                  {tBilingual('Custom', 'কাস্টম')}
                 </th>
                 <th className="py-3 px-4 text-right">{tBilingual('Action', 'অ্যাকশন')}</th>
               </tr>
@@ -130,10 +130,10 @@ export function PricingMatrixTable({
  const tiers = (p.price_tiers as any) || {}
 
  const retailPrice = tiers.retail ?? baseSell
- const resellerPrice = tiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0)
- const corporatePrice = tiers.corporate ?? (baseSell > 0 ? Math.round(baseSell * 0.9) : 0)
- const agencyPrice = tiers.agency ?? (baseSell > 0 ? Math.round(baseSell * 0.88) : 0)
- const govtPrice = tiers.government ?? (baseSell > 0 ? Math.round(baseSell * 0.95) : 0)
+                    const wholesalePrice = tiers.wholesale ?? tiers.wholesale_price ?? (tiers.dealer ?? tiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.8) : 0))
+                    const dealerPrice = tiers.dealer ?? tiers.dealer_price ?? (tiers.reseller ?? (baseSell > 0 ? Math.round(baseSell * 0.85) : 0))
+                    const corporatePrice = tiers.corporate ?? (baseSell > 0 ? Math.round(baseSell * 0.9) : 0)
+                    const customPrice = tiers.custom ?? tiers.custom_price ?? (baseSell > 0 ? Math.round(baseSell * 0.75) : 0)
 
  const marginPct =
  baseSell > 0 && baseCost > 0
@@ -169,35 +169,35 @@ export function PricingMatrixTable({
                     </td>
 
                     {/* Retail */}
-                    <td className="py-3 px-3 text-center tabular-nums font-black text-success text-success">
+                    <td className="py-3 px-3 text-center tabular-nums font-black text-success">
                       {formatBDT(retailPrice)}
                     </td>
 
-                    {/* Reseller */}
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-primary text-primary">
-                      {formatBDT(resellerPrice)}
+                    {/* Wholesale */}
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-primary">
+                      {formatBDT(wholesalePrice)}
+                    </td>
+
+                    {/* Dealer */}
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-primary">
+                      {formatBDT(dealerPrice)}
                     </td>
 
                     {/* Corporate */}
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-primary text-primary">
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-primary">
                       {formatBDT(corporatePrice)}
                     </td>
 
-                    {/* Agency */}
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-warning text-warning">
-                      {formatBDT(agencyPrice)}
-                    </td>
-
-                    {/* Govt */}
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-destructive text-destructive">
-                      {formatBDT(govtPrice)}
+                    {/* Custom */}
+                    <td className="py-3 px-3 text-center tabular-nums font-bold text-warning">
+                      {formatBDT(customPrice)}
                     </td>
 
                     {/* Action */}
                     <td className="py-3 px-4 text-right">
                       <Button
  size="sm"variant="outline"onClick={() => onOpenEditProductPrice(p)}
- className="h-7 px-2.5 text-xs font-bold text-success text-success border-success-border border-success-border bg-success-surface/50 hover:bg-success-surface/70">
+ className="h-7 px-2.5 text-xs font-bold text-success border-success-border bg-success-surface/50 hover:bg-success-surface/70">
                         <Edit2 className="h-3 w-3 mr-1 text-success"/>
                         {tBilingual('Edit Rates', 'দর পরিবর্তন')}
                       </Button>

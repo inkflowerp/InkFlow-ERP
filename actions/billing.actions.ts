@@ -25,7 +25,7 @@ import type {
   CreditLimitWarningInfo,
   CreateInvoiceItemInput,
 } from '../types/billing.types.ts'
-import type { CustomerRecord, ResolvedProductRate } from '../types/crm.types.ts'
+import type { CustomerRecord, ResolvedProductRate, CustomerCategory } from '../types/crm.types.ts'
 import { InvoiceCreateSchema, PaymentRecordSchema } from '../lib/security/input-validation.ts'
 
 export type { CreateInvoiceItemInput }
@@ -46,7 +46,7 @@ export interface CreateInvoicePayload {
     mobile: string
     whatsapp?: string
     address: string
-    customer_type?: 'retail' | 'reseller' | 'corporate' | 'government'
+    customer_type?: string
     email?: string
     save_customer?: boolean
   }
@@ -262,7 +262,7 @@ export const createInvoiceAction = withTenantAction(
             mobile: newCust.mobile.trim(),
             whatsapp: newCust.whatsapp?.trim() || null,
             address: newCust.address ? newCust.address.trim() : null,
-            customer_type: newCust.customer_type || 'regular',
+            customer_type: (newCust.customer_type as CustomerCategory) || 'regular',
             email: newCust.email?.trim().toLowerCase() || null,
           })
           resolvedCustomerId = createdCust.id

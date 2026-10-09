@@ -154,4 +154,85 @@ describe('Quotation Line Items Customer Type Tier Resolution', () => {
     assert.strictEqual(productRate.effectiveRate, 115.0, 'Dedicated contract rate ৳115 should take precedence')
     assert.strictEqual(productRate.source, 'custom')
   })
+
+  it('4. Matches all 5 customer types and rates: Wholesale, Dealer, Corporate, Retail, Custom', async () => {
+    const product = await ProductRepository.createProduct({
+      company_id: companyId,
+      name: 'All 5 Tiers Product',
+      sku: 'PRD-5-TIERS',
+      unit: 'sft',
+      selling_price: 100.0,
+      base_cost: 50.0,
+      category: 'digital_print',
+      price_tiers: {
+        retail: 100.0,
+        corporate: 90.0,
+        dealer: 85.0,
+        wholesale: 80.0,
+        custom: 75.0,
+      },
+    })
+
+    // PricingRepository.resolvePrice verification
+    const wsPrice = await PricingRepository.resolvePrice(companyId, { productId: product.id, customerType: 'wholesale' })
+    assert.strictEqual(wsPrice.effectiveUnitPrice, 80.0, 'Wholesale rate should be ৳80')
+
+    const dealerPrice = await PricingRepository.resolvePrice(companyId, { productId: product.id, customerType: 'dealer' })
+    assert.strictEqual(dealerPrice.effectiveUnitPrice, 85.0, 'Dealer rate should be ৳85')
+
+    const corpPrice = await PricingRepository.resolvePrice(companyId, { productId: product.id, customerType: 'corporate' })
+    assert.strictEqual(corpPrice.effectiveUnitPrice, 90.0, 'Corporate rate should be ৳90')
+
+    const retailPrice = await PricingRepository.resolvePrice(companyId, { productId: product.id, customerType: 'retail' })
+    assert.strictEqual(retailPrice.effectiveUnitPrice, 100.0, 'Retail rate should be ৳100')
+
+    const customPrice = await PricingRepository.resolvePrice(companyId, { productId: product.id, customerType: 'custom' })
+    assert.strictEqual(customPrice.effectiveUnitPrice, 75.0, 'Custom rate should be ৳75')
+
+    // CustomerRepository.resolveCustomerRates verification
+    const wsCust = await CustomerRepository.createCustomer({
+      company_id: companyId,
+      name: 'Wholesale Buyer Ltd',
+      mobile: '01711999001',
+      customer_type: 'wholesale',
+    })
+    const wsRates = await CustomerRepository.resolveCustomerRates(companyId, wsCust.id)
+    assert.strictEqual(wsRates.find((r) => r.productId === product.id)?.effectiveRate, 80.0)
+
+    const dealerCust = await CustomerRepository.createCustomer({
+      company_id: companyId,
+      name: 'Dealer Agent Ltd',
+      mobile: '01711999002',
+      customer_type: 'dealer',
+    })
+    const dealerRates = await CustomerRepository.resolveCustomerRates(companyId, dealerCust.id)
+    assert.strictEqual(dealerRates.find((r) => r.productId === product.id)?.effectiveRate, 85.0)
+
+    const corpCustomer = await CustomerRepository.createCustomer({
+      company_id: companyId,
+      name: 'Corporate Enterprise Ltd',
+      mobile: '01711999003',
+      customer_type: 'corporate',
+    })
+    const corpRates = await CustomerRepository.resolveCustomerRates(companyId, corpCustomer.id)
+    assert.strictEqual(corpRates.find((r) => r.productId === product.id)?.effectiveRate, 90.0)
+
+    const retailCust = await CustomerRepository.createCustomer({
+      company_id: companyId,
+      name: 'Retail Walk-In Client',
+      mobile: '01711999004',
+      customer_type: 'retail',
+    })
+    const retailRates = await CustomerRepository.resolveCustomerRates(companyId, retailCust.id)
+    assert.strictEqual(retailRates.find((r) => r.productId === product.id)?.effectiveRate, 100.0)
+
+    const customCust = await CustomerRepository.createCustomer({
+      company_id: companyId,
+      name: 'Custom VIP Client',
+      mobile: '01711999005',
+      customer_type: 'custom',
+    })
+    const customRates = await CustomerRepository.resolveCustomerRates(companyId, customCust.id)
+    assert.strictEqual(customRates.find((r) => r.productId === product.id)?.effectiveRate, 75.0)
+  })
 })

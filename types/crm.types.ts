@@ -1,22 +1,25 @@
 export type CustomerKind = 'business' | 'individual'
 
 export type CustomerCategory =
-  | 'retail'
-  | 'corporate'
-  | 'agency'
+  | 'wholesale'
   | 'dealer'
+  | 'corporate'
+  | 'retail'
+  | 'custom'
+  | 'reseller'
+  | 'agency'
   | 'government'
   | 'regular'
-  | 'reseller'
 
 // Legacy / alias for backwards compatibility
 export type CustomerType = CustomerCategory
 
 export type CustomerRateLevel =
   | 'default'
-  | 'retail'
-  | 'corporate'
+  | 'wholesale'
   | 'dealer'
+  | 'corporate'
+  | 'retail'
   | 'custom'
 
 export type CustomerPaymentTerms =

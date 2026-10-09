@@ -1037,6 +1037,12 @@ export function NewQuotationModal({
         tierRate = Number(val)
         tierLabel = 'Wholesale Tier'
       }
+    } else if (cType === 'custom') {
+      const val = tiers['custom'] ?? tiers['custom_price']
+      if (val !== undefined && val !== null && Number(val) > 0) {
+        tierRate = Number(val)
+        tierLabel = 'Custom Tier'
+      }
     } else if (cType === 'vip') {
       const val = tiers['vip'] ?? tiers['vip_price']
       if (val !== undefined && val !== null && Number(val) > 0) {
@@ -2036,9 +2042,10 @@ export function NewQuotationModal({
                     <div className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border">
                       {[
                         { value: 'retail', label: 'Retail' },
-                        { value: 'reseller', label: 'Reseller' },
+                        { value: 'wholesale', label: 'Wholesale' },
+                        { value: 'dealer', label: 'Dealer' },
                         { value: 'corporate', label: 'Corporate' },
-                        { value: 'government', label: 'Govt / Org' },
+                        { value: 'custom', label: 'Custom' },
                       ].map((tab) => (
                         <button
  key={tab.value}
