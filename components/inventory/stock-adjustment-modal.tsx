@@ -40,6 +40,8 @@ export interface StockAdjustmentModalProps {
  locations: InventoryLocationRecord[]
  selectedMaterial?: MaterialRecord | null
  selectedMaterialId?: string
+ selectedWidthFt?: number
+ selectedLengthFt?: number
  onSuccess?: () => void
  companyId?: string
 }
@@ -79,6 +81,8 @@ export function StockAdjustmentModal({
  locations,
  selectedMaterial,
  selectedMaterialId,
+ selectedWidthFt,
+ selectedLengthFt,
  onSuccess,
  companyId,
 }: StockAdjustmentModalProps) {

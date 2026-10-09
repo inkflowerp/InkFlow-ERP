@@ -74,6 +74,10 @@ export interface ReceiveStockModalProps {
  orders?: PurchaseOrderRecord[]
  purchaseOrder?: PurchaseOrderRecord | null
  selectedMaterialId?: string
+ selectedWidthFt?: number
+ selectedLengthFt?: number
+ selectedUnitCost?: number
+ selectedSizeId?: string
  onSuccess?: () => void
  companyId?: string
 }
@@ -348,6 +352,10 @@ export function ReceiveStockModal({
  orders = [],
  purchaseOrder,
  selectedMaterialId,
+ selectedWidthFt,
+ selectedLengthFt,
+ selectedUnitCost,
+ selectedSizeId,
  onSuccess,
  companyId,
 }: ReceiveStockModalProps) {
@@ -853,99 +861,155 @@ export function ReceiveStockModal({
   }
 
   // Initialize or populate Direct Items
- const createInitialDirectRow = (itemId?: string): DirectReceiptItemRow => {
- const target: UnifiedStockItem = (itemId ? unifiedCatalog.find((x) => x.id === itemId || x.parent_id === itemId) : unifiedCatalog[0]) || {
- id: catalogMaterials[0]?.id || 'item-1',
- parent_id: catalogMaterials[0]?.id || 'item-1',
- sku: catalogMaterials[0]?.sku || '',
- name: catalogMaterials[0]?.name || 'Select Item',
- item_type: 'material' as const,
- category: catalogMaterials[0]?.category || 'General',
- category_group: 'General',
- unit: catalogMaterials[0]?.unit || 'pcs',
- master_unit: catalogMaterials[0]?.unit || 'pcs',
- master_purchase_unit: (catalogMaterials[0] as any)?.purchase_unit || catalogMaterials[0]?.unit || 'pcs',
- available_purchase_units: ['pcs'],
- physical_form: 'general' as const,
- current_stock: 0,
- previous_cost: Number(catalogMaterials[0]?.average_cost || 0),
- previous_selling_price: Math.round(Number(catalogMaterials[0]?.average_cost || 0) * 1.35),
- target_margin_percent: 35,
- is_roll: false,
- roll_width_ft: null,
- roll_length_ft: null,
- roll_area_sft: null,
- sheet_size: null,
- sheet_area_sft: null,
- thickness_mm: null,
- available_widths_ft: undefined,
- available_sheet_sizes: undefined,
- variants: [],
- size_spec: null,
- liquid_volume_capacity: null,
- pack_quantity: null,
-    }
+ const createInitialDirectRow = (
+   itemId?: string,
+   widthFt?: number,
+   lengthFt?: number,
+   unitCost?: number,
+   sizeId?: string
+ ): DirectReceiptItemRow => {
+   const target: UnifiedStockItem = (itemId ? unifiedCatalog.find((x) => x.id === itemId || x.parent_id === itemId) : unifiedCatalog[0]) || {
+     id: catalogMaterials[0]?.id || 'item-1',
+     parent_id: catalogMaterials[0]?.id || 'item-1',
+     sku: catalogMaterials[0]?.sku || '',
+     name: catalogMaterials[0]?.name || 'Select Item',
+     item_type: 'material' as const,
+     category: catalogMaterials[0]?.category || 'General',
+     category_group: 'General',
+     unit: catalogMaterials[0]?.unit || 'pcs',
+     master_unit: catalogMaterials[0]?.unit || 'pcs',
+     master_purchase_unit: (catalogMaterials[0] as any)?.purchase_unit || catalogMaterials[0]?.unit || 'pcs',
+     available_purchase_units: ['pcs'],
+     physical_form: 'general' as const,
+     current_stock: 0,
+     previous_cost: Number(catalogMaterials[0]?.average_cost || 0),
+     previous_selling_price: Math.round(Number(catalogMaterials[0]?.average_cost || 0) * 1.35),
+     target_margin_percent: 35,
+     is_roll: false,
+     roll_width_ft: null,
+     roll_length_ft: null,
+     roll_area_sft: null,
+     sheet_size: null,
+     sheet_area_sft: null,
+     thickness_mm: null,
+     available_widths_ft: undefined,
+     available_sheet_sizes: undefined,
+     variants: [],
+     size_spec: null,
+     liquid_volume_capacity: null,
+     pack_quantity: null,
+   }
 
- const pForm = target.physical_form || 'general'
- const configuredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(target)
- const initialSize = configuredSizes[0]
+   const pForm = target.physical_form || 'general'
+   let configuredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(target)
 
- let initialCost = Number(target.previous_cost) || 0
- if (initialSize?.default_supplier_price) {
- initialCost = initialSize.default_supplier_price
-    }
+   // Intelligently find or create matching configured size & discrete economics
+   let matchedSize: ConfiguredMaterialSize | undefined
 
- const prevCost = initialCost
- const prevSell = Number(target.previous_selling_price) || 0
- const targetMargin = target.target_margin_percent || (prevSell > prevCost && prevSell > 0 ? Math.round(((prevSell - prevCost) / prevSell) * 100) : 35)
- const suggestedSell = prevSell > 0 ? prevSell : (prevCost > 0 ? Math.ceil(prevCost / (1 - targetMargin / 100)) : 0)
- const availUnits = target.available_purchase_units || getAvailablePurchaseUnits(pForm, target.unit, target.master_purchase_unit)
+   if (sizeId) {
+     matchedSize = configuredSizes.find((s) => s.id === sizeId)
+   }
 
- const summary = computePriceIntelligence(target, initialSize?.label, initialCost, selectedSupplierId, initialSize)
+   if (!matchedSize && widthFt !== undefined && widthFt > 0) {
+     matchedSize = configuredSizes.find((s) => {
+       const matchW = (s.width_ft !== undefined && Math.abs(s.width_ft - widthFt) < 0.05) ||
+                      (s.nominal_width_ft !== undefined && Math.abs(s.nominal_width_ft - widthFt) < 0.05)
+       if (!matchW) return false
+       if (lengthFt !== undefined && lengthFt > 0 && s.length_ft !== undefined) {
+         return Math.abs(s.length_ft - lengthFt) < 1
+       }
+       return true
+     })
 
- return {
- id: `dir-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
- material_id: target.id,
- parent_id: target.parent_id || target.id,
- variant_id: target.variant_id,
- variant_name: target.variant_name,
- material_name: target.name,
- sku: target.sku,
- unit: target.master_purchase_unit || target.unit || 'pcs',
- master_unit: target.master_unit || target.unit || 'pcs',
- master_purchase_unit: target.master_purchase_unit || target.unit,
- available_purchase_units: availUnits,
- physical_form: pForm,
- item_type: target.item_type,
- category: target.category,
- previous_cost: prevCost,
- unit_cost: prevCost,
- cost_variance_percent: 0,
- previous_selling_price: prevSell,
- new_selling_price: suggestedSell,
- target_margin_percent: targetMargin,
- update_master_pricing: true,
- quantity: 1,
- batch_lot_number: '',
- total_cost: prevCost * 1,
- is_roll: target.is_roll,
- roll_width_ft: initialSize?.width_ft || target.roll_width_ft,
- roll_length_ft: initialSize?.length_ft || target.roll_length_ft,
- roll_area_sft: initialSize?.standard_area_sft || target.roll_area_sft,
- sheet_size: initialSize?.physical_form === 'sheet' ? initialSize.label : target.sheet_size,
- sheet_area_sft: initialSize?.standard_area_sft || target.sheet_area_sft,
- thickness_mm: initialSize?.thickness_mm || target.thickness_mm,
- available_widths_ft: target.available_widths_ft,
- available_sheet_sizes: target.available_sheet_sizes,
- configured_sizes: configuredSizes,
- selected_size_id: initialSize?.id,
- price_intelligence_summary: summary,
- variants: target.variants,
- size_spec: initialSize?.label || target.size_spec,
- liquid_volume_capacity: target.liquid_volume_capacity,
- pack_quantity: target.pack_quantity,
-    }
-  }
+     if (!matchedSize) {
+       matchedSize = configuredSizes.find((s) =>
+         s.label.toLowerCase().includes(`${widthFt}ft`) ||
+         s.label.toLowerCase().includes(`${widthFt} ft`)
+       )
+     }
+
+     if (!matchedSize) {
+       const effectiveL = lengthFt && lengthFt > 0 ? lengthFt : (target.roll_length_ft || 164)
+       const areaSft = Math.round(widthFt * effectiveL)
+       const dynamicPrice = unitCost !== undefined && unitCost > 0 ? unitCost : undefined
+       const dynamicSize: ConfiguredMaterialSize = {
+         id: `size-${widthFt}x${effectiveL}`,
+         label: `${widthFt}ft × ${effectiveL}ft (${areaSft} sqft)`,
+         physical_form: pForm === 'sheet' ? 'sheet' : 'roll',
+         width_ft: widthFt,
+         nominal_width_ft: widthFt,
+         allowance_ft: 0,
+         length_ft: effectiveL,
+         standard_area_sft: areaSft,
+         default_supplier_price: dynamicPrice,
+         is_active: true,
+         sku_suffix: `${widthFt}FT`,
+       }
+       configuredSizes = [dynamicSize, ...configuredSizes]
+       matchedSize = dynamicSize
+     }
+   }
+
+   const initialSize = matchedSize || configuredSizes[0]
+
+   let initialCost = Number(target.previous_cost) || 0
+   if (unitCost !== undefined && unitCost > 0) {
+     initialCost = unitCost
+   } else if (initialSize?.default_supplier_price && initialSize.default_supplier_price > 0) {
+     initialCost = initialSize.default_supplier_price
+   }
+
+   const prevCost = initialCost
+   const prevSell = Number(target.previous_selling_price) || 0
+   const targetMargin = target.target_margin_percent || (prevSell > prevCost && prevSell > 0 ? Math.round(((prevSell - prevCost) / prevSell) * 100) : 35)
+   const suggestedSell = prevSell > 0 && initialCost === Number(target.previous_cost) ? prevSell : (prevCost > 0 ? Math.ceil(prevCost / (1 - targetMargin / 100)) : 0)
+   const availUnits = target.available_purchase_units || getAvailablePurchaseUnits(pForm, target.unit, target.master_purchase_unit)
+
+   const summary = computePriceIntelligence(target, initialSize?.label, initialCost, selectedSupplierId, initialSize)
+
+   return {
+     id: `dir-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+     material_id: target.id,
+     parent_id: target.parent_id || target.id,
+     variant_id: target.variant_id,
+     variant_name: target.variant_name,
+     material_name: target.name,
+     sku: target.sku,
+     unit: target.master_purchase_unit || target.unit || 'pcs',
+     master_unit: target.master_unit || target.unit || 'pcs',
+     master_purchase_unit: target.master_purchase_unit || target.unit,
+     available_purchase_units: availUnits,
+     physical_form: pForm,
+     item_type: target.item_type,
+     category: target.category,
+     previous_cost: prevCost,
+     unit_cost: prevCost,
+     cost_variance_percent: 0,
+     previous_selling_price: prevSell,
+     new_selling_price: suggestedSell,
+     target_margin_percent: targetMargin,
+     update_master_pricing: true,
+     quantity: 1,
+     batch_lot_number: '',
+     total_cost: prevCost * 1,
+     is_roll: target.is_roll,
+     roll_width_ft: initialSize?.width_ft || widthFt || target.roll_width_ft,
+     roll_length_ft: initialSize?.length_ft || lengthFt || target.roll_length_ft,
+     roll_area_sft: initialSize?.standard_area_sft || target.roll_area_sft,
+     sheet_size: initialSize?.physical_form === 'sheet' ? initialSize.label : target.sheet_size,
+     sheet_area_sft: initialSize?.standard_area_sft || target.sheet_area_sft,
+     thickness_mm: initialSize?.thickness_mm || target.thickness_mm,
+     available_widths_ft: target.available_widths_ft,
+     available_sheet_sizes: target.available_sheet_sizes,
+     configured_sizes: configuredSizes,
+     selected_size_id: initialSize?.id,
+     price_intelligence_summary: summary,
+     variants: target.variants,
+     size_spec: initialSize?.label || target.size_spec,
+     liquid_volume_capacity: target.liquid_volume_capacity,
+     pack_quantity: target.pack_quantity,
+   }
+ }
 
   // Populate PO Rows with price intelligence
  const populatePoRows = (po: PurchaseOrderRecord) => {
@@ -1042,11 +1106,21 @@ export function ReceiveStockModal({
  setLocationId('main-store')
       }
 
- const initialPo = purchaseOrder || availableOrders.find((o) => o.id === selectedPoId)
- if (initialPo) {
+ if (purchaseOrder) {
  setMode('po')
- setSelectedPoId(initialPo.id)
- populatePoRows(initialPo)
+ setSelectedPoId(purchaseOrder.id)
+ populatePoRows(purchaseOrder)
+      } else if (selectedMaterialId) {
+ setMode('direct')
+ setDirectItems([
+ createInitialDirectRow(
+ selectedMaterialId,
+ selectedWidthFt,
+ selectedLengthFt,
+ selectedUnitCost,
+ selectedSizeId
+ ),
+        ])
       } else if (availableOrders.length > 0 && mode === 'po' && !selectedPoId) {
  const firstReceivable =
  availableOrders.find((o) => o.status === 'issued' || o.status === 'partially_received') || availableOrders[0]
@@ -1055,10 +1129,27 @@ export function ReceiveStockModal({
  populatePoRows(firstReceivable)
         }
       } else if (mode !== 'po') {
- setDirectItems([createInitialDirectRow(selectedMaterialId)])
+ setDirectItems([
+ createInitialDirectRow(
+ selectedMaterialId,
+ selectedWidthFt,
+ selectedLengthFt,
+ selectedUnitCost,
+ selectedSizeId
+ ),
+        ])
       }
     }
-  }, [open, purchaseOrder, selectedMaterialId, companyId])
+  }, [
+ open,
+ purchaseOrder,
+ selectedMaterialId,
+ selectedWidthFt,
+ selectedLengthFt,
+ selectedUnitCost,
+ selectedSizeId,
+ companyId,
+  ])
 
   // Dynamic live sync: update active directItems rows whenever catalog configuration or pricing changes
  useEffect(() => {
@@ -1072,8 +1163,15 @@ export function ReceiveStockModal({
  if (!matched) return row
 
  const newConfiguredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(matched)
- const existingSize = newConfiguredSizes.find((s) => s.id === row.selected_size_id)
+ const existingSize =
+ (row.configured_sizes || []).find((s) => s.id === row.selected_size_id) ||
+ newConfiguredSizes.find((s) => s.id === row.selected_size_id)
  const activeSize = existingSize || newConfiguredSizes[0]
+
+ const combinedSizes = [...newConfiguredSizes]
+ if (existingSize && !combinedSizes.some((s) => s.id === existingSize.id)) {
+ combinedSizes.unshift(existingSize)
+        }
 
  const activeCost =
  activeSize?.default_supplier_price && activeSize.default_supplier_price > 0
@@ -1099,7 +1197,7 @@ export function ReceiveStockModal({
  master_unit: matched.master_unit,
  master_purchase_unit: matched.master_purchase_unit,
  available_purchase_units: availUnits,
- configured_sizes: newConfiguredSizes,
+ configured_sizes: combinedSizes,
  selected_size_id: activeSize?.id,
  size_spec: activeSize?.label || matched.size_spec,
  roll_width_ft: activeSize?.width_ft || matched.roll_width_ft,

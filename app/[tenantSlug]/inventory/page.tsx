@@ -307,6 +307,10 @@ function UnifiedInventoryContent() {
 
   // Target items for contextual actions
  const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
+ const [selectedReceiveWidthFt, setSelectedReceiveWidthFt] = useState<number | undefined>(undefined)
+ const [selectedReceiveLengthFt, setSelectedReceiveLengthFt] = useState<number | undefined>(undefined)
+ const [selectedReceiveUnitCost, setSelectedReceiveUnitCost] = useState<number | undefined>(undefined)
+ const [selectedReceiveSizeId, setSelectedReceiveSizeId] = useState<string | undefined>(undefined)
  const [selectedRollForAction, setSelectedRollForAction] = useState<InventoryRollRecord | null>(null)
  const [selectedFloorRecordForConsumption, setSelectedFloorRecordForConsumption] = useState<FloorConsumptionRecord | null>(null)
  const [selectedPoForReceive, setSelectedPoForReceive] = useState<PurchaseOrderRecord | null>(null)
@@ -1893,6 +1897,16 @@ function UnifiedInventoryContent() {
  size="sm"variant={isOut ? 'default' : 'outline'}
  onClick={() => {
  setSelectedMaterialForAction(row.material)
+ setSelectedReceiveWidthFt(row.width_ft > 0 ? row.width_ft : undefined)
+ setSelectedReceiveLengthFt(row.length_ft > 0 ? row.length_ft : undefined)
+ setSelectedReceiveUnitCost(
+ row.purchase_price > 0
+ ? row.purchase_price
+ : row.avg_unit_cost > 0
+ ? row.avg_unit_cost
+ : undefined
+                        )
+ setSelectedReceiveSizeId(undefined)
  setIsReceiveStockOpen(true)
                                   }}
  className={cn(
@@ -1908,6 +1922,8 @@ function UnifiedInventoryContent() {
                                 <Button
  size="sm"variant="outline"onClick={() => {
  setSelectedMaterialForAction(row.material)
+ setSelectedReceiveWidthFt(row.width_ft > 0 ? row.width_ft : undefined)
+ setSelectedReceiveLengthFt(row.length_ft > 0 ? row.length_ft : undefined)
  setIsAdjustmentOpen(true)
                                   }}
  className="h-7 px-2 text-xs text-warning hover:bg-warning-surface border-warning-border border-warning-border font-medium cursor-pointer"title={isBn ? 'স্টক এডজাস্টমেন্ট' : 'Stock adjustment'}
@@ -3351,7 +3367,14 @@ function UnifiedInventoryContent() {
  open={isReceiveStockOpen}
  onOpenChange={(open) => {
  setIsReceiveStockOpen(open)
- if (!open) setSelectedPoForReceive(null)
+ if (!open) {
+ setSelectedPoForReceive(null)
+ setSelectedMaterialForAction(null)
+ setSelectedReceiveWidthFt(undefined)
+ setSelectedReceiveLengthFt(undefined)
+ setSelectedReceiveUnitCost(undefined)
+ setSelectedReceiveSizeId(undefined)
+            }
           }}
  materials={materials}
  products={readyProducts}
@@ -3359,6 +3382,10 @@ function UnifiedInventoryContent() {
  orders={orders}
  purchaseOrder={selectedPoForReceive}
  selectedMaterialId={selectedMaterialForAction?.id}
+ selectedWidthFt={selectedReceiveWidthFt}
+ selectedLengthFt={selectedReceiveLengthFt}
+ selectedUnitCost={selectedReceiveUnitCost}
+ selectedSizeId={selectedReceiveSizeId}
  onSuccess={() => {
  showNotification('Stock received and ledger updated successfully.')
  loadAllData()
@@ -3441,12 +3468,18 @@ function UnifiedInventoryContent() {
  open={isAdjustmentOpen}
  onOpenChange={(open) => {
  setIsAdjustmentOpen(open)
- if (!open) setSelectedMaterialForAction(null)
+ if (!open) {
+ setSelectedMaterialForAction(null)
+ setSelectedReceiveWidthFt(undefined)
+ setSelectedReceiveLengthFt(undefined)
+            }
           }}
  materials={materials}
  locations={locations}
  selectedMaterial={selectedMaterialForAction}
  selectedMaterialId={selectedMaterialForAction?.id}
+ selectedWidthFt={selectedReceiveWidthFt}
+ selectedLengthFt={selectedReceiveLengthFt}
  onSuccess={() => {
  showNotification('Stock adjustment recorded successfully.')
  loadAllData()
