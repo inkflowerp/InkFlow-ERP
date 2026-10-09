@@ -15,7 +15,7 @@ export default async function ProductsModuleLayout({ params, children }: LayoutP
     <PanelAccessGuard
       module="products"
       action="view"
-      panelTitle="Products & Services"
+      panelTitle="Product & Services"
       panelTitleBn="পণ্য ও সেবা"
     >
       {children}

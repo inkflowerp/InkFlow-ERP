@@ -186,8 +186,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'products',
-          title: 'Items',
-          titleBn: 'পণ্য তালিকা',
+          title: 'Product & Services',
+          titleBn: 'পণ্য ও সেবা',
           href: '/products',
           icon: 'Layers',
           permission: { action: 'view', resource: 'products' },

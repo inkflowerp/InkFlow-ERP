@@ -1741,8 +1741,23 @@ export default function ProductsCatalogPage() {
  const renderProductActionMenu = (item: ProductRecord, idx: number, totalCount: number) => {
  const isOpen = activeMenuProductId === item.id
  return (
-      <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
-        <div className="relative inline-block text-left"data-product-menu>
+      <td className="py-3.5 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px]">
+        <div className="flex items-center justify-center gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleOpenEdit(item)
+            }}
+            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer flex items-center justify-center"
+            title={tBilingual('Edit', 'সম্পাদনা')}
+            aria-label="Edit Item"
+          >
+            <Edit3 className="h-4 w-4" />
+          </Button>
+
+          <div className="relative inline-block text-left"data-product-menu>
           <Button
  size="sm"variant="ghost"onClick={(e) => {
  e.stopPropagation()
@@ -1854,6 +1869,7 @@ export default function ProductsCatalogPage() {
             </div>
           )}
         </div>
+        </div>
       </td>
     )
   }
@@ -1874,11 +1890,11 @@ export default function ProductsCatalogPage() {
 
  return (
     <PanelAccessGuard
- module="products"action="view"panelTitle="Products & Commercial Masters"panelTitleBn="পণ্য ও বাণিজ্যিক মাস্টার্স">
+ module="products"action="view"panelTitle="Product & Services"panelTitleBn="পণ্য ও সেবা">
       <div className="space-y-6 pb-12">
       {/* Page Header with Direct Action Launchers */}
       <PageHeader
- titleEn="Products & Commercial Masters"titleBn="পণ্য ও বাণিজ্যিক মাস্টার্স"descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"icon={Package}
+ titleEn="Product & Services"titleBn="পণ্য ও সেবা"descriptionEn="Unified commercial catalog • Print services, ready products, raw materials, finishing & logistics tariffs"descriptionBn="প্রিন্টিং সার্ভিস, রেডি প্রোডাক্ট, কাঁচামাল, ফিনিশিং ও ডেলিভারি ট্যারিফ নিয়ন্ত্রণ কেন্দ্র"icon={Package}
  iconColor="text-primary"actions={
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
@@ -1985,48 +2001,7 @@ export default function ProductsCatalogPage() {
         </Card>
       </div>
 
-      {/* 9 Specialized Commercial Navigation Tabs with Live Counts */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border scrollbar-thin">
-        {[
-          { id: 'all', label: tBilingual('All Items', 'সকল আইটেম'), count: tabCounts.all, icon: Package },
-          { id: 'service', label: tBilingual('Services', 'সার্ভিসসমূহ'), count: tabCounts.service, icon: Printer },
-          { id: 'product', label: tBilingual('Ready Products', 'প্রস্তুত পণ্য'), count: tabCounts.product, icon: Package },
-          { id: 'material', label: tBilingual('Raw Materials', 'কাঁচামাল'), count: tabCounts.material, icon: Layers },
-          { id: 'outsource', label: tBilingual('Outsource Products', 'আউটসোর্স পণ্য'), count: tabCounts.outsource, icon: Share2 },
-          { id: 'finishing', label: tBilingual('Finishing Masters', 'ফিনিশিং মাস্টার'), count: tabCounts.finishing, icon: Scissors },
-          { id: 'additional', label: tBilingual('Additional Work', 'অতিরিক্ত কাজ'), count: tabCounts.additional, icon: PlusCircle },
-          { id: 'installation', label: tBilingual('Installation & Delivery', 'ইনস্টলেশন ও ডেলিভারি'), count: tabCounts.installation, icon: Truck },
-          { id: 'printing_methods', label: tBilingual('Printing Methods', 'প্রিন্টিং পদ্ধতি'), count: tabCounts.printing_methods, icon: Palette },
-        ].map((tab) => {
- const Icon = tab.icon
- const isActive = entityTypeFilter === tab.id
- return (
-            <button
- key={tab.id}
- type="button"onClick={() => setEntityTypeFilter(tab.id as any)}
- className={cn(
-                'px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 border',
- isActive
-                  ? 'bg-surface-inset text-foreground border-border dark:border-white shadow-xs'
-                  : 'bg-card text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted'
-              )}
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0"/>
-              <span>{tab.label}</span>
-              <span
- className={cn(
-                  'px-1.5 py-0.5 text-xs rounded-full tabular-nums font-bold',
- isActive
-                    ? 'bg-card/20 text-white '
-                    : 'bg-muted text-muted-foreground '
-                )}
-              >
-                {tab.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+
 
       {/* Search, Category, Commercial Type & Status Filters */}
       <div className="p-3 bg-card rounded-xl border border-border shadow-xs flex flex-wrap items-center justify-between gap-3">
@@ -2746,7 +2721,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -2913,7 +2888,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3073,7 +3048,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Compatible Printing', 'উপযোগী প্রিন্টিং')}</th>
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Effective Cost / Unit', 'কার্যকর খরচ / একক')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3225,7 +3200,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap bangla-text">{tBilingual('Selling Rate', 'বিক্রয় দর')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
@@ -3357,12 +3332,11 @@ export default function ProductsCatalogPage() {
           <CardHeader className="py-3.5 px-4 border-b border-border bg-muted">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>{tBilingual('Commercial Master Catalog', 'কমার্শিয়াল মাস্টার ক্যাটালগ')}</span>
+                <span>{tBilingual('Product & Services', 'পণ্য ও সেবা')}</span>
                 <Badge variant="outline"className="text-xs tabular-nums font-bold">
                   {filteredProducts.length}
                 </Badge>
               </CardTitle>
-              <span className="text-xs text-muted-foreground">{tBilingual("PostgreSQL Authoritative Units, Conversion & Costing", "ইউনিট কনভার্সন ও নির্ভরযোগ্য কস্টিং")}</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -3403,7 +3377,7 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Gross Margin', 'মোট মার্জিন')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Min Charge', 'সর্বনিম্ন চার্জ')}</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center bangla-text">{tBilingual('Status', 'অবস্থা')}</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[90px] min-w-[90px] bangla-text">{tBilingual('Actions', 'অ্যাকশন')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border dark:divide-border">
