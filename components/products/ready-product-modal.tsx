@@ -572,60 +572,93 @@ export function ReadyProductModal({
  return calculateGrossMargin(cost, sp)
   }, [totalLandedCost, sellingPrice])
 
-  // Auto-fill price tiers based on standard segment percentages (MUST NOT be less than Landed Unit Cost)
- const handleAutoFillTiers = () => {
- let sp = Number(sellingPrice) || 0
- const costFloor = Number(totalLandedCost) || 0
- if (sp <= costFloor && costFloor > 0) {
- sp = Math.ceil(costFloor * (1 + (targetMargin || 35) / 100))
- setSellingPrice(sp)
+  // Sync Customer Tier Segment Rates linked with Price Settings:
+  // Wholesale (minimum price), Dealer (+5%), Corporate (+10%), Retail (+15%), VIP (Custom)
+  const handleUpdateLinkWithPriceSettings = () => {
+    const baseMin =
+      minPrice !== '' && Number(minPrice) > 0
+        ? Number(minPrice)
+        : totalLandedCost > 0
+        ? Number(totalLandedCost)
+        : purchasePrice !== '' && Number(purchasePrice) > 0
+        ? Number(purchasePrice)
+        : sellingPrice !== '' && Number(sellingPrice) > 0
+        ? Math.round(Number(sellingPrice) / 1.15)
+        : 0
+
+    if (baseMin <= 0) {
+      dispatchToast({
+        type: 'warning',
+        title: tBilingual('Minimum Price Required', 'সর্বনিম্ন মূল্য আবশ্যক'),
+        message: tBilingual(
+          'Please enter Minimum Selling Price or Purchase Price to calculate tier rates.',
+          'গ্রাহক স্তরের রেট হিসাব করতে সর্বনিম্ন বিক্রয় মূল্য বা ক্রয় মূল্য প্রদান করুন।'
+        ),
+      })
+      return
     }
- if (sp <= 0 && costFloor <= 0) return
 
- const effectiveSp = sp > 0 ? sp : Math.ceil(costFloor)
+    const wholesaleRate = Math.round(baseMin)
+    const dealerRate = Math.round(baseMin * 1.05)
+    const corporateRate = Math.round(baseMin * 1.10)
+    const retailRate = Math.round(baseMin * 1.15)
+    const customRate = priceTiers.custom !== '' ? priceTiers.custom : retailRate
 
- const clampToFloor = (calcVal: number) => {
- const rounded = Math.round(calcVal)
- const floored = Math.max(Math.ceil(costFloor), rounded)
- return floored
-    }
+    setMinPrice(wholesaleRate)
+    setSellingPrice(retailRate)
+    setPriceTiers({
+      wholesale: wholesaleRate,
+      dealer: dealerRate,
+      corporate: corporateRate,
+      retail: retailRate,
+      custom: customRate,
+    })
 
- setPriceTiers({
- retail: clampToFloor(effectiveSp),
- corporate: clampToFloor(effectiveSp * 0.95), // 5% discount, clamped to costFloor
- dealer: clampToFloor(effectiveSp * 0.90),    // 10% discount, clamped to costFloor
- wholesale: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
- custom: clampToFloor(effectiveSp * 0.75),
+    dispatchToast({
+      type: 'success',
+      title: tBilingual('Price Settings Linked', 'প্রাইস সেটিংস লিংক সম্পন্ন'),
+      message: tBilingual(
+        `Tiers updated: Wholesale (৳${wholesaleRate}), Dealer (৳${dealerRate}), Corporate (৳${corporateRate}), Retail (৳${retailRate})`,
+        `রেট আপডেট: পাইকারি (৳${wholesaleRate}), ডিলার (৳${dealerRate}), কর্পোরেট (৳${corporateRate}), রিটেইল (৳${retailRate})`
+      ),
     })
   }
 
-  // 1-Click Preset Template Loader
- const handleApplyPreset = (preset: typeof READY_PRODUCT_PRESETS[0]) => {
- setName(preset.name)
- setNameBn(preset.name_bn)
- setCategory(preset.category)
- setDimensionsSpec(preset.dimensions)
- setMaterialSpec(preset.material)
- setFinishColor(preset.finish)
- setUnit(preset.unit)
- setPurchaseUnit(preset.purchaseUnit)
- setBaseCost(preset.defaultCost)
- setPurchasePrice(preset.defaultCost)
- setFreightCost('')
- setSellingPrice(preset.defaultSellingPrice)
- setUnitWeightKg(preset.weightKg)
- setPcsPerCarton(preset.pcsPerCarton)
- setHasCarryBag(preset.hasBag)
- setIsFoldable(preset.isFoldable)
- setDescription(preset.description)
+  const handleAutoFillTiers = handleUpdateLinkWithPriceSettings
 
-    // Auto calculate initial price tiers
- setPriceTiers({
- retail: preset.defaultSellingPrice,
- corporate: Math.round(preset.defaultSellingPrice * 0.95),
- dealer: Math.round(preset.defaultSellingPrice * 0.90),
- wholesale: Math.round(preset.defaultSellingPrice * 0.85),
- custom: preset.defaultSellingPrice,
+  // 1-Click Preset Template Loader
+  const handleApplyPreset = (preset: typeof READY_PRODUCT_PRESETS[0]) => {
+    setName(preset.name)
+    setNameBn(preset.name_bn)
+    setCategory(preset.category)
+    setDimensionsSpec(preset.dimensions)
+    setMaterialSpec(preset.material)
+    setFinishColor(preset.finish)
+    setUnit(preset.unit)
+    setPurchaseUnit(preset.purchaseUnit)
+    setBaseCost(preset.defaultCost)
+    setPurchasePrice(preset.defaultCost)
+    setFreightCost('')
+    setUnitWeightKg(preset.weightKg)
+    setPcsPerCarton(preset.pcsPerCarton)
+    setHasCarryBag(preset.hasBag)
+    setIsFoldable(preset.isFoldable)
+    setDescription(preset.description)
+
+    // Link initial price tiers with price settings formula
+    const baseMin = preset.defaultCost
+    const ws = baseMin
+    const dlr = Math.round(baseMin * 1.05)
+    const corp = Math.round(baseMin * 1.10)
+    const ret = Math.round(baseMin * 1.15)
+    setMinPrice(ws)
+    setSellingPrice(preset.defaultSellingPrice || ret)
+    setPriceTiers({
+      wholesale: ws,
+      dealer: dlr,
+      corporate: corp,
+      retail: preset.defaultSellingPrice || ret,
+      custom: preset.defaultSellingPrice || ret,
     })
   }
 
@@ -861,7 +894,7 @@ export function ReadyProductModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-foreground">
-                {initialData ? (isBn ? `রেডি প্রোডাক্ট সম্পাদনা: ${initialData.name_bn || initialData.name}` : `Edit Ready Product: ${initialData.name}`) : tBilingual('New Ready Product Master', 'নতুন রেডি প্রোডাক্ট মাস্টার')}
+                {initialData ? (isBn ? `রেডি প্রোডাক্ট সম্পাদনা: ${initialData.name_bn || initialData.name}` : `Edit Ready Product: ${initialData.name}`) : tBilingual('Ready Product', 'রেডি প্রোডাক্ট')}
               </span>
               <Badge variant="outline"className="text-xs uppercase tabular-nums py-0.5 px-2 bg-primary/10 text-primary border-primary/20">
  Ready to Sell
@@ -982,75 +1015,95 @@ export function ReadyProductModal({
               </div>
 
               <div className="space-y-3">
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Product Name (English)', 'প্রোডাক্টের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
- placeholder={tBilingual('e.g. X-Stand Display 2×5 ft, Roll-up Banner Stand 33×80 in...', 'যেমন: এক্স-স্ট্যান্ড ডিসপ্লে ২×৫ ফিট, রোল-আপ ব্যানার ৩৩×৮০ ইঞ্চি...')}value={name}
- onChange={(e) => {
- setName(e.target.value)
- if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
-                    }}
- required
- className={cn(
-                      'h-9 text-xs transition-colors',
- fieldErrors.name && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
+                {/* First Row: Product Name (English) | Product Name (Bangla) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('Product Name (English)', 'প্রোডাক্টের নাম (ইংরেজি)')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      placeholder={tBilingual('e.g. X-Stand Display 2×5 ft, Roll-up Banner Stand 33×80 in...', 'যেমন: এক্স-স্ট্যান্ড ডিসপ্লে ২×৫ ফিট, রোল-আপ ব্যানার ৩৩×৮০ ইঞ্চি...')}
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value)
+                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                      }}
+                      required
+                      className={cn(
+                        'h-9 text-xs transition-colors',
+                        fieldErrors.name && 'border-destructive focus-visible:ring-destructive bg-destructive/10'
+                      )}
+                      autoFocus
+                    />
+                    {fieldErrors.name && (
+                      <p className="text-xs text-destructive font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
+                        <span>{fieldErrors.name}</span>
+                      </p>
                     )}
- autoFocus
-                  />
-                  {fieldErrors.name && (
-                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
-                      <span>{fieldErrors.name}</span>
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Product Name (Bangla - Optional)', 'বাংলা নাম (ঐচ্ছিক)')}
-                    </Label>
-                    <Input
- placeholder="যেমন: এক্স-স্ট্যান্ড ডিসপ্লে ব্যানার"value={nameBn}
- onChange={(e) => setNameBn(e.target.value)}
- className="h-9 text-xs font-bengali"/>
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('SKU / Item Code', 'আইটেম কোড / SKU')}
+                      {tBilingual('Product Name (Bangla - Optional)', 'বাংলা নাম (ঐচ্ছিক)')}
                     </Label>
                     <Input
- placeholder="e.g. XSTAND-2X5"value={sku}
- onChange={(e) => setSku(e.target.value)}
- className="h-9 text-xs tabular-nums uppercase"/>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Barcode / EAN-13 (Optional)', 'বারকোড / EAN-13 (ঐচ্ছিক)')}
-                    </Label>
-                    <div className="relative">
-                      <QrCode className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground"/>
-                      <Input
- placeholder={tBilingual('Scan or enter barcode', 'বারকোড স্ক্যান বা ইনপুট করুন')}value={barcode}
- onChange={(e) => setBarcode(e.target.value)}
- className="pl-8 h-9 text-xs tabular-nums"/>
-                    </div>
+                      placeholder="যেমন: এক্স-স্ট্যান্ড ডিসপ্লে ব্যানার"
+                      value={nameBn}
+                      onChange={(e) => setNameBn(e.target.value)}
+                      className="h-9 text-xs font-bengali"
+                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <div className="sm:col-span-2">
+                {/* Second Row: Purchase Unit | Selling Unit */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
                     <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Category', 'ক্যাটাগরি')}
+                      {tBilingual('Purchase Unit', 'ক্রয় একক')} <span className="text-destructive">*</span>
                     </Label>
                     <select
- value={category}
- onChange={(e) => setCategory(e.target.value)}
- className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
+                      value={purchaseUnit}
+                      onChange={(e) => setPurchaseUnit(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
+                    >
+                      {READY_PRODUCT_UNITS.map((u) => (
+                        <option key={u.value} value={u.value}>
+                          {locale === 'bn' ? u.labelBn : u.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('Selling Unit', 'বিক্রয় একক')} <span className="text-destructive">*</span>
+                    </Label>
+                    <select
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
+                    >
+                      {READY_PRODUCT_UNITS.map((u) => (
+                        <option key={u.value} value={u.value}>
+                          {locale === 'bn' ? u.labelBn : u.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Third Row: Category | Brand */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('Category', 'ক্যাটাগরি')}
+                    </Label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium"
+                    >
                       {READY_PRODUCT_CATEGORIES.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -1066,44 +1119,69 @@ export function ReadyProductModal({
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Brand / Maker', 'ব্র্যান্ড / প্রস্তুতকারক')}
+                      {tBilingual('Brand / Maker', 'ব্র্যান্ড / প্রস্তুতকারক')}
                     </Label>
                     <Input
- placeholder={tBilingual('e.g. MasterDisplay, China Import', 'যেমন: মাস্টার ডিসপ্লে, চায়না ইমপোর্ট')}value={brand}
- onChange={(e) => setBrand(e.target.value)}
- className="h-9 text-xs"/>
+                      placeholder={tBilingual('e.g. MasterDisplay, China Import', 'যেমন: মাস্টার ডিসপ্লে, চায়না ইমপোর্ট')}
+                      value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Fourth Row: SKU/Item Code | Barcode */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      {tBilingual('SKU / Item Code', 'আইটেম কোড / SKU')}
+                    </Label>
+                    <Input
+                      placeholder="e.g. XSTAND-2X5"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      className="h-9 text-xs tabular-nums uppercase"
+                    />
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Selling Unit', 'বিক্রয় একক')} <span className="text-destructive">*</span>
+                      {tBilingual('Barcode / EAN-13 (Optional)', 'বারকোড / EAN-13 (ঐচ্ছিক)')}
                     </Label>
-                    <select
- value={unit}
- onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
- className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
-                      {READY_PRODUCT_UNITS.map((u) => (<option key={u.value} value={u.value}>{locale === 'bn' ? u.labelBn : u.label}</option>))}
-                    </select>
+                    <div className="relative">
+                      <QrCode className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground"/>
+                      <Input
+                        placeholder={tBilingual('Scan or enter barcode', 'বারকোড স্ক্যান বা ইনপুট করুন')}
+                        value={barcode}
+                        onChange={(e) => setBarcode(e.target.value)}
+                        className="pl-8 h-9 text-xs tabular-nums"
+                      />
+                    </div>
                   </div>
                 </div>
 
+                {/* Fifth Row: Product Description */}
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Product Description & Selling Highlights', 'প্রোডাক্ট বিবরণ ও বিক্রয় বৈশিষ্ট্য')}
+                    {tBilingual('Product Description & Selling Highlights', 'প্রোডাক্ট বিবরণ ও বিক্রয় বৈশিষ্ট্য')}
                   </Label>
                   <textarea
- rows={2}
- placeholder={tBilingual('e.g. Professional display stand with high-elastic fiberglass rods, anodized aluminum base, and waterproof padded carry bag...', 'যেমন: ফাইবারগ্লাস রড ও অ্যালুমিনিয়াম বেসসহ প্রফেশনাল ডিসপ্লে স্ট্যান্ড...')}value={description}
- onChange={(e) => setDescription(e.target.value)}
- className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-ring outline-hidden resize-none"/>
+                    rows={2}
+                    placeholder={tBilingual('e.g. Professional display stand with high-elastic fiberglass rods, anodized aluminum base, and waterproof padded carry bag...', 'যেমন: ফাইবারগ্লাস রড ও অ্যালুমিনিয়াম বেসসহ প্রফেশনাল ডিসপ্লে স্ট্যান্ড...')}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full p-2.5 rounded-md border border-input bg-card text-xs focus:ring-1 focus:ring-ring outline-hidden resize-none"
+                  />
                 </div>
 
                 <div className="pt-2 border-t border-border">
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground">
                     <input
- type="checkbox"checked={isActive}
- onChange={(e) => setIsActive(e.target.checked)}
- className="w-4 h-4 rounded text-primary focus:ring-ring"/>
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={(e) => setIsActive(e.target.checked)}
+                      className="w-4 h-4 rounded text-primary focus:ring-ring"
+                    />
                     <span className={cn(isBn && "font-bangla")}>{tBilingual('Active in Sales & Billing Catalog', 'সেলস ও বিলিং ক্যাটালগে সক্রিয়')}</span>
                   </label>
                 </div>
@@ -1160,30 +1238,22 @@ export function ReadyProductModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
+              <div className="pt-1">
+                <div className="max-w-xs">
                   <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Unit Net Weight (kg)', 'প্রতি পিস ওজন (কেজি)')}
+                    {tBilingual('Unit Net Weight (kg)', 'প্রতি পিস ওজন (কেজি)')}
                   </Label>
                   <div className="relative">
                     <Scale className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground"/>
                     <Input
- type="number"step="0.01"placeholder="e.g. 1.25"value={unitWeightKg}
- onChange={(e) => setUnitWeightKg(e.target.value === '' ? '' : parseFloat(e.target.value))}
- className="pl-8 h-9 text-xs tabular-nums"/>
+                      type="number"
+                      step="0.01"
+                      placeholder="e.g. 1.25"
+                      value={unitWeightKg}
+                      onChange={(e) => setUnitWeightKg(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-8 h-9 text-xs tabular-nums"
+                    />
                   </div>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">
- {tBilingual('Purchase Unit', 'ক্রয় একক')}
-                  </Label>
-                  <select
- value={purchaseUnit}
- onChange={(e) => setPurchaseUnit(e.target.value)}
- className="w-full h-9 text-xs rounded-md border border-input bg-card px-2 font-medium">
-                    {READY_PRODUCT_UNITS.map((u) => (<option key={u.value} value={u.value}>{locale === 'bn' ? u.labelBn : u.label}</option>))}
-                  </select>
                 </div>
               </div>
 
@@ -1293,35 +1363,17 @@ export function ReadyProductModal({
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Commercial Selling Price & Landed Cost Structure', 'বাণিজ্যিক বিক্রয় মূল্য ও ল্যান্ডেড খরচ কাঠামো')}</h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              {/* First Row: Purchase Price {update with Receive stock} | Minimum Selling price {link with Price Settings} */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual(`Base Selling Price (৳ / ${unit})`, `মূল বিক্রয় মূল্য (৳ / ${unit})`)} <span className="text-destructive">*</span></Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
-                    <Input
- type="number"step="any"min="0"placeholder="e.g. 750"value={sellingPrice}
- onChange={(e) => {
- setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))
- if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
-                      }}
- required
- className={cn(
-                        'pl-7 h-9 text-xs tabular-nums font-bold text-primary text-primary transition-colors',
- fieldErrors.sellingPrice && 'border-danger-border focus-visible:focus:ring-ring bg-danger-surface/30 bg-danger-surface'
-                      )}
- autoFocus
-                    />
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold text-foreground">
+                      {tBilingual('Purchase Price (৳)', 'ক্রয় মূল্য (৳)')}
+                    </Label>
+                    <Badge variant="outline" className="text-xs py-0 px-1.5 bg-muted text-muted-foreground border-border font-normal">
+                      {tBilingual('update with Receive stock', 'স্টক রিসিভের সাথে আপডেট হয়')}
+                    </Badge>
                   </div>
-                  {fieldErrors.sellingPrice && (
-                    <p className="text-xs text-destructive text-destructive font-medium mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
-                      <span>{fieldErrors.sellingPrice}</span>
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Factory Purchase Price (৳)', 'কারখানা ক্রয় মূল্য (৳)')}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
@@ -1341,25 +1393,87 @@ export function ReadyProductModal({
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Freight / Landed Add (৳)', 'ভাড়া / ল্যান্ডেড খরচ (৳)')}</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold text-foreground">
+                      {tBilingual('Minimum Selling Price (৳)', 'সর্বনিম্ন বিক্রয় মূল্য (৳)')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Badge variant="outline" className="text-xs py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-medium">
+                      {tBilingual('link with Price Settings', 'প্রাইস সেটিংসের সাথে লিংক')}
+                    </Badge>
+                  </div>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"min="0"placeholder="e.g. 30"value={freightCost}
- onChange={(e) => setFreightCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
- className="pl-7 h-9 text-xs tabular-nums"/>
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder={tBilingual('e.g. 600', 'যেমন: ৬০০')}
+                      value={minPrice}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                        setMinPrice(val)
+                      }}
+                      className="pl-7 h-9 text-xs tabular-nums font-bold text-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Second Row: Freight / Landed Add | Base Selling Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block text-foreground">
+                    {tBilingual('Freight / Landed Add (৳)', 'ভাড়া / ল্যান্ডেড খরচ (৳)')}
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="e.g. 30"
+                      value={freightCost}
+                      onChange={(e) => setFreightCost(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="pl-7 h-9 text-xs tabular-nums"
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1 block text-foreground">{tBilingual('Floor Protect Price (৳)', 'ফ্লোর প্রটেক্ট মূল্য (৳)')}</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold text-foreground">
+                      {tBilingual(`Base Selling Price (৳ / ${unit})`, `মূল বিক্রয় মূল্য (৳ / ${unit})`)} <span className="text-destructive">*</span>
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {tBilingual('Standard Retail (+15%)', 'স্ট্যান্ডার্ড রিটেইল (+১৫%)')}
+                    </span>
+                  </div>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"min="0"placeholder={tBilingual('Floor rate', 'ফ্লোর রেট')}value={minPrice}
- onChange={(e) => setMinPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
- className="pl-7 h-9 text-xs tabular-nums"/>
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="e.g. 750"
+                      value={sellingPrice}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? '' : parseFloat(e.target.value)
+                        setSellingPrice(val)
+                        if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
+                      }}
+                      required
+                      className={cn(
+                        'pl-7 h-9 text-xs tabular-nums font-bold text-primary transition-colors',
+                        fieldErrors.sellingPrice && 'border-destructive focus-visible:ring-destructive bg-destructive/10'
+                      )}
+                    />
                   </div>
+                  {fieldErrors.sellingPrice && (
+                    <p className="text-xs text-destructive font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0"/>
+                      <span>{fieldErrors.sellingPrice}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1371,13 +1485,14 @@ export function ReadyProductModal({
                     <span>{tBilingual('Live Yield & Margin Analysis', 'লাইভ মার্জিন ও লাভ বিশ্লেষণ')} ({tBilingual('Landed Cost:', 'ল্যান্ডেড খরচ:')} ৳{totalLandedCost.toFixed(2)})</span>
                   </div>
                   <Badge
- variant="outline"className={cn(
+                    variant="outline"
+                    className={cn(
                       'text-xs font-bold px-2 py-0.5 rounded-md',
- marginMetrics.grossMarginPercent >= targetMargin
+                      marginMetrics.grossMarginPercent >= targetMargin
                         ? 'bg-success-surface text-success border-success-border'
                         : marginMetrics.grossMarginPercent >= minAllowedMargin
-                        ? 'bg-warning-surface text-warning border-warning-border bg-warning-surface text-warning border-warning-border'
-                        : 'bg-danger-surface text-destructive border-danger-border bg-danger-surface text-destructive border-danger-border'
+                        ? 'bg-warning-surface text-warning border-warning-border'
+                        : 'bg-destructive/10 text-destructive border-destructive/20'
                     )}
                   >
                     {marginMetrics.grossMarginPercent >= targetMargin ? (
@@ -1393,30 +1508,30 @@ export function ReadyProductModal({
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
+                  <div className="p-2 rounded-lg bg-card border border-border/60 shadow-2xs">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Profit / Unit', 'লাভ / ইউনিট')}</span>
-                    <span className="text-sm font-black tabular-nums text-success text-success">
+                    <span className="text-sm font-black tabular-nums text-success">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
+                  <div className="p-2 rounded-lg bg-card border border-border/60 shadow-2xs">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Gross Margin', 'গ্রস মার্জিন')}</span>
                     <span
- className={cn(
+                      className={cn(
                         'text-sm font-black tabular-nums',
- marginMetrics.grossMarginPercent >= minAllowedMargin
-                          ? 'text-success text-success'
-                          : 'text-destructive text-destructive'
+                        marginMetrics.grossMarginPercent >= minAllowedMargin
+                          ? 'text-success'
+                          : 'text-destructive'
                       )}
                     >
                       {marginMetrics.grossMarginPercent}%
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-card border border-border /60 shadow-2xs">
+                  <div className="p-2 rounded-lg bg-card border border-border/60 shadow-2xs">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider block">{tBilingual('Markup', 'মার্কআপ')}</span>
-                    <span className="text-sm font-black tabular-nums text-primary text-primary">
+                    <span className="text-sm font-black tabular-nums text-primary">
                       {marginMetrics.markupPercent}%
                     </span>
                   </div>
@@ -1426,16 +1541,20 @@ export function ReadyProductModal({
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-muted-foreground">{tBilingual('Target Gross Margin (%)', 'টার্গেট গ্রস মার্জিন (%)')}</Label>
                     <Input
- type="number"value={targetMargin}
- onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
- className="h-8 text-xs tabular-nums font-bold text-success"/>
+                      type="number"
+                      value={targetMargin}
+                      onChange={(e) => setTargetMargin(parseFloat(e.target.value) || 35)}
+                      className="h-8 text-xs tabular-nums font-bold text-success"
+                    />
                   </div>
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-muted-foreground">{tBilingual('Minimum Allowed Margin (%) (Floor)', 'সর্বনিম্ন অনুমোদিত মার্জিন (%) (ফ্লোর)')}</Label>
                     <Input
- type="number"value={minAllowedMargin}
- onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
- className="h-8 text-xs tabular-nums"/>
+                      type="number"
+                      value={minAllowedMargin}
+                      onChange={(e) => setMinAllowedMargin(parseFloat(e.target.value) || 15)}
+                      className="h-8 text-xs tabular-nums"
+                    />
                   </div>
                 </div>
               </div>
@@ -1449,117 +1568,174 @@ export function ReadyProductModal({
                     <Tag className="w-3.5 h-3.5"/>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{tBilingual('Customer Tier Segment Rates', 'গ্রাহক স্তর অনুযায়ী রেট')}</h3>
-                    <p className="text-xs text-muted-foreground">{tBilingual('Auto-applied when preparing quotations & sales for specific customer types.', 'নির্দিষ্ট ধরনের গ্রাহকদের কোটেশন ও বিক্রয়ের সময় স্বয়ংক্রিয়ভাবে প্রযোজ্য হয়।')}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                        {tBilingual('Customer Tier Segment Rates', 'গ্রাহক স্তর অনুযায়ী রেট')}
+                      </h3>
+                      <Badge variant="outline" className="text-xs py-0 px-2 bg-primary/10 text-primary border-primary/20">
+                        {tBilingual('link with Price Settings', 'প্রাইস সেটিংসের সাথে লিংক')}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {tBilingual(
+                        'Wholesale (minimum price), Dealer (+5%), Corporate (+10%), Retail (+15%), VIP (Custom)',
+                        'পাইকারি (সর্বনিম্ন দর), ডিলার (+৫%), কর্পোরেট (+১০%), রিটেইল (+১৫%), ভিআইপি (কাস্টম)'
+                      )}
+                    </p>
                   </div>
                 </div>
 
                 <Button
- type="button"size="sm"variant="outline"onClick={handleAutoFillTiers}
- className="h-7 text-xs font-semibold text-foreground border-border hover:bg-muted bg-primary/10/50 bg-primary/10 hover:bg-primary/10 cursor-pointer">
-                  <Sparkles className="w-3 h-3 mr-1"/> Auto-calculate Tiers
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleUpdateLinkWithPriceSettings}
+                  className="h-8 text-xs font-bold text-primary border-primary/30 hover:bg-primary/10 bg-primary/5 cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  title="Wholesale (minimum price), Dealer (+5%), Corporate (+10%), Retail (+15%), VIP (Custom)"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>{tBilingual('Update link with Price Settings', 'প্রাইস সেটিংস লিংক আপডেট')}</span>
                 </Button>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                {/* Retail Tier */}
+                {/* Wholesale Tier (minimum price) */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-foreground">Retail</span>
-                    <span className="text-xs text-muted-foreground">100%</span>
+                    <span className="text-xs font-bold uppercase text-foreground">
+                      {tBilingual('Wholesale', 'হোলসেল')}
+                    </span>
+                    <Badge variant="outline" className="text-xs py-0 px-1 bg-success-surface text-success border-success-border font-medium">
+                      {tBilingual('Min Price', 'মূল দর')}
+                    </Badge>
                   </div>
                   <div className="relative">
                     <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"placeholder={String(sellingPrice || '0')}
- value={priceTiers.retail}
- onChange={(e) =>
- setPriceTiers({
+                      type="number"
+                      step="any"
+                      placeholder={String(minPrice || '0')}
+                      value={priceTiers.wholesale}
+                      onChange={(e) =>
+                        setPriceTiers({
                           ...priceTiers,
- retail: e.target.value === '' ? '' : parseFloat(e.target.value),
+                          wholesale: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
- className="pl-5 h-7 text-xs tabular-nums font-semibold"/>
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
 
-                {/* Corporate Tier */}
+                {/* Dealer Tier (+5%) */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-primary text-primary">Corporate</span>
-                    <span className="text-xs text-primary font-medium">-5%</span>
+                    <span className="text-xs font-bold uppercase text-primary">
+                      {tBilingual('Dealer', 'ডিলার')}
+                    </span>
+                    <Badge variant="outline" className="text-xs py-0 px-1 bg-primary/10 text-primary border-primary/20 font-medium">
+                      +5%
+                    </Badge>
                   </div>
                   <div className="relative">
                     <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"placeholder="e.g. 712"value={priceTiers.corporate}
- onChange={(e) =>
- setPriceTiers({
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 630"
+                      value={priceTiers.dealer}
+                      onChange={(e) =>
+                        setPriceTiers({
                           ...priceTiers,
- corporate: e.target.value === '' ? '' : parseFloat(e.target.value),
+                          dealer: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
- className="pl-5 h-7 text-xs tabular-nums font-semibold"/>
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
 
-                {/* Dealer Tier */}
+                {/* Corporate Tier (+10%) */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-primary text-primary">Dealer</span>
-                    <span className="text-xs text-primary font-medium">-10%</span>
+                    <span className="text-xs font-bold uppercase text-primary">
+                      {tBilingual('Corporate', 'কর্পোরেট')}
+                    </span>
+                    <Badge variant="outline" className="text-xs py-0 px-1 bg-primary/10 text-primary border-primary/20 font-medium">
+                      +10%
+                    </Badge>
                   </div>
                   <div className="relative">
                     <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"placeholder="e.g. 675"value={priceTiers.dealer}
- onChange={(e) =>
- setPriceTiers({
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 660"
+                      value={priceTiers.corporate}
+                      onChange={(e) =>
+                        setPriceTiers({
                           ...priceTiers,
- dealer: e.target.value === '' ? '' : parseFloat(e.target.value),
+                          corporate: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
- className="pl-5 h-7 text-xs tabular-nums font-semibold"/>
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
 
-                {/* Wholesale Tier */}
+                {/* Retail Tier (+15%) */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-success text-success">Wholesale</span>
-                    <span className="text-xs text-success font-medium">-15%</span>
+                    <span className="text-xs font-bold uppercase text-foreground">
+                      {tBilingual('Retail', 'রিটেইল')}
+                    </span>
+                    <Badge variant="outline" className="text-xs py-0 px-1 bg-muted text-muted-foreground border-border font-medium">
+                      +15%
+                    </Badge>
                   </div>
                   <div className="relative">
                     <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"placeholder="e.g. 635"value={priceTiers.wholesale}
- onChange={(e) =>
- setPriceTiers({
+                      type="number"
+                      step="any"
+                      placeholder={String(sellingPrice || '0')}
+                      value={priceTiers.retail}
+                      onChange={(e) =>
+                        setPriceTiers({
                           ...priceTiers,
- wholesale: e.target.value === '' ? '' : parseFloat(e.target.value),
+                          retail: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
- className="pl-5 h-7 text-xs tabular-nums font-semibold"/>
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
 
                 {/* Custom VIP Tier */}
                 <div className="p-2.5 rounded-lg border border-border bg-muted space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-warning text-warning">Custom</span>
-                    <span className="text-xs text-warning font-medium">VIP</span>
+                    <span className="text-xs font-bold uppercase text-warning">
+                      {tBilingual('VIP', 'ভিআইপি')}
+                    </span>
+                    <Badge variant="outline" className="text-xs py-0 px-1 bg-warning-surface text-warning border-warning-border font-medium">
+                      Custom
+                    </Badge>
                   </div>
                   <div className="relative">
                     <span className="absolute left-2 top-2 text-muted-foreground font-bold text-xs">৳</span>
                     <Input
- type="number"step="any"placeholder="Custom"value={priceTiers.custom}
- onChange={(e) =>
- setPriceTiers({
+                      type="number"
+                      step="any"
+                      placeholder="Custom"
+                      value={priceTiers.custom}
+                      onChange={(e) =>
+                        setPriceTiers({
                           ...priceTiers,
- custom: e.target.value === '' ? '' : parseFloat(e.target.value),
+                          custom: e.target.value === '' ? '' : parseFloat(e.target.value),
                         })
                       }
- className="pl-5 h-7 text-xs tabular-nums font-semibold"/>
+                      className="pl-5 h-7 text-xs tabular-nums font-semibold"
+                    />
                   </div>
                 </div>
               </div>
