@@ -40,218 +40,183 @@ export function PrintLetterheadArt({
       className={`absolute inset-0 pointer-events-none overflow-hidden select-none ${className}`}
       aria-hidden="true"
     >
-      {/* 1. TOP HEADER ARTWORK (Compact height ~13.5% to never overlap safe area) */}
-      <div className="absolute top-0 left-0 right-0 h-[13.5%] w-full flex items-start justify-between">
-        {/* Top Left: Logo & Corporate Identity */}
-        <div className="pt-2 pl-3 sm:pt-2.5 sm:pl-4 z-10 max-w-[48%]">
-          <div className="flex items-center gap-2">
-            {companyLogoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={companyLogoUrl}
-                alt={companyName}
-                className="h-8 w-8 object-contain shrink-0 rounded-xs"
-              />
-            ) : (
-              /* Ribbon Swirl Logo Mark */
-              <svg
-                viewBox="0 0 36 36"
-                fill="none"
-                className="h-7 w-7 shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Upper emerald ribbon loop */}
-                <path
-                  d="M6 18C6 11.373 11.373 6 18 6C24.627 6 29 10 29 15C29 20 23 23 18 20C14 17.6 12 14 15 10"
-                  stroke="#10B981"
-                  strokeWidth="3.6"
-                  strokeLinecap="round"
-                />
-                {/* Lower dark green ribbon loop */}
-                <path
-                  d="M30 18C30 24.627 24.627 30 18 30C11.373 30 7 26 7 21C7 16 13 13 18 16C22 18.4 24 22 21 26"
-                  stroke="#064E3B"
-                  strokeWidth="3.6"
-                  strokeLinecap="round"
-                />
-                {/* Center golden highlight node */}
-                <circle cx="18" cy="18" r="3" fill="#EAB308" />
-              </svg>
-            )}
+      {/* 1. TOP HEADER ARTWORK: Exact match to Reference Image 2 */}
+      <div className="absolute top-0 left-0 right-0 h-[13.5%] w-full flex items-start justify-between overflow-hidden">
+        {/* Full-width Precision Swoosh SVG */}
+        <svg
+          viewBox="0 0 1024 213"
+          fill="none"
+          preserveAspectRatio="none"
+          className="absolute inset-0 w-full h-full pointer-events-none select-none z-0"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Subtle Light Sage Shadow / Swoosh Layer */}
+          <path
+            d="M 495 0 L 595 160 Q 615 200 655 213 L 1024 213 L 1024 0 Z"
+            fill="#E7EDEA"
+          />
 
-            <div>
-              {/* Company Name: Dynamic & Exactly 24px */}
-              <div className="flex items-baseline leading-none">
-                {companyName === 'PrintFlow' ? (
-                  <>
+          {/* Main Deep Forest Green Banner (#0A2E26) */}
+          <path
+            d="M 545 0 L 642 165 Q 662 202 705 213 L 1024 213 L 1024 0 Z"
+            fill="#0A2E26"
+          />
+        </svg>
+
+        {/* Top Left: Logo & Corporate Identity */}
+        <div className="relative z-10 pt-2.5 pl-4 sm:pt-3 sm:pl-5 max-w-[50%] h-full flex flex-col justify-between pb-2">
+          {/* Brand Mark & Tagline */}
+          <div>
+            <div className="flex items-center gap-2.5">
+              {companyLogoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={companyLogoUrl}
+                  alt={companyName}
+                  className="h-9 w-auto max-w-[130px] object-contain shrink-0 rounded-xs"
+                />
+              ) : (
+                /* Stylized "P" Ribbon Logo Mark matching Reference */
+                <svg
+                  viewBox="0 0 36 36"
+                  fill="none"
+                  className="h-8 w-8 shrink-0"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Stem of P in deep dark forest green */}
+                  <path
+                    d="M6 5v26h6V20h8c6.6 0 10.5-3.5 10.5-7.5S26.6 5 20 5H6z"
+                    fill="#0A2E26"
+                  />
+                  {/* Golden top swoop flourish */}
+                  <path
+                    d="M6 11c5-3 12-4 17-2 3.5 1.5 5.5 3.5 6.5 5.5-2.5-3.5-7-6-13-5.5C11.5 9.5 8 10 6 11z"
+                    fill="#F59E0B"
+                  />
+                  {/* Emerald middle swoop flourish */}
+                  <path
+                    d="M6 18c6-3.5 13-4 18-2 3 1.5 5 3.5 5.5 5-2-3-6-5-12-4.5C12 17 8 17.5 6 18z"
+                    fill="#10B981"
+                  />
+                </svg>
+              )}
+
+              <div>
+                {/* Company Name: Dynamic */}
+                <div className="flex items-baseline leading-none">
+                  {companyName === 'PrintFlow' ? (
+                    <>
+                      <span
+                        style={{ fontSize: '26px', lineHeight: '28px' }}
+                        className="font-black text-[#0A2E26] tracking-tight"
+                      >
+                        Print
+                      </span>
+                      <span
+                        style={{ fontSize: '26px', lineHeight: '28px' }}
+                        className="font-black text-[#16A34A] tracking-tight"
+                      >
+                        Flow
+                      </span>
+                    </>
+                  ) : (
                     <span
                       style={{ fontSize: '24px', lineHeight: '26px' }}
-                      className="font-black text-[#111827] tracking-tight"
+                      className="font-black text-[#0A2E26] tracking-tight block truncate max-w-[240px]"
+                      title={companyName}
                     >
-                      Print
+                      {companyName}
                     </span>
-                    <span
-                      style={{ fontSize: '24px', lineHeight: '26px' }}
-                      className="font-black text-[#10B981] tracking-tight"
-                    >
-                      Flow
-                    </span>
-                  </>
-                ) : (
-                  <span
-                    style={{ fontSize: '24px', lineHeight: '26px' }}
-                    className="font-black text-[#111827] tracking-tight block truncate max-w-[220px]"
-                    title={companyName}
-                  >
-                    {companyName}
-                  </span>
-                )}
+                  )}
+                </div>
               </div>
-              {/* Tagline: Exactly 8px */}
-              <span
-                style={{ fontSize: '8px', lineHeight: '10px', letterSpacing: '0.1em' }}
-                className="font-bold text-[#4B5563] uppercase block mt-0.5 tracking-wider whitespace-nowrap"
-              >
-                SIGNAGE &nbsp;|&nbsp; PRINT &nbsp;|&nbsp; GROW TOGETHER
-              </span>
             </div>
+
+            {/* Tagline: SIGNAGE | PRINT | GROW TOGETHER */}
+            <span
+              style={{ fontSize: '8.5px', lineHeight: '11px', letterSpacing: '0.14em' }}
+              className="font-bold text-[#4B5563] uppercase block mt-1 tracking-wider whitespace-nowrap"
+            >
+              {tagline || 'SIGNAGE \u00A0|\u00A0 PRINT \u00A0|\u00A0 GROW TOGETHER'}
+            </span>
           </div>
 
-          {/* Contact Details with Circular Micro-Icons: Exactly 8px */}
+          {/* Contact Details with Standalone Vector Icons (No Circles) */}
           <div
-            style={{ fontSize: '8px', lineHeight: '11px' }}
-            className="mt-1 space-y-0.5 text-[#374151] font-medium"
+            style={{ fontSize: '9px', lineHeight: '13px' }}
+            className="mt-1.5 space-y-1 text-[#1F2937] font-medium"
           >
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#111827] text-white shrink-0">
-                <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
-                </svg>
-              </span>
-              <span className="truncate max-w-[210px]">{address}</span>
+            {/* Line 1: Location Pin & Address */}
+            <div className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-[#0A2E26] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+              </svg>
+              <span className="truncate max-w-[270px]">{address}</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="flex items-center gap-1">
-                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#111827] text-white shrink-0">
-                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z" />
-                  </svg>
-                </span>
-                <span>{phone}</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#111827] text-white shrink-0">
-                  <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                  </svg>
-                </span>
-                <span>{email}</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#111827] text-white shrink-0">
-                <svg className="w-1.5 h-1.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1a2 2 0 0 0 2 2v1.93zm6.9-2.54A8 8 0 0 0 19 12c0-.68-.1-1.34-.28-1.96l-4.72 4.72a2 2 0 0 0-.58 1.41v1.17c1.37-.43 2.59-1.25 3.48-2.34z" />
+
+            {/* Line 2: Phone & Email with generous spacing */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-[#0A2E26] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z" />
                 </svg>
-              </span>
-              <span>{website}</span>
+                <span className="whitespace-nowrap">{phone}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-[#0A2E26] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+                <span className="truncate max-w-[150px]">{email}</span>
+              </div>
+            </div>
+
+            {/* Line 3: Website Globe */}
+            <div className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-[#0A2E26] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1a2 2 0 0 0 2 2v1.93zm6.9-2.54A8 8 0 0 0 19 12c0-.68-.1-1.34-.28-1.96l-4.72 4.72a2 2 0 0 0-.58 1.41v1.17c1.37-.43 2.59-1.25 3.48-2.34z" />
+              </svg>
+              <span className="truncate max-w-[270px]">{website}</span>
             </div>
           </div>
         </div>
 
-        {/* Top Right: Layered Organic Blade & Swoosh Header Banner */}
-        <div className="relative w-[52%] h-full">
-          <svg
-            viewBox="0 0 450 140"
-            fill="none"
-            preserveAspectRatio="none"
-            className="w-full h-full"
-            xmlns="http://www.w3.org/2000/svg"
+        {/* Top Right: Header Title Block in Dark Green Banner */}
+        <div className="relative z-10 w-[46%] h-full flex flex-col items-end text-right justify-center pr-6 sm:pr-10 pointer-events-none">
+          {/* Document Title: Single line, right-aligned, dynamic scale */}
+          <h1
+            style={{
+              fontSize:
+                documentTypeTitleEn.length <= 9
+                  ? '30px'
+                  : documentTypeTitleEn.length <= 13
+                  ? '25px'
+                  : '21px',
+              lineHeight: '1.1',
+              letterSpacing: '0.04em',
+            }}
+            className="font-black uppercase text-white tracking-wide whitespace-nowrap drop-shadow-xs text-right"
           >
-            {/* Outermost pale mint wing/blade (far left) */}
-            <path
-              d="M 40 0 C 15 20, 0 35, 0 52 C 0 75, 45 110, 110 140 L 450 140 L 450 0 Z"
-              fill="#D1FAE5"
-              fillOpacity="0.75"
-            />
+            {documentTypeTitleEn}
+          </h1>
 
-            {/* Middle vivid emerald wing/blade */}
-            <path
-              d="M 90 0 C 65 25, 45 45, 45 62 C 45 88, 85 118, 145 140 L 450 140 L 450 0 Z"
-              fill="#10B981"
-            />
-
-            {/* Main deep forest green banner body */}
-            <path
-              d="M 140 0 C 110 30, 85 55, 85 72 C 85 102, 130 126, 210 132 C 290 138, 380 135, 450 126 L 450 0 Z"
-              fill="#064E3B"
-            />
-
-            {/* Bottom bright emerald contour stripe */}
-            <path
-              d="M 85 72 C 85 104, 130 128, 210 134 C 290 140, 380 137, 450 128"
-              stroke="#10B981"
-              strokeWidth="4.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-
-            {/* Top origami geometric facets / accents */}
-            <polygon
-              points="170,0 215,30 265,0"
-              fill="#047857"
-              fillOpacity="0.5"
-            />
-            <polygon
-              points="280,0 330,38 410,0"
-              fill="#059669"
-              fillOpacity="0.4"
-            />
-            <polygon
-              points="360,0 405,28 450,0"
-              fill="#10B981"
-              fillOpacity="0.3"
-            />
-          </svg>
-
-          {/* Title Overlay in Dark Green Banner: RIGHT ALIGNED, SINGLE LINE */}
-          <div className="absolute top-1.5 sm:top-2.5 right-0 w-full flex flex-col items-end text-right pr-3.5 sm:pr-6 z-10 text-white pointer-events-none">
-            {/* Document Title: Single line, right-aligned, dynamic scale for long titles */}
-            <h1
-              style={{
-                fontSize:
-                  documentTypeTitleEn.length <= 11
-                    ? '24px'
-                    : documentTypeTitleEn.length <= 14
-                    ? '21px'
-                    : '20px',
-                lineHeight: '26px',
-                letterSpacing: '0.02em',
-              }}
-              className="font-black uppercase text-white drop-shadow-xs whitespace-nowrap text-right"
+          {/* Bengali Subheading with Gold Accent Bar: Right-aligned */}
+          <div className="flex items-center justify-end gap-2.5 mt-1">
+            <div className="w-8 sm:w-10 h-[2.5px] bg-[#B88C2F] rounded-full shrink-0" />
+            <span
+              style={{ fontSize: '18px', lineHeight: '22px' }}
+              className="font-bold text-white tracking-normal whitespace-nowrap text-right"
             >
-              {documentTypeTitleEn}
-            </h1>
-
-            {/* Bengali Subheading with Gold Accent Bar: Right-aligned */}
-            <div className="flex items-center justify-end gap-1.5 mt-0.5">
-              <div className="w-7 sm:w-9 h-[2px] bg-[#EAB308] rounded-full shrink-0" />
-              <span
-                style={{ fontSize: '12px', lineHeight: '14px' }}
-                className="font-bold text-white tracking-normal text-right whitespace-nowrap"
-              >
-                {documentTypeTitleBn}
-              </span>
-            </div>
-
-            {/* Partner Subtitle: Right-aligned, Single Line */}
-            <p
-              style={{ fontSize: '8px', lineHeight: '10px', letterSpacing: '0.12em' }}
-              className="font-bold text-white/90 uppercase tracking-widest mt-0.5 text-right whitespace-nowrap"
-            >
-              {tagline || 'YOUR PRINTING & SIGNAGE PARTNER'}
-            </p>
+              {documentTypeTitleBn}
+            </span>
           </div>
+
+          {/* Partner Subtitle: Right-aligned, Single Line */}
+          <p
+            style={{ fontSize: '8.5px', lineHeight: '11px', letterSpacing: '0.18em' }}
+            className="font-bold text-white/90 uppercase tracking-widest mt-2 whitespace-nowrap text-right"
+          >
+            {tagline || 'YOUR PRINTING & SIGNAGE PARTNER'}
+          </p>
         </div>
       </div>
 
