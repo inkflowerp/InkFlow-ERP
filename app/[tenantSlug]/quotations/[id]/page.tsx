@@ -7,6 +7,7 @@ import {
  FileSpreadsheet,
  ArrowLeft,
  Printer,
+  Download,
  Send,
  Copy,
  CheckCircle2,
@@ -71,6 +72,7 @@ import {
 } from '@/actions/quotation.actions'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { QuotationPdfDocument } from '@/components/pdf/documents/quotation-pdf-document'
+import { downloadPdf } from '@/lib/pdf/pdf-generator'
 import {
  formatBDT,
  toBengaliNumerals,
@@ -497,7 +499,36 @@ function QuotationDetailContent() {
   }
 
   // Send WhatsApp Action
- const handleSendWhatsApp = async () => {
+ const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true)
+      const docElement = (
+        <QuotationPdfDocument
+          quotation={quote}
+          company={{
+            name: company?.name,
+            tagline: company?.legal_name || "Printing & Signage Specialists",
+            address: company?.address,
+            phone: company?.phone,
+            email: company?.email,
+            binNumber: company?.bin_no,
+          }}
+          languageMode="en"
+          template={activeTemplate}
+        />
+      )
+      await downloadPdf(docElement, `QUO-${quote.quotation_number}`)
+    } catch (err: any) {
+      console.error('PDF download error:', err)
+      window.print()
+    } finally {
+      setIsDownloadingPdf(false)
+    }
+  }
+
+  const handleSendWhatsApp = async () => {
  const rawPhone = quote.customer_whatsapp || quote.customer_phone || ''
  const cleanPhone = rawPhone.replace(/\D/g, '')
  const formattedPhone = cleanPhone.startsWith('880')
@@ -725,28 +756,34 @@ function QuotationDetailContent() {
 
               {/* CONVERSION & PRINT: Print & Convert to Order */}
               <div className="flex flex-wrap items-center gap-2">
-                {/* 3. Print / Vector PDF Engine */}
-                <PdfActionButtons
-                  document={
-                    <QuotationPdfDocument
-                      quotation={quote}
-                      company={{
-                        name: company?.name,
-                        tagline: company?.legal_name || "Printing & Signage Specialists",
-                        address: company?.address,
-                        phone: company?.phone,
-                        email: company?.email,
-                        binNumber: company?.bin_no,
-                      }}
-                      languageMode={languageMode === "bilingual" ? "bn" : languageMode}
-                      template={activeTemplate}
-                    />
-                  }
-                  filename={`QUO-${quote.quotation_number}`}
-                  title={`Quotation #${quote.quotation_number}`}
-                  hideDownload={true}
-                  printLabel="Print"
-                />
+                {/* 3. Direct Print (Instant Browser & Physical Print) */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.print()}
+                  className="h-9 text-xs font-semibold border-border bg-card hover:bg-muted text-foreground gap-1.5 shadow-xs cursor-pointer"
+                  title="Direct Print or Save as PDF — 100% matches on-screen preview"
+                >
+                  <Printer className="h-4 w-4 text-muted-foreground" />
+                  <span>Print</span>
+                </Button>
+
+                {/* 4. Download Vector PDF */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isDownloadingPdf}
+                  onClick={handleDownloadPdf}
+                  className="h-9 text-xs font-semibold border-border bg-card hover:bg-muted text-foreground gap-1.5 shadow-xs cursor-pointer"
+                  title="Download clean high-resolution Vector PDF document"
+                >
+                  {isDownloadingPdf ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                  <span>Download PDF</span>
+                </Button>
 
                 {/* 4. Convert to Order (Opens Advance Payment Modal -> Orders, Jobs + Draft Invoice) */}
                 {quote.status !== "converted" && !quote.converted_order_id ? (
@@ -811,7 +848,7 @@ function QuotationDetailContent() {
  PROFESSIONAL PRINT & PDF QUOTATION DOCUMENT
  Standard A4 layout with print-optimized styling
            ========================================================================= */}
-        <div className="bg-card text-foreground print:bg-white print:text-foreground print: print: p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none">
+        <div data-print-isolate="true" className="bg-card text-foreground print:bg-white print:text-foreground p-8 sm:p-12 rounded-xl shadow-xs border border-border print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none print:w-full print:max-w-none">
           {/* Document Header */}
           <div className="flex justify-between items-start border-b-2 border-border print:border-border pb-6">
             <div className="space-y-1">
@@ -925,7 +962,7 @@ function QuotationDetailContent() {
           <div className="my-6">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-surface-inset text-foreground print:bg-surface-inset">
+                <tr className="bg-muted text-foreground border-y border-border print:bg-muted">
                   <th className="py-2.5 px-3 font-bold w-12 text-center">#</th>
                   <th className="py-2.5 px-3 font-bold">
                     {languageMode === 'bn' ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}

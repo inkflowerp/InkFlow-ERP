@@ -69,12 +69,29 @@ export function PdfViewerModal({
   };
 
  const handlePrint = () => {
- if (!blobUrl) return;
- const iframe = window.document.getElementById("pdf-preview-iframe") as HTMLIFrameElement;
- if (iframe && iframe.contentWindow) {
- iframe.contentWindow.print();
-    } else {
- window.open(blobUrl,"_blank");
+    if (!blobUrl) {
+      window.print();
+      return;
+    }
+    try {
+      const iframe = window.document.getElementById("pdf-preview-iframe") as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          return;
+        } catch {
+          // Cross-origin blocked in Chrome PDF extension sandbox
+        }
+      }
+      const win = window.open(blobUrl, "_blank");
+      if (win) {
+        win.focus();
+      } else {
+        window.print();
+      }
+    } catch {
+      window.print();
     }
   };
 

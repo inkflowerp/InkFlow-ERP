@@ -52,7 +52,7 @@ const QuotationPdfContent = ({
   const companySubtitle = company?.tagline || "Printing & Signage Manufacturing";
   const companyAddress = company?.address || "";
   const companyContact = `${company?.phone || "+880 1700-000000"} · ${company?.email || "sales@printflow.bd"}`;
-  const headerRightText = template?.header_disclaimer || (isBn ? "বাণিজ্যিক দরপত্র / প্রাক্কলন" : "PRICE ESTIMATE / QUOTATION");
+  const headerRightText = template?.header_disclaimer && !/[^\u0000-\u007F]/.test(template.header_disclaimer) ? template.header_disclaimer : "COMMERCIAL PRICE ESTIMATE / QUOTATION";
 
   const appOrigin =
     typeof window !== 'undefined' && window.location?.origin
@@ -153,11 +153,15 @@ const QuotationPdfContent = ({
   const formattedInWords = numberToWordsBDT(quotation.grand_total || 0);
 
   // Split multi-line terms for crisp layout (synchronizing with configured template from settings -> Print formats)
-  const defaultTerms = isBn
-    ? (template?.footer_terms_bn || "১. কোটেশনের মেয়াদ প্রদানের তারিখ হতে ১৫ দিন।\n২. কাজের অর্ডারের সাথে অগ্রিম এবং অবশিষ্ট মালামাল ডেলিভারির সময় প্রদেয়।")
-    : (template?.footer_terms_en || "1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance.\n4. Delivery timeline starts after artwork confirmation.");
-  const rawTerms = quotation.terms_and_conditions || defaultTerms;
+  const defaultTerms = template?.footer_terms_en || "1. 50% advance along with work order confirmation, balance on delivery.\n2. Proof approval required before mass production.\n3. Quotation valid for 15 days from issuance.\n4. Delivery timeline starts after artwork confirmation.";
+  const rawTerms = (quotation.terms_and_conditions && !/[^\u0000-\u007F]/.test(quotation.terms_and_conditions))
+    ? quotation.terms_and_conditions
+    : defaultTerms;
   const termsList = rawTerms.split("\n").map(t => t.trim()).filter(Boolean);
+
+const advancePct = quotation.advance_percentage !== undefined && quotation.advance_percentage !== null ? quotation.advance_percentage : 50;
+  const advanceAmt = quotation.advance_amount !== undefined && quotation.advance_amount !== null ? quotation.advance_amount : Math.round(((quotation.grand_total || 0) * advancePct) / 100);
+  const dueAmt = quotation.due_on_delivery !== undefined && quotation.due_on_delivery !== null ? quotation.due_on_delivery : Math.max(0, (quotation.grand_total || 0) - advanceAmt);
 
   return (
     <Document title={`Quotation ${quotation.quotation_number}`}>
@@ -242,11 +246,11 @@ const QuotationPdfContent = ({
             <TableHeader>
               <TableRow header>
                 <TableCell width="5%" align="center">#</TableCell>
-                <TableCell width="39%">{isBn ? 'পণ্যের বিবরণ ও স্পেসিফিকেশন' : 'Item Description & Specifications'}</TableCell>
-                <TableCell width="14%" align="center">{isBn ? 'পরিমাপ (W × H)' : 'Dimensions'}</TableCell>
-                <TableCell width="14%" align="center">{isBn ? 'ক্ষেত্রফল / সংখ্যা' : 'Area / Qty'}</TableCell>
-                <TableCell width="13%" align="right">{isBn ? 'একক দর (BDT)' : 'Unit Rate (BDT)'}</TableCell>
-                <TableCell width="15%" align="right">{isBn ? 'মোট মূল্য (BDT)' : 'Total (BDT)'}</TableCell>
+                <TableCell width="39%">Item Description & Specifications</TableCell>
+                <TableCell width="14%" align="center">Dimensions</TableCell>
+                <TableCell width="14%" align="center">Area / Qty</TableCell>
+                <TableCell width="13%" align="right">Unit Rate (BDT)</TableCell>
+                <TableCell width="15%" align="right">Total (BDT)</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -273,7 +277,7 @@ const QuotationPdfContent = ({
                     </TableCell>
                     <TableCell width="39%">
                       <Text variant="xs" weight="bold" noMargin>
-                        {isBn && item.description_bn ? item.description_bn : (item.description || "Printing Item")}
+                        {item.description || (item.description_bn && !/[^\u0000-\u007F]/.test(item.description_bn) ? item.description_bn : "Printing Item")}
                       </Text>
                       {specBadges.length > 0 && (
                         <View style={{ marginTop: 2 }}>
@@ -351,7 +355,7 @@ const QuotationPdfContent = ({
               {/* Official Payment Accounts (Matching Preview) */}
               <View style={[styles.termsBox, { marginTop: 6 }] as never}>
                 <Text variant="xs" weight="bold" noMargin color="mutedForeground" uppercase style={{ fontSize: 7 }}>
-                  {isBn ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
+                  Official Payment Accounts:
                 </Text>
                 <View style={{ marginTop: 2 }}>
                   <Text variant="xs" noMargin color="foreground" style={{ fontSize: 7.5, lineHeight: 1.3 }}>
@@ -383,18 +387,18 @@ const QuotationPdfContent = ({
                     value: `BDT ${formatLakhCrore(quotation.grand_total || 0)}`,
                     valueStyle: { fontSize: 10.5, fontWeight: "bold" as const, color: theme.colors.primary },
                   },
-                  ...(quotation.advance_amount ? [{
-                    key: `Advance Required (${quotation.advance_percentage || 50}%):`,
-                    value: `BDT ${formatLakhCrore(quotation.advance_amount)}`,
+                  {
+                    key: `Advance Required (${advancePct}%):`,
+                    value: `BDT ${formatLakhCrore(advanceAmt)}`,
                     keyStyle: { fontWeight: "bold" as const },
                     valueStyle: { fontWeight: "bold" as const, color: theme.colors.primary },
-                  }] : []),
-                  ...(quotation.due_on_delivery ? [{
+                  },
+                  {
                     key: "Due on Delivery:",
-                    value: `BDT ${formatLakhCrore(quotation.due_on_delivery)}`,
+                    value: `BDT ${formatLakhCrore(dueAmt)}`,
                     keyStyle: { fontWeight: "bold" as const },
                     valueStyle: { fontWeight: "bold" as const },
-                  }] : []),
+                  },
                 ]}
               />
             </View>
@@ -414,7 +418,7 @@ const QuotationPdfContent = ({
                 variant="double"
                 signers={[
                   { label: "Prepared By", name: quotation.salesperson_name || "Sales Executive", date: quotation.quotation_date },
-                  { label: template?.authorized_signatory_title || (isBn ? "অনুমোদিত স্বাক্ষর" : "Client Acceptance"), name: "Authorized Signatory", date: "" },
+                  { label: template?.authorized_signatory_title && !/[^\u0000-\u007F]/.test(template.authorized_signatory_title) ? template.authorized_signatory_title : "Authorized Signatory", name: "Authorized Signatory", date: "" },
                 ]}
               />
             </View>
