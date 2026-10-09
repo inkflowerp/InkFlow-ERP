@@ -104,7 +104,8 @@ export function PrintFloorConsumptionUnit({
         r.status === 'on_floor' ||
         r.location_name === 'Print Floor' ||
         Boolean(r.mounted_machine_id) ||
-        Boolean(r.mounted_machine_name)
+        Boolean(r.mounted_machine_name) ||
+        Boolean((r as any).mounted_press_name)
     )
 
     const seenRollKeys = new Set<string>()
@@ -179,7 +180,21 @@ export function PrintFloorConsumptionUnit({
   // Filtered Floor Consumptions
  const filteredRecords = useMemo(() => {
  return floorConsumptions.filter((rec) => {
- const matchStatus = selectedStatus === 'all' || rec.status === selectedStatus
+    const matchStatus =
+      selectedStatus === 'all' ||
+      (selectedStatus === 'on_floor' &&
+        (rec.status === 'on_floor' ||
+          (rec.status as string) === 'in_use' ||
+          (rec.status as string) === 'mounted' ||
+          (rec.status !== 'fully_consumed' && rec.status !== 'returned' && Number(rec.remaining_floor_balance) > 0))) ||
+      (selectedStatus === 'partially_consumed' &&
+        (rec.status === 'partially_consumed' ||
+          (Number(rec.consumed_quantity) > 0 && Number(rec.remaining_floor_balance) > 0))) ||
+      (selectedStatus === 'fully_consumed' &&
+        (rec.status === 'fully_consumed' ||
+          rec.status === 'returned' ||
+          (Number(rec.remaining_floor_balance) <= 0 && Number(rec.consumed_quantity) > 0))) ||
+      rec.status === selectedStatus
 
  const q = search.trim().toLowerCase()
  const matchSearch =

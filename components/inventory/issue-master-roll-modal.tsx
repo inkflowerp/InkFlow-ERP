@@ -29,6 +29,7 @@ import {
  MaterialRequestRecord,
  IssueMasterRollParams,
  IssueMasterRollResult,
+  FloorConsumptionRecord,
 } from '@/types/inventory.types'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
@@ -716,6 +717,68 @@ export function IssueMasterRollModal({
  if (!res.success || !res.data) {
  setError(res.error || 'Failed to issue materials to floor.')
  return
+      }
+
+      // Write directly to local PrintFlowDataStore cache to guarantee immediate visibility
+      try {
+        if (res.data.results && Array.isArray(res.data.results)) {
+          for (const rResult of res.data.results) {
+            const rollsToSave = rResult.rolls?.length
+              ? rResult.rolls
+              : rResult.roll
+              ? [rResult.roll]
+              : []
+
+            for (const roll of rollsToSave) {
+              if (!roll) continue
+              PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll, companyId)
+              PrintFlowDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, roll)
+
+              const initialArea = Number(roll.initial_area_sft || (roll.width_ft * roll.initial_length_ft) || 1)
+              const remainingArea = Number(roll.remaining_area_sft || roll.initial_area_sft || initialArea)
+
+              const floorRecord: FloorConsumptionRecord = {
+                id: `fc-${roll.id}`,
+                company_id: roll.company_id || companyId || 'default',
+                branch_id: roll.branch_id || null,
+                issue_id: roll.id,
+                issue_number: roll.roll_code,
+                material_id: roll.material_id,
+                material_name: roll.material?.name || 'Roll Substrate',
+                sku: roll.material?.sku || roll.roll_code,
+                unit: 'sft',
+                roll_id: roll.id,
+                roll_code: roll.roll_code,
+                operator_name: roll.mounted_by_name || 'Floor Operator',
+                machine_id: roll.mounted_machine_id || null,
+                machine_name: (roll as any).mounted_press_name || roll.mounted_machine_name || null,
+                job_reference: roll.notes || null,
+                issued_quantity: initialArea,
+                consumed_quantity: 0,
+                remaining_floor_balance: remainingArea,
+                unit_cost: roll.unit_cost || 0,
+                total_cost: roll.total_cost || 0,
+                wastage_quantity: 0,
+                wastage_reason: null,
+                wastage_cost: 0,
+                returned_quantity: 0,
+                return_location_id: null,
+                return_location_name: null,
+                remnants_count: 0,
+                remnants_area_sft: 0,
+                status: 'on_floor',
+                notes: roll.notes || null,
+                created_at: roll.created_at || new Date().toISOString(),
+                updated_at: roll.updated_at || new Date().toISOString(),
+                material: roll.material,
+              }
+              PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, companyId)
+              PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+            }
+          }
+        }
+      } catch (storeErr) {
+        console.error('[IssueMasterRollModal] Error writing to PrintFlowDataStore:', storeErr)
       }
 
       // Dispatch real-time sync broadcast events

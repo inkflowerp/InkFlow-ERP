@@ -419,13 +419,35 @@ function UnifiedInventoryContent() {
  if (res.data.summary) {
  setSummary(res.data.summary)
         }
- try {
- if (res.data.materials) PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
- if (res.data.rolls) PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
- if (res.data.locations) PrintFlowDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
- if (res.data.floorConsumptions) PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, res.data.floorConsumptions, false)
- const mList = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
- setMachines(mList)
+        try {
+          if (res.data.materials && res.data.materials.length > 0) {
+            PrintFlowDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
+          }
+          if (res.data.rolls && res.data.rolls.length > 0) {
+            const existingRolls = PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+            const rollMap = new Map<string, InventoryRollRecord>()
+            for (const r of existingRolls) if (r?.id) rollMap.set(r.id, r)
+            for (const r of res.data.rolls) if (r?.id) {
+              const prev = rollMap.get(r.id)
+              rollMap.set(r.id, prev ? { ...prev, ...r } : r)
+            }
+            PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, Array.from(rollMap.values()), false)
+          }
+          if (res.data.locations && res.data.locations.length > 0) {
+            PrintFlowDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
+          }
+          if (res.data.floorConsumptions && res.data.floorConsumptions.length > 0) {
+            const existingFloor = PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []
+            const floorMap = new Map<string, FloorConsumptionRecord>()
+            for (const fc of existingFloor) if (fc?.id) floorMap.set(fc.id, fc)
+            for (const fc of res.data.floorConsumptions) if (fc?.id) {
+              const prev = floorMap.get(fc.id)
+              floorMap.set(fc.id, prev ? { ...prev, ...fc } : fc)
+            }
+            PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, Array.from(floorMap.values()), false)
+          }
+          const mList = PrintFlowDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+          setMachines(mList)
         } catch {}
       }
     } catch (err: any) {

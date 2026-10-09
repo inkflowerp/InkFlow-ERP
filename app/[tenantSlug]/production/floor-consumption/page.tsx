@@ -48,6 +48,7 @@ import {
 import { ProductionTaskRecord } from '@/types/production.types'
 import { getProductionTasksAction } from '@/actions/production-planning.actions'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { PrintFlowDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function FloorConsumptionPage() {
  const params = useParams()
@@ -78,63 +79,178 @@ export default function FloorConsumptionPage() {
  const [isIssueMasterRollOpen, setIsIssueMasterRollOpen] = useState(false)
  const [isMaterialRequestOpen, setIsMaterialRequestOpen] = useState(false)
 
- const loadFloorData = useCallback(async () => {
- try {
- setLoading(true)
- setError(null)
- const [invRes, taskRes] = await Promise.all([
- getInventoryDashboardDataAction(companyId),
- getProductionTasksAction({}, companyId),
+ const hydrateFromLocalStore = useCallback(() => {
+    try {
+      const localFloor = [
+        ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
+        ...(slug && slug !== companyId ? PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, slug) || [] : []),
+        ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+      ]
+      if (localFloor.length > 0) {
+        const floorMap = new Map<string, FloorConsumptionRecord>()
+        for (const item of localFloor) {
+          if (item?.id) floorMap.set(item.id, item)
+        }
+        setFloorConsumptions(Array.from(floorMap.values()))
+      }
+
+      const localRolls = [
+        ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+        ...(slug && slug !== companyId ? PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, slug) || [] : []),
+        ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+      ]
+      if (localRolls.length > 0) {
+        const rollMap = new Map<string, InventoryRollRecord>()
+        for (const r of localRolls) {
+          if (r?.id) rollMap.set(r.id, r)
+        }
+        setRolls(Array.from(rollMap.values()))
+      }
+
+      const localMats = [
+        ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+        ...(PrintFlowDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+      ]
+      if (localMats.length > 0) {
+        const matMap = new Map<string, MaterialRecord>()
+        for (const m of localMats) {
+          if (m?.id) matMap.set(m.id, m)
+        }
+        setMaterials(Array.from(matMap.values()))
+      }
+
+      const localLocs = [
+        ...(PrintFlowDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, companyId) || []),
+        ...(PrintFlowDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS) || []),
+      ]
+      if (localLocs.length > 0) {
+        const locMap = new Map<string, InventoryLocationRecord>()
+        for (const l of localLocs) {
+          if (l?.id) locMap.set(l.id, l)
+        }
+        setLocations(Array.from(locMap.values()))
+      }
+    } catch (err) {
+      console.error('[FloorConsumptionPage] Error hydrating from local store:', err)
+    }
+  }, [companyId, slug])
+
+  const loadFloorData = useCallback(async (isBackground = false) => {
+    try {
+      if (!isBackground) setLoading(true)
+      setError(null)
+      const [invRes, taskRes] = await Promise.all([
+        getInventoryDashboardDataAction(companyId),
+        getProductionTasksAction({}, companyId),
       ])
 
- if (invRes.success && invRes.data) {
- setFloorConsumptions(invRes.data.floorConsumptions || [])
- setMaterials(invRes.data.materials || [])
- setLocations(invRes.data.locations || [])
- setIssues(invRes.data.issues || [])
- setRolls(invRes.data.rolls || [])
- setRequests(invRes.data.requests || [])
+      if (invRes.success && invRes.data) {
+        const serverFloor = invRes.data.floorConsumptions || []
+        const serverRolls = invRes.data.rolls || []
+
+        // Non-destructive merge for floor consumptions
+        setFloorConsumptions((prev) => {
+          const map = new Map<string, FloorConsumptionRecord>()
+          for (const item of prev) {
+            if (item?.id) map.set(item.id, item)
+          }
+          const localStored = [
+            ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
+            ...(PrintFlowDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+          ]
+          for (const item of localStored) {
+            if (item?.id && !map.has(item.id)) map.set(item.id, item)
+          }
+          for (const item of serverFloor) {
+            if (!item?.id) continue
+            const existing = map.get(item.id)
+            map.set(item.id, existing ? { ...existing, ...item } : item)
+          }
+          const merged = Array.from(map.values())
+          try {
+            PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, merged, false, companyId)
+            PrintFlowDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, merged, false)
+          } catch {}
+          return merged
+        })
+
+        // Non-destructive merge for rolls
+        setRolls((prev) => {
+          const map = new Map<string, InventoryRollRecord>()
+          for (const r of prev) {
+            if (r?.id) map.set(r.id, r)
+          }
+          const localStoredRolls = [
+            ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+            ...(PrintFlowDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+          ]
+          for (const r of localStoredRolls) {
+            if (r?.id && !map.has(r.id)) map.set(r.id, r)
+          }
+          for (const r of serverRolls) {
+            if (!r?.id) continue
+            const existing = map.get(r.id)
+            map.set(r.id, existing ? { ...existing, ...r } : r)
+          }
+          const merged = Array.from(map.values())
+          try {
+            PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, merged, false, companyId)
+            PrintFlowDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, merged, false)
+          } catch {}
+          return merged
+        })
+
+        if (invRes.data.materials?.length) setMaterials(invRes.data.materials)
+        if (invRes.data.locations?.length) setLocations(invRes.data.locations)
+        if (invRes.data.issues?.length) setIssues(invRes.data.issues)
+        if (invRes.data.requests) setRequests(invRes.data.requests)
       } else if (!invRes.success) {
- setError(invRes.error || 'Failed to load floor inventory data')
+        setError(invRes.error || 'Failed to load floor inventory data')
       }
 
- if (taskRes.success && taskRes.data) {
- setTasks(taskRes.data)
+      if (taskRes.success && taskRes.data) {
+        setTasks(taskRes.data)
       }
     } catch (err: any) {
- setError(err?.message || 'Network error fetching floor consumption')
+      setError(err?.message || 'Network error fetching floor consumption')
     } finally {
- setLoading(false)
+      setLoading(false)
     }
   }, [companyId])
 
- useEffect(() => {
- setMounted(true)
- loadFloorData()
-  }, [loadFloorData])
+  useEffect(() => {
+    setMounted(true)
+    hydrateFromLocalStore()
+    loadFloorData(false)
+  }, [hydrateFromLocalStore, loadFloorData])
 
   // Realtime Broadcast Synchronization
- useEffect(() => {
- if (typeof window === 'undefined') return
+  useEffect(() => {
+    if (typeof window === 'undefined') return
 
- const handleSync = () => {
- loadFloorData()
+    const handleSync = () => {
+      hydrateFromLocalStore()
+      loadFloorData(true)
     }
 
- window.addEventListener('printflow_table_synced:floor_consumption', handleSync)
- window.addEventListener('printflow_table_synced:stock_ledger', handleSync)
- window.addEventListener('printflow_table_synced:materials', handleSync)
- window.addEventListener('printflow_table_synced:physical_rolls', handleSync)
+    window.addEventListener('printflow_table_synced:floor_consumption', handleSync)
+    window.addEventListener('printflow_table_synced:mounted_rolls', handleSync)
+    window.addEventListener('printflow_table_synced:stock_ledger', handleSync)
+    window.addEventListener('printflow_table_synced:materials', handleSync)
+    window.addEventListener('printflow_table_synced:physical_rolls', handleSync)
+    window.addEventListener('printflow_data_sync', handleSync)
 
- return () => {
- window.removeEventListener('printflow_table_synced:floor_consumption', handleSync)
- window.removeEventListener('printflow_table_synced:stock_ledger', handleSync)
- window.removeEventListener('printflow_table_synced:materials', handleSync)
- window.removeEventListener('printflow_table_synced:physical_rolls', handleSync)
+    return () => {
+      window.removeEventListener('printflow_table_synced:floor_consumption', handleSync)
+      window.removeEventListener('printflow_table_synced:mounted_rolls', handleSync)
+      window.removeEventListener('printflow_table_synced:stock_ledger', handleSync)
+      window.removeEventListener('printflow_table_synced:materials', handleSync)
+      window.removeEventListener('printflow_table_synced:physical_rolls', handleSync)
+      window.removeEventListener('printflow_data_sync', handleSync)
     }
-  }, [loadFloorData])
+  }, [hydrateFromLocalStore, loadFloorData])
 
- if (!mounted) return null
+  if (!mounted) return null
 
  return (
     <PanelAccessGuard

@@ -2167,7 +2167,7 @@ export class InventoryRepository {
       }
 
       const { data, error } = await query
-      if (!error && data && Array.isArray(data)) {
+      if (!error && data && Array.isArray(data) && data.length > 0) {
         for (const item of data) {
           if (item && item.id) {
             seenIds.add(item.id)
@@ -2192,6 +2192,62 @@ export class InventoryRepository {
         }
       }
     } catch {}
+
+    // 1b. Fallback to Admin Client if list is empty or RLS prevented reading
+    if (list.length === 0) {
+      try {
+        const admin = createAdminClient()
+        let query = (admin as any)
+          .from('material_issues')
+          .select('*, items:material_issue_items(*, material:materials(id, name, sku, unit))')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
+
+        if (options?.taskId) query = query.eq('production_task_id', options.taskId)
+        if (options?.requestId) query = query.eq('request_id', options.requestId)
+
+        const { data, error } = await query
+        if (!error && data && Array.isArray(data) && data.length > 0) {
+          for (const item of data) {
+            if (item && item.id && !seenIds.has(item.id)) {
+              seenIds.add(item.id)
+              if (item.items && Array.isArray(item.items)) {
+                for (const it of item.items) {
+                  if (it.notes) {
+                    try {
+                      const parsed = JSON.parse(it.notes)
+                      if (parsed && typeof parsed === 'object') {
+                        if (!it.roll_id && parsed.roll_id) it.roll_id = parsed.roll_id
+                        if (!it.roll_code && parsed.roll_code) it.roll_code = parsed.roll_code
+                        if (!it.machine_id && parsed.machine_id) it.machine_id = parsed.machine_id
+                        if (!it.machine_name && parsed.machine_name) it.machine_name = parsed.machine_name
+                        if (!it.job_reference && parsed.job_reference) it.job_reference = parsed.job_reference
+                      }
+                    } catch {}
+                  }
+                }
+              }
+              list.push(item as unknown as MaterialIssueRecord)
+            }
+          }
+        }
+      } catch {}
+    }
+
+    // Hydrate machine & job & received_by from notes or fields
+    for (const item of list) {
+      if (!item.assigned_machine && item.notes) {
+        const mM = item.notes.match(/Machine:\s*([^|]+)/i)
+        if (mM && mM[1]) item.assigned_machine = mM[1].trim()
+      }
+      if (!item.job_reference && item.notes) {
+        const jM = item.notes.match(/Job Ref:\s*([^|]+)/i)
+        if (jM && jM[1]) item.job_reference = jM[1].trim()
+      }
+      if (!item.received_by_name && (item as any).issued_to_name) {
+        item.received_by_name = (item as any).issued_to_name
+      }
+    }
 
     // Merge DataStore material issues
     const localIssues = [
@@ -2344,22 +2400,25 @@ export class InventoryRepository {
 
     try {
       const supabase = await createClient()
-      const issuePayload = {
+      const metaNotes = [
+        params.notes?.trim(),
+        assignedMach ? `Machine: ${assignedMach}` : null,
+        jobRef ? `Job Ref: ${jobRef}` : null,
+        validSourceLocId ? `Source Location: ${validSourceLocId}` : null,
+      ].filter(Boolean).join(' | ')
+
+      const issuePayload: Record<string, any> = {
         id: issueId,
         company_id: params.company_id,
-        branch_id: params.branch_id || null,
         issue_number: issueNumber,
-        request_id: params.request_id || null,
-        production_task_id: params.production_task_id || null,
-        source_location_id: validSourceLocId,
-        destination_location_id: validDestLocId,
-        issued_by_id: params.issued_by_id || null,
-        issued_by_name: params.issued_by_name,
-        received_by_name: params.received_by_name || null,
-        assigned_machine: assignedMach,
-        status: 'completed',
-        notes: params.notes?.trim() || null,
+        issued_by_name: params.issued_by_name || 'Store Keeper',
+        issued_to_name: params.received_by_name || 'Floor Operator',
+        notes: metaNotes || null,
       }
+      if (params.branch_id) issuePayload.branch_id = params.branch_id
+      if (params.request_id) issuePayload.request_id = params.request_id
+      if (params.production_task_id) issuePayload.production_task_id = params.production_task_id
+      if (params.issued_by_id) issuePayload.issued_by_id = params.issued_by_id
 
       let issueRecordSaved: any = null
       const { data: issue, error: issueErr } = await (supabase as any)
@@ -2661,7 +2720,8 @@ export class InventoryRepository {
         r.status === 'in_use' ||
         r.status === 'on_floor' ||
         Boolean(r.mounted_machine_id) ||
-        Boolean(r.mounted_machine_name)
+        Boolean(r.mounted_machine_name) ||
+        Boolean((r as any).mounted_press_name)
       )
     })
 
@@ -2745,15 +2805,31 @@ export class InventoryRepository {
       }
     }
 
-    // Add any standalone explicit consumption records not mapped to issues
+    // Add any standalone explicit consumption records not mapped to issues, or merge latest consumption metrics
     for (const exp of explicitConsumptions) {
-      const alreadyIncluded = results.some(
+      const matchIdx = results.findIndex(
         (r) =>
           r.id === exp.id ||
           (exp.issue_item_id && r.issue_item_id === exp.issue_item_id) ||
           (exp.roll_id && r.roll_id === exp.roll_id)
       )
-      if (!alreadyIncluded) {
+      if (matchIdx !== -1) {
+        const existing = results[matchIdx]
+        if (Number(exp.consumed_quantity || 0) > Number(existing.consumed_quantity || 0)) {
+          existing.consumed_quantity = exp.consumed_quantity
+        }
+        if (Number(exp.wastage_quantity || 0) > Number(existing.wastage_quantity || 0)) {
+          existing.wastage_quantity = exp.wastage_quantity
+          existing.wastage_reason = exp.wastage_reason || existing.wastage_reason
+        }
+        if (Number(exp.returned_quantity || 0) > Number(existing.returned_quantity || 0)) {
+          existing.returned_quantity = exp.returned_quantity
+        }
+        if (exp.remaining_floor_balance !== undefined && Number(exp.remaining_floor_balance) !== Number(existing.remaining_floor_balance)) {
+          existing.remaining_floor_balance = exp.remaining_floor_balance
+          existing.status = exp.status || existing.status
+        }
+      } else {
         results.push(exp)
         if (exp.roll_id) processedItemKeys.add(exp.roll_id)
         if (exp.roll_code) processedItemKeys.add(exp.roll_code.toLowerCase())
@@ -3061,6 +3137,7 @@ export class InventoryRepository {
       material: mat,
     }
 
+    PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, params.company_id)
     PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
 
     return { success: true, floorRecord, remnantsCreated: remnantsCount }
@@ -3151,6 +3228,7 @@ export class InventoryRepository {
       material: mat,
     }
 
+    PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, params.company_id)
     PrintFlowDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
 
     return { success: true, remainingFloorBalance: remaining, floorRecord }
@@ -4154,11 +4232,10 @@ export class InventoryRepository {
 
           try {
             const supabase = await createClient()
-            const updatePayload = {
+            const updatePayload: Record<string, any> = {
               status: rollRecord.status === 'on_floor' ? 'in_use' : rollRecord.status,
               location_name: 'Print Floor',
-              mounted_machine_id: rollMachineId,
-              mounted_machine_name: rollMachineName,
+              mounted_press_name: rollMachineName || null,
               updated_at: rollRecord.updated_at,
             }
             const { error: updErr } = await (supabase as any)
@@ -4181,8 +4258,7 @@ export class InventoryRepository {
                 .update({
                   status: rollRecord.status === 'on_floor' ? 'in_use' : rollRecord.status,
                   location_name: 'Print Floor',
-                  mounted_machine_id: rollMachineId,
-                  mounted_machine_name: rollMachineName,
+                  mounted_press_name: rollMachineName || null,
                   updated_at: rollRecord.updated_at,
                 })
                 .eq('id', rollRecord.id)
@@ -4235,10 +4311,9 @@ export class InventoryRepository {
             material: mat,
           }
 
-          const insertPayload = {
+          const insertPayload: Record<string, any> = {
             id: rollRecord.id,
             company_id: companyId,
-            branch_id: params.branch_id || null,
             material_id: mat.id,
             roll_tag: rollRecord.roll_tag,
             roll_code: rollRecord.roll_code,
@@ -4251,12 +4326,13 @@ export class InventoryRepository {
             current_area_sft: singleUnitConsumptionQuantity,
             status: rollRecord.status === 'on_floor' ? 'in_use' : rollRecord.status,
             location_name: 'Print Floor',
-            mounted_machine_id: rollMachineId,
-            mounted_machine_name: rollMachineName,
+            mounted_press_name: rollMachineName || null,
             unit_cost: rollRecord.unit_cost,
             total_cost: rollRecord.total_cost,
             notes: rollRecord.notes,
           }
+          if (params.branch_id) insertPayload.branch_id = params.branch_id
+          if (params.location_id && params.location_id.length === 36) insertPayload.location_id = params.location_id
 
           try {
             const supabase = await createClient()
@@ -4314,10 +4390,9 @@ export class InventoryRepository {
         material: mat,
       }
 
-      const insertPayload = {
+      const insertPayload: Record<string, any> = {
         id: floorRecord.id,
         company_id: companyId,
-        branch_id: params.branch_id || null,
         material_id: mat.id,
         roll_tag: floorRecord.roll_tag,
         roll_code: floorRecord.roll_code,
@@ -4330,12 +4405,13 @@ export class InventoryRepository {
         current_area_sft: floorRecord.current_area_sft,
         status: floorRecord.status === 'on_floor' ? 'in_use' : floorRecord.status,
         location_name: 'Print Floor',
-        mounted_machine_id: floorRecord.mounted_machine_id,
-        mounted_machine_name: floorRecord.mounted_machine_name,
+        mounted_press_name: floorRecord.mounted_press_name || null,
         unit_cost: floorRecord.unit_cost,
         total_cost: floorRecord.total_cost,
         notes: floorRecord.notes,
       }
+      if (params.branch_id) insertPayload.branch_id = params.branch_id
+      if (params.location_id && params.location_id.length === 36) insertPayload.location_id = params.location_id
 
       try {
         const supabase = await createClient()
@@ -4621,18 +4697,24 @@ export class InventoryRepository {
 
     try {
       const supabase = await createClient()
-      const issuePayload = {
+      const metaNotes = [
+        issueRecord.notes,
+        machineName ? `Machine: ${machineName}` : null,
+        params.lot_number ? `Job Ref: ${params.lot_number}` : null,
+        validLocationId ? `Source Location: ${validLocationId}` : null,
+      ].filter(Boolean).join(' | ')
+
+      const issuePayload: Record<string, any> = {
         id: issueRecord.id,
         company_id: companyId,
-        branch_id: params.branch_id || null,
         issue_number: issueRecord.issue_number,
-        source_location_id: validLocationId,
-        issued_by_name: issueRecord.issued_by_name,
-        received_by_name: issueRecord.received_by_name,
-        assigned_machine: issueRecord.assigned_machine,
-        status: 'completed',
-        notes: issueRecord.notes,
+        issued_by_name: issueRecord.issued_by_name || 'Store Keeper',
+        issued_to_name: issueRecord.received_by_name || 'Floor Operator',
+        notes: metaNotes || null,
       }
+      if (params.branch_id) issuePayload.branch_id = params.branch_id
+      if (params.request_id) issuePayload.request_id = params.request_id
+      if (params.production_task_id) issuePayload.production_task_id = params.production_task_id
 
       let dbIssue: any = null
       const { data: clientIssue, error: clientErr } = await (supabase as any)
@@ -4655,7 +4737,7 @@ export class InventoryRepository {
 
       if (dbIssue) {
         for (const it of issueRecord.items || []) {
-          const itemPayload = {
+          const itemPayload: Record<string, any> = {
             id: it.id,
             company_id: companyId,
             issue_id: dbIssue.id,
@@ -4672,6 +4754,8 @@ export class InventoryRepository {
               job_reference: it.job_reference,
             }),
           }
+          if (validLocationId) itemPayload.location_id = validLocationId
+
           const { error: itErr } = await (supabase as any).from('material_issue_items').insert(itemPayload)
           if (itErr) {
             const admin = createAdminClient()
