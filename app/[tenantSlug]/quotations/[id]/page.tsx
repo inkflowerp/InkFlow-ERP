@@ -113,6 +113,7 @@ function QuotationDetailContent() {
  const [isConvertingInvoice, setIsConvertingInvoice] = useState(false)
  const [isConvertingOrder, setIsConvertingOrder] = useState(false)
  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
 
   // Synchronize Settings -> Print Formats (Document Templates)
   const [docTemplates] = useDataStore<Record<DocumentType, DocumentTemplateConfigRecord>>(
@@ -498,9 +499,7 @@ function QuotationDetailContent() {
  router.push(getTenantNavHref(`/quotations/${duplicated.id}`, pathname, slug))
   }
 
-  // Send WhatsApp Action
- const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
-
+  // Download PDF Action
   const handleDownloadPdf = async () => {
     try {
       setIsDownloadingPdf(true)
