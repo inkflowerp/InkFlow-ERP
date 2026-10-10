@@ -338,13 +338,31 @@ export class BillingRepository {
 
         if (!res.error && res.data && res.data.length > 0) {
           const dbInvoices = (res.data || []) as unknown as InvoiceRecord[]
-          // Ensure items, payments, write_offs defaults
-          const formatted = dbInvoices.map((inv) => ({
-            ...inv,
-            items: inv.items || [],
-            payments: inv.payments || [],
-            write_offs: inv.write_offs || [],
-          }))
+          // Ensure items, payments, write_offs defaults and normalize status
+          const formatted = dbInvoices.map((inv) => {
+            const rawStatus = (inv.status || '').toLowerCase()
+            const isAdministrative = rawStatus === 'cancelled' || rawStatus === 'void' || rawStatus === 'written_off' || rawStatus === 'draft'
+            const dueAmt = Number(inv.due_amount) !== undefined ? Number(inv.due_amount) : Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0))
+            const paidAmt = Number(inv.paid_amount) || 0
+            const grandTotal = Number(inv.grand_total) || 0
+            let status = inv.status
+            if (!isAdministrative) {
+              if (dueAmt <= 0.01 && grandTotal > 0) {
+                status = 'paid'
+              } else if (paidAmt > 0 && dueAmt > 0.01) {
+                status = 'partially_paid'
+              } else if (paidAmt <= 0 && dueAmt > 0) {
+                status = 'unpaid'
+              }
+            }
+            return {
+              ...inv,
+              status,
+              items: inv.items || [],
+              payments: inv.payments || [],
+              write_offs: inv.write_offs || [],
+            }
+          })
 
           // Sync into client-side store for instant search
           try {
@@ -376,7 +394,11 @@ export class BillingRepository {
         } else if (filters.status === 'vat') {
           list = list.filter((i) => i.invoice_type === 'vat_invoice')
         } else {
-          list = list.filter((i) => i.status === filters.status)
+          if (filters.status === 'partially_paid') {
+            list = list.filter((i) => (i.status === 'partially_paid' || ((Number(i.paid_amount) || 0) > 0 && (Number(i.due_amount) || 0) > 0.01)) && i.status !== 'cancelled')
+          } else {
+            list = list.filter((i) => i.status === filters.status)
+          }
         }
       }
 
@@ -456,8 +478,24 @@ export class BillingRepository {
 
       if (!res.error && res.data) {
         const inv = res.data as unknown as InvoiceRecord
+        const rawStatus = (inv.status || '').toLowerCase()
+        const isAdministrative = rawStatus === 'cancelled' || rawStatus === 'void' || rawStatus === 'written_off' || rawStatus === 'draft'
+        const dueAmt = Number(inv.due_amount) !== undefined ? Number(inv.due_amount) : Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0))
+        const paidAmt = Number(inv.paid_amount) || 0
+        const grandTotal = Number(inv.grand_total) || 0
+        let status = inv.status
+        if (!isAdministrative) {
+          if (dueAmt <= 0.01 && grandTotal > 0) {
+            status = 'paid'
+          } else if (paidAmt > 0 && dueAmt > 0.01) {
+            status = 'partially_paid'
+          } else if (paidAmt <= 0 && dueAmt > 0) {
+            status = 'unpaid'
+          }
+        }
         const formatted: InvoiceRecord = {
           ...inv,
+          status,
           items: inv.items || [],
           payments: inv.payments || [],
           write_offs: inv.write_offs || [],
@@ -494,10 +532,24 @@ export class BillingRepository {
         (inv.id === id || inv.invoice_number === id) &&
         (!inv.company_id || inv.company_id === companyId || inv.company_id === effectiveCompanyId)
     )
-    if (matchedTenant) return matchedTenant
+    const normalizeInv = (item: InvoiceRecord | null | undefined): InvoiceRecord | null => {
+      if (!item) return null
+      const rawStatus = (item.status || '').toLowerCase()
+      if (rawStatus === 'cancelled' || rawStatus === 'void' || rawStatus === 'written_off' || rawStatus === 'draft') return item
+      const paid = Number(item.paid_amount) || 0
+      const due = Number(item.due_amount) !== undefined ? Number(item.due_amount) : Math.max(0, (Number(item.grand_total) || 0) - paid)
+      const grand = Number(item.grand_total) || 0
+      let status = item.status
+      if (due <= 0.01 && grand > 0) status = 'paid'
+      else if (paid > 0 && due > 0.01) status = 'partially_paid'
+      return { ...item, status, paid_amount: paid, due_amount: due }
+    }
+
+    if (matchedTenant) return normalizeInv(matchedTenant)
 
     // Resilient fallback by exact document ID / invoice number
-    return all.find((inv) => inv && (inv.id === id || inv.invoice_number === id)) || null
+    const fallbackInv = all.find((inv) => inv && (inv.id === id || inv.invoice_number === id)) || null
+    return normalizeInv(fallbackInv)
   }
 
   static async getNextInvoiceNumber(companyId: string): Promise<string> {
@@ -603,7 +655,7 @@ export class BillingRepository {
       salesperson_name: invoice.salesperson_name || null,
       invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
       due_date: invoice.due_date || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      status: invoice.status || (paidAmount >= grandTotal ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid'),
+      status: (invoice.status === 'cancelled' || invoice.status === 'written_off' || invoice.status === 'draft') ? invoice.status : (paidAmount >= grandTotal && grandTotal > 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid'),
       subtotal,
       discount_amount: discountAmt,
       vat_percentage: vatPct,

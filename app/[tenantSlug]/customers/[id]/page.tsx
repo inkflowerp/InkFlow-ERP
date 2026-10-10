@@ -1383,16 +1383,24 @@ export default function CustomerProfilePage() {
                               )}
                             </div>
 
-                            <Badge
- variant="outline"className={cn(
-                                'text-xs capitalize',
- inv.status === 'paid' && 'bg-success-surface text-success border-success-border',
- inv.status === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
- inv.status === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
-                              )}
-                            >
-                              {inv.status.replace('_', ' ')}
-                            </Badge>
+                            {(() => {
+                              const isPaid = inv.status === 'paid' || (Number(inv.due_amount) <= 0.01 && Number(inv.grand_total) > 0)
+                              const isPartial = !isPaid && (inv.status === 'partially_paid' || (Number(inv.paid_amount) > 0 && Number(inv.due_amount) > 0.01))
+                              const effectiveStatus = isPaid ? 'paid' : isPartial ? 'partially_paid' : inv.status
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    'text-xs capitalize',
+                                    effectiveStatus === 'paid' && 'bg-success-surface text-success border-success-border',
+                                    effectiveStatus === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
+                                    effectiveStatus === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
+                                  )}
+                                >
+                                  {effectiveStatus.replace('_', ' ')}
+                                </Badge>
+                              )
+                            })()}
                           </div>
                         </div>
                       ))}
@@ -1543,16 +1551,24 @@ export default function CustomerProfilePage() {
                         ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <Badge
- variant="outline"className={cn(
-                            'text-xs capitalize',
- inv.status === 'paid' && 'bg-success-surface text-success border-success-border',
- inv.status === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
- inv.status === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
-                          )}
-                        >
-                          {inv.status.replace('_', ' ')}
-                        </Badge>
+                        {(() => {
+                          const isPaid = inv.status === 'paid' || (Number(inv.due_amount) <= 0.01 && Number(inv.grand_total) > 0)
+                          const isPartial = !isPaid && (inv.status === 'partially_paid' || (Number(inv.paid_amount) > 0 && Number(inv.due_amount) > 0.01))
+                          const effectiveStatus = isPaid ? 'paid' : isPartial ? 'partially_paid' : inv.status
+                          return (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-xs capitalize',
+                                effectiveStatus === 'paid' && 'bg-success-surface text-success border-success-border',
+                                effectiveStatus === 'unpaid' && 'bg-danger-surface text-destructive border-danger-border',
+                                effectiveStatus === 'partially_paid' && 'bg-warning-surface text-warning border-warning-border'
+                              )}
+                            >
+                              {effectiveStatus.replace('_', ' ')}
+                            </Badge>
+                          )
+                        })()}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link

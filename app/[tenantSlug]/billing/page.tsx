@@ -112,6 +112,33 @@ function getTodayDateStr(): string {
   }
 }
 
+function normalizeInvoiceRecord(inv: InvoiceRecord): InvoiceRecord {
+  if (!inv) return inv
+  const rawStatus = (inv.status || '').toLowerCase()
+  if (rawStatus === 'cancelled' || rawStatus === 'void' || rawStatus === 'written_off') {
+    return inv
+  }
+  const paid = Number(inv.paid_amount) || 0
+  const grand = Number(inv.grand_total) || 0
+  const due = Number(inv.due_amount) !== undefined ? Number(inv.due_amount) : Math.max(0, grand - paid)
+
+  let status = inv.status
+  if (due <= 0.01 && grand > 0) {
+    status = 'paid'
+  } else if (paid > 0 && due > 0.01) {
+    status = 'partially_paid'
+  } else if (paid <= 0 && due > 0 && rawStatus !== 'draft') {
+    status = 'unpaid'
+  }
+
+  return {
+    ...inv,
+    status,
+    paid_amount: paid,
+    due_amount: due,
+  }
+}
+
 function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): InvoiceRecord[] {
  if (typeof window === 'undefined') return []
  const invoiceMap = new Map<string, InvoiceRecord>()
@@ -147,7 +174,7 @@ function getLocalInvoices(slug?: string, companySlug?: string, companyId?: strin
  const parsed = JSON.parse(raw)
  if (Array.isArray(parsed)) {
  parsed.forEach((inv) => {
- if (isMatchingTenant(inv)) invoiceMap.set(inv.id, inv)
+ if (isMatchingTenant(inv)) invoiceMap.set(inv.id, normalizeInvoiceRecord(inv))
           })
         }
       }
@@ -706,7 +733,7 @@ function BillingContent() {
  const localInvs = getLocalInvoices(slug, company?.slug, company?.id)
  const invMap = new Map<string, InvoiceRecord>()
  invoices.forEach((inv) => {
- if (inv && inv.id) invMap.set(inv.id, inv)
+ if (inv && inv.id) invMap.set(inv.id, normalizeInvoiceRecord(inv))
       })
  localInvs.forEach((inv) => {
  if (inv && inv.id) invMap.set(inv.id, inv)
@@ -970,7 +997,7 @@ function BillingContent() {
         )
  case 'signage_fabrication':
  return (
-          <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1.5 font-medium">
+          <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs py-0 px-1.5 font-medium">
             💡 Signage
           </Badge>
         )
@@ -983,7 +1010,7 @@ function BillingContent() {
  case 'digital_print':
  default:
  return (
-          <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1.5 font-medium">
+          <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs py-0 px-1.5 font-medium">
             🎨 Digital
           </Badge>
         )
@@ -1014,7 +1041,7 @@ function BillingContent() {
       }
  if (invoiceFilterTab === 'draft') return inv.status === 'unpaid' && inv.paid_amount === 0
  if (invoiceFilterTab === 'unpaid') return (inv.status === 'unpaid' || inv.status === 'partially_paid') && inv.due_amount > 0
- if (invoiceFilterTab === 'partially_paid') return inv.status === 'partially_paid'
+ if (invoiceFilterTab === 'partially_paid') return inv.status === 'partially_paid' || ((Number(inv.paid_amount) || 0) > 0 && (Number(inv.due_amount) || 0) > 0.01 && inv.status !== 'cancelled')
  if (invoiceFilterTab === 'paid') return inv.status === 'paid' || inv.due_amount === 0
  if (invoiceFilterTab === 'due_today') return inv.due_date === new Date().toISOString().split('T')[0] && inv.due_amount > 0
  if (invoiceFilterTab === 'overdue') return inv.due_amount > 0 && calculateDaysOverdue(inv.due_date) > 0
@@ -1162,52 +1189,52 @@ function BillingContent() {
   }
 
   // Status Badge Helper
- const getStatusBadge = (status: InvoiceStatus, dueDate: string, dueAmt: number) => {
- const daysOverdue = calculateDaysOverdue(dueDate)
+ const getStatusBadge = (status: InvoiceStatus, dueDate: string, dueAmt: number, paidAmt: number = 0) => {
+    const daysOverdue = calculateDaysOverdue(dueDate)
 
- if (status === 'paid' || dueAmt <= 0.01) {
- return (
+    if (status === 'paid' || dueAmt <= 0.01) {
+      return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success/10 text-success border border-success-border/20">
           <CheckCircle2 className="h-3 w-3 text-success"/> Paid
         </span>
       )
     }
 
- if (status === 'cancelled') {
- return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted0/10 text-foreground border border-border/20">
+    if (status === 'cancelled') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-foreground border border-border/20">
           <Ban className="h-3 w-3 text-muted-foreground"/> Cancelled
         </span>
       )
     }
 
- if (status === 'written_off') {
- return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20/20">
- Written Off
+    if (status === 'written_off') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+          Written Off
         </span>
       )
     }
 
- if (dueAmt > 0 && daysOverdue > 0) {
- return (
+    if (dueAmt > 0 && daysOverdue > 0) {
+      return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-destructive/15 text-destructive text-destructive border border-danger-border/30 animate-pulse">
           <AlertOctagon className="h-3 w-3 text-destructive text-destructive"/> {daysOverdue}d Overdue
         </span>
       )
     }
 
- if (status === 'partially_paid') {
- return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20/20">
+    if (status === 'partially_paid' || (paidAmt > 0 && dueAmt > 0.01)) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
           <Clock className="h-3 w-3 text-primary"/> Partially Paid
         </span>
       )
     }
 
- return (
+    return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning-border/20">
- Unpaid
+        Unpaid
       </span>
     )
   }
@@ -1644,7 +1671,7 @@ function BillingContent() {
                                 {inv.invoice_number}
                               </Link>
                               {inv.invoice_type === 'vat_invoice' && (
-                                <Badge className="bg-primary/10 text-primary border border-primary/20/20 text-xs py-0 px-1 shrink-0 whitespace-nowrap">
+                                <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs py-0 px-1 shrink-0 whitespace-nowrap">
  VAT 6.3
                                 </Badge>
                               )}
@@ -1681,7 +1708,7 @@ function BillingContent() {
                             {formatBDT(inv.due_amount || 0)}
                           </td>
                           <td className="p-3.5 text-center whitespace-nowrap">
-                            {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
+                            {getStatusBadge(inv.status, inv.due_date, inv.due_amount, inv.paid_amount)}
                           </td>
                           <td className="p-3.5 text-muted-foreground whitespace-nowrap">
                             {inv.salesperson_name || inv.created_by_name || 'Commercial'}
@@ -1814,7 +1841,7 @@ function BillingContent() {
                           </Link>
                           {getSectorBadge(getSectorForInvoice(inv))}
                         </div>
-                        {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
+                        {getStatusBadge(inv.status, inv.due_date, inv.due_amount, inv.paid_amount)}
                       </div>
 
                       <div>

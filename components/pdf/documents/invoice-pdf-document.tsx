@@ -109,17 +109,13 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
     },
   });
 
- const getStatusBadge = () => {
- switch (invoice.status) {
- case"paid":
- return <Badge label="PAID"variant="success"size="sm"/>;
- case"partially_paid":
- return <Badge label="PARTIAL"variant="warning"size="sm"/>;
- case"overdue":
- return <Badge label="OVERDUE"variant="destructive"size="sm"/>;
- default:
- return <Badge label="UNPAID"variant="outline"size="sm"/>;
-    }
+  const getStatusBadge = () => {
+    const isPaid = invoice.status === 'paid' || (Number(invoice.due_amount) <= 0.01 && Number(invoice.grand_total) > 0);
+    const isPartial = invoice.status === 'partially_paid' || (Number(invoice.paid_amount) > 0 && Number(invoice.due_amount) > 0.01);
+    if (isPaid) return <Badge label="PAID" variant="success" size="sm" />;
+    if (isPartial) return <Badge label="PARTIAL" variant="warning" size="sm" />;
+    if (invoice.status === 'overdue') return <Badge label="OVERDUE" variant="destructive" size="sm" />;
+    return <Badge label="UNPAID" variant="outline" size="sm" />;
   };
 
  const formattedInWords = numberToWordsBDT(invoice.grand_total || 0);

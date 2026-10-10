@@ -548,7 +548,7 @@ export function RecordPaymentModal({
                                 </span>
                               ) : (
                                 <span className="text-xs font-bold text-warning uppercase tracking-wider block">
-                                  {inv.status === 'partially_paid' ? 'Partially Paid' : 'Unpaid'}
+                                  {(inv.status === 'partially_paid' || ((Number(inv.paid_amount) || 0) > 0 && (Number(inv.due_amount) || 0) > 0.01)) ? 'Partially Paid' : 'Unpaid'}
                                 </span>
                               )}
                             </div>

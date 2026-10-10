@@ -1380,7 +1380,7 @@ export class PrintFlowDataStore {
     const orderId = orderData.id || `ord-${Date.now()}`
     const orderNum = orderData.order_number || `ORD-${Date.now().toString().slice(-6)}`
     const finalPrice = orderData.final_price || orderData.subtotal || 0
-    const advancePaid = orderData.advance_amount || 0
+    const advancePaid = Number(orderData.advance_amount ?? (orderData as any).advance_paid) || 0
     const dueAmount = Math.max(0, finalPrice - advancePaid)
 
     const newOrder: SalesOrderRecord = {
@@ -1614,7 +1614,7 @@ export class PrintFlowDataStore {
       customer_address: newOrder.customer_address,
       invoice_date: newOrder.order_date,
       due_date: newOrder.delivery_date,
-      status: 'draft',
+      status: dueAmount <= 0.01 && (newOrder.final_price || 0) > 0 ? 'paid' : advancePaid > 0 ? 'partially_paid' : 'unpaid',
       subtotal: newOrder.subtotal,
       discount_amount: newOrder.discount_amount,
       vat_percentage: 0,
