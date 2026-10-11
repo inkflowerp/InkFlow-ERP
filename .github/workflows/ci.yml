@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: 1. Checkout Codebase
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 2. Setup Node.js 24 Runtime
         uses: actions/setup-node@v4
